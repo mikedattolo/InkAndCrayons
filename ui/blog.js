@@ -1,6 +1,13 @@
 const POSTS_KEY = "lrl_posts";
 const COMMENTS_KEY = "lrl_comments";
-const PROFANITY = ["badword", "dummy", "nasty"];
+const PROFANITY = [
+  "badword",
+  "dummy",
+  "nasty",
+  "stupid",
+  "idiot",
+  "dumb",
+];
 
 function readJson(key, fallback) {
   const raw = localStorage.getItem(key);
@@ -15,6 +22,31 @@ function readJson(key, fallback) {
 
 function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
+}
+
+function escapeHtml(text) {
+  const map = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  };
+  return text.replace(/[&<>"']/g, (char) => map[char]);
+}
+
+function renderMarkdown(text) {
+  // Lightweight markdown: **bold**, *italic*, `code`, and URLs.
+  let safe = escapeHtml(text);
+  safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  safe = safe.replace(/\*(.+?)\*/g, "<em>$1</em>");
+  safe = safe.replace(/`(.+?)`/g, "<code>$1</code>");
+  safe = safe.replace(
+    /(https?:\/\/[^\s]+)/g,
+    '<a href="$1" target="_blank" rel="noreferrer">$1</a>'
+  );
+  safe = safe.replace(/\n/g, "<br />");
+  return safe;
 }
 
 function sanitize(text) {
@@ -79,7 +111,7 @@ export function createBlogUI({
 
       const body = document.createElement("div");
       body.className = "modal__body-text";
-      body.textContent = post.body;
+      body.innerHTML = renderMarkdown(post.body);
 
       const commentsWrap = document.createElement("div");
       commentsWrap.className = "post__comments";
@@ -94,7 +126,7 @@ export function createBlogUI({
         commentMeta.textContent = `${comment.author} · ${new Date(comment.createdAt).toLocaleDateString()}`;
 
         const commentBody = document.createElement("div");
-        commentBody.textContent = comment.body;
+        commentBody.innerHTML = renderMarkdown(comment.body);
 
         commentEl.appendChild(commentMeta);
         commentEl.appendChild(commentBody);

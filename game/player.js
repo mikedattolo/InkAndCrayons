@@ -59,7 +59,12 @@ export function createPlayer({ element, startX, startY, width, height }) {
   }
 
   function render() {
-    element.style.transform = `translate(${state.x}px, ${state.y}px)`;
+    const speed = Math.hypot(state.velocityX, state.velocityY);
+    const tilt = Math.max(-6, Math.min(6, state.velocityX * 0.05));
+    const squash = 1 - Math.min(0.1, speed / (config.maxSpeed * 10));
+    const stretch = 1 + Math.min(0.12, speed / (config.maxSpeed * 8));
+
+    element.style.transform = `translate(${state.x}px, ${state.y}px) rotate(${tilt}deg) scale(${stretch}, ${squash})`;
   }
 
   return {

@@ -154,6 +154,7 @@ body {
   border: 2px solid #b8742b;
   box-shadow: 0 6px 8px rgba(0, 0, 0, 0.18);
   z-index: 3;
+  transition: transform 0.08s linear;
 }
 
 .object {
