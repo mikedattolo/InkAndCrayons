@@ -1,10 +1,14 @@
 import { initAuth, onAuthStateChanged, getUserProfile } from "./auth/auth.js";
 import { createAuthGate } from "./ui/auth.js";
 import { createModal } from "./ui/modal.js";
-import { loadBooks, renderBooks } from "./ui/bookshelf.js";
+import { loadBooks, renderBooks, addBookOverride } from "./ui/bookshelf.js";
 import { createBlogUI } from "./ui/blog.js";
-import { loadShopItems, renderShopItems } from "./ui/shop.js";
-import { loadAnnouncements, renderAnnouncements } from "./ui/whiteboard.js";
+import { loadShopItems, renderShopItems, addShopOverride } from "./ui/shop.js";
+import {
+  loadAnnouncements,
+  renderAnnouncements,
+  addAnnouncementOverride,
+} from "./ui/whiteboard.js";
 import { createPlayer } from "./game/player.js";
 import { getBounds, getObstacles } from "./game/world.js";
 import { updateInteractions } from "./game/interactions.js";
@@ -25,6 +29,20 @@ const blogFormEl = document.getElementById("blogForm");
 const blogTitleInput = document.getElementById("postTitle");
 const blogBodyInput = document.getElementById("postBody");
 const blogStatusEl = document.getElementById("blogStatus");
+const adminPanelEl = document.getElementById("adminPanel");
+const adminStatusEl = document.getElementById("adminStatus");
+const adminAnnouncementForm = document.getElementById("adminAnnouncementForm");
+const adminAnnouncementTitle = document.getElementById("adminAnnouncementTitle");
+const adminAnnouncementMessage = document.getElementById("adminAnnouncementMessage");
+const adminResourceForm = document.getElementById("adminResourceForm");
+const adminResourceTitle = document.getElementById("adminResourceTitle");
+const adminResourceDesc = document.getElementById("adminResourceDesc");
+const adminResourceUrl = document.getElementById("adminResourceUrl");
+const adminShopForm = document.getElementById("adminShopForm");
+const adminShopTitle = document.getElementById("adminShopTitle");
+const adminShopDesc = document.getElementById("adminShopDesc");
+const adminShopPrice = document.getElementById("adminShopPrice");
+const adminShopUrl = document.getElementById("adminShopUrl");
 
 const gateEl = document.getElementById("gate");
 const gateForm = document.getElementById("gateForm");
@@ -158,6 +176,14 @@ function ensureSignedIn() {
   }
   authGate.setGateOpen(true);
   return false;
+}
+
+function isAdmin() {
+  return currentUser?.role === "admin";
+}
+
+function setAdminVisibility(isVisible) {
+  adminPanelEl.setAttribute("aria-hidden", String(!isVisible));
 }
 
 function getDirection() {
@@ -318,6 +344,51 @@ function attachEvents() {
   window.addEventListener("keydown", handleKeyDown);
   window.addEventListener("keyup", handleKeyUp);
   blogCloseBtn.addEventListener("click", closeBlog);
+
+   adminAnnouncementForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (!isAdmin()) return;
+    const title = adminAnnouncementTitle.value.trim();
+    const message = adminAnnouncementMessage.value.trim();
+    if (!title || !message) return;
+    addAnnouncementOverride({ title, message });
+    adminStatusEl.textContent = "Announcement saved.";
+    adminAnnouncementTitle.value = "";
+    adminAnnouncementMessage.value = "";
+    loadContent();
+  });
+
+  adminResourceForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (!isAdmin()) return;
+    const title = adminResourceTitle.value.trim();
+    const description = adminResourceDesc.value.trim();
+    const url = adminResourceUrl.value.trim();
+    if (!title || !description || !url) return;
+    addBookOverride({ title, description, url });
+    adminStatusEl.textContent = "Resource link saved.";
+    adminResourceTitle.value = "";
+    adminResourceDesc.value = "";
+    adminResourceUrl.value = "";
+    loadContent();
+  });
+
+  adminShopForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (!isAdmin()) return;
+    const title = adminShopTitle.value.trim();
+    const description = adminShopDesc.value.trim();
+    const price = adminShopPrice.value.trim();
+    const url = adminShopUrl.value.trim();
+    if (!title || !description || !price || !url) return;
+    addShopOverride({ title, description, price, url });
+    adminStatusEl.textContent = "Shop item saved.";
+    adminShopTitle.value = "";
+    adminShopDesc.value = "";
+    adminShopPrice.value = "";
+    adminShopUrl.value = "";
+    loadContent();
+  });
 }
 
 async function init() {
@@ -326,6 +397,10 @@ async function init() {
     currentUser = user;
     blogUI.setUser(user);
     blogStatusEl.textContent = user ? "" : "Sign in to create posts and comments.";
+    setAdminVisibility(isAdmin());
+    if (!isAdmin()) {
+      adminStatusEl.textContent = "";
+    }
   });
 
   await loadContent();

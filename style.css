@@ -473,6 +473,65 @@ body {
   color: #6b6b6b;
 }
 
+.admin {
+  border-top: 1px solid #ece4d6;
+  padding-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.admin__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin__badge {
+  background: #f0f4ea;
+  color: #4f6b3c;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid #d0dcc4;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin__section summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: 6px 0;
+}
+
+.admin__form {
+  display: grid;
+  gap: 8px;
+  padding: 8px 0 2px;
+}
+
+.admin__form input,
+.admin__form textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #d8cfbf;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.admin__form button {
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: #4f6b3c;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin__status {
+  color: #4f6b3c;
+}
+
 .post {
   border: 1px solid #ece4d6;
   border-radius: 12px;
@@ -491,6 +550,23 @@ body {
   margin-top: 8px;
   display: grid;
   gap: 6px;
+}
+
+.post__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.post__delete {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 8px;
+  background: #d9534f;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
 }
 
 .comment {

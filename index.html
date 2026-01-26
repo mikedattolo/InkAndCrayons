@@ -94,6 +94,54 @@
             <button id="postSubmit" type="submit">Publish Post</button>
             <small id="blogStatus" class="blog__status"></small>
           </form>
+
+          <section id="adminPanel" class="admin" aria-hidden="true" aria-label="Admin controls">
+            <div class="admin__header">
+              <h3>Admin Panel</h3>
+              <span class="admin__badge">Admin</span>
+            </div>
+
+            <details class="admin__section">
+              <summary>Add Announcement</summary>
+              <form id="adminAnnouncementForm" class="admin__form">
+                <label for="adminAnnouncementTitle">Title</label>
+                <input id="adminAnnouncementTitle" type="text" maxlength="80" required />
+                <label for="adminAnnouncementMessage">Message</label>
+                <textarea id="adminAnnouncementMessage" rows="3" required></textarea>
+                <button type="submit">Save Announcement</button>
+              </form>
+            </details>
+
+            <details class="admin__section">
+              <summary>Add Resource Link (Bookshelf)</summary>
+              <form id="adminResourceForm" class="admin__form">
+                <label for="adminResourceTitle">Title</label>
+                <input id="adminResourceTitle" type="text" maxlength="80" required />
+                <label for="adminResourceDesc">Description</label>
+                <textarea id="adminResourceDesc" rows="2" required></textarea>
+                <label for="adminResourceUrl">URL</label>
+                <input id="adminResourceUrl" type="url" required />
+                <button type="submit">Save Resource</button>
+              </form>
+            </details>
+
+            <details class="admin__section">
+              <summary>Add Shop Item</summary>
+              <form id="adminShopForm" class="admin__form">
+                <label for="adminShopTitle">Title</label>
+                <input id="adminShopTitle" type="text" maxlength="80" required />
+                <label for="adminShopDesc">Description</label>
+                <textarea id="adminShopDesc" rows="2" required></textarea>
+                <label for="adminShopPrice">Price</label>
+                <input id="adminShopPrice" type="text" maxlength="20" required />
+                <label for="adminShopUrl">URL</label>
+                <input id="adminShopUrl" type="url" required />
+                <button type="submit">Save Shop Item</button>
+              </form>
+            </details>
+
+            <small id="adminStatus" class="admin__status" aria-live="polite"></small>
+          </section>
         </aside>
       </div>
     </section>

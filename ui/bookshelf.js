@@ -1,7 +1,30 @@
+const BOOKS_OVERRIDE_KEY = "lrl_books_override";
+
+function readOverrides() {
+  const raw = localStorage.getItem(BOOKS_OVERRIDE_KEY);
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveOverrides(list) {
+  localStorage.setItem(BOOKS_OVERRIDE_KEY, JSON.stringify(list));
+}
+
+export function addBookOverride(entry) {
+  const list = readOverrides();
+  list.unshift(entry);
+  saveOverrides(list);
+}
+
 export async function loadBooks() {
   const response = await fetch("data/books.json");
   const data = await response.json();
-  return data.books || [];
+  const overrides = readOverrides();
+  return [...overrides, ...(data.books || [])];
 }
 
 export function renderBooks(books) {

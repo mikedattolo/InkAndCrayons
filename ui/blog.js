@@ -1,5 +1,6 @@
 const POSTS_KEY = "lrl_posts";
 const COMMENTS_KEY = "lrl_comments";
+const DELETED_POSTS_KEY = "lrl_deleted_posts";
 const PROFANITY = [
   "badword",
   "dummy",
@@ -62,13 +63,29 @@ export async function loadPosts() {
   const response = await fetch("data/posts.json");
   const data = await response.json();
   const stored = readJson(POSTS_KEY, []);
-  return [...(data.posts || []), ...stored];
+  const deleted = new Set(readJson(DELETED_POSTS_KEY, []));
+
+  const combined = [...(data.posts || []), ...stored].map((post, index) => {
+    if (post.id) return post;
+    return { ...post, id: `builtin_${index}` };
+  });
+
+  return combined.filter((post) => !deleted.has(post.id));
 }
 
 function savePost(post) {
   const posts = readJson(POSTS_KEY, []);
   posts.unshift(post);
   writeJson(POSTS_KEY, posts);
+}
+
+function deletePost(postId) {
+  const posts = readJson(POSTS_KEY, []).filter((p) => p.id !== postId);
+  writeJson(POSTS_KEY, posts);
+
+  const deleted = new Set(readJson(DELETED_POSTS_KEY, []));
+  deleted.add(postId);
+  writeJson(DELETED_POSTS_KEY, Array.from(deleted));
 }
 
 function loadComments() {
@@ -169,9 +186,30 @@ export function createBlogUI({
       commentForm.appendChild(commentInput);
       commentForm.appendChild(commentButton);
 
+      const actions = document.createElement("div");
+      actions.className = "post__actions";
+
+      if (user?.role === "admin") {
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.textContent = "Delete";
+        deleteBtn.className = "post__delete";
+        deleteBtn.addEventListener("click", () => {
+          deletePost(post.id);
+          loadPosts().then((data) => {
+            posts = data;
+            render();
+          });
+        });
+        actions.appendChild(deleteBtn);
+      }
+
       card.appendChild(title);
       card.appendChild(meta);
       card.appendChild(body);
+      if (actions.childNodes.length) {
+        card.appendChild(actions);
+      }
       card.appendChild(commentsWrap);
       card.appendChild(commentForm);
       postsContainer.appendChild(card);

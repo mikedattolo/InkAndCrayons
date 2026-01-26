@@ -65,6 +65,7 @@ export function createUser({ email, username, password }) {
     username,
     passwordHash: encodePassword(password),
     avatar: "default",
+    role: "user",
     createdAt: new Date().toISOString(),
   };
 
@@ -79,6 +80,20 @@ export function signInUser({ email, password }) {
   const users = loadUsers();
   const normalizedEmail = email.toLowerCase();
   const passwordHash = encodePassword(password);
+
+  // Built-in local admin for offline management
+  if (normalizedEmail === "admin@local" && password === "admin123") {
+    const admin = {
+      id: "admin_local",
+      email: "admin@local",
+      username: "Admin",
+      role: "admin",
+      avatar: "default",
+      createdAt: new Date().toISOString(),
+    };
+    setSessionUserId(admin.id);
+    return { user: admin };
+  }
 
   const user = users.find(
     (item) => item.email === normalizedEmail && item.passwordHash === passwordHash

@@ -1,7 +1,30 @@
+const SHOP_OVERRIDE_KEY = "lrl_shop_override";
+
+function readOverrides() {
+  const raw = localStorage.getItem(SHOP_OVERRIDE_KEY);
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveOverrides(list) {
+  localStorage.setItem(SHOP_OVERRIDE_KEY, JSON.stringify(list));
+}
+
+export function addShopOverride(entry) {
+  const list = readOverrides();
+  list.unshift(entry);
+  saveOverrides(list);
+}
+
 export async function loadShopItems() {
   const response = await fetch("data/shop.json");
   const data = await response.json();
-  return data.items || [];
+  const overrides = readOverrides();
+  return [...overrides, ...(data.items || [])];
 }
 
 export function renderShopItems(items) {
