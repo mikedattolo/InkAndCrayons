@@ -1,0 +1,16 @@
+{
+  "posts": [
+    {
+      "title": "Welcome to Our Classroom Blog",
+      "author": "Little Roots Team",
+      "body": "<p>We share gentle routines, creative centers, and classroom wins. Check back weekly for new ideas.</p>",
+      "image": ""
+    },
+    {
+      "title": "5 Calm Corner Essentials",
+      "author": "Ms. Rivera",
+      "body": "<ul><li>Soft seating</li><li>Breathing cards</li><li>Fidget tools</li><li>Feelings chart</li><li>Cozy lighting</li></ul>",
+      "image": ""
+    }
+  ]
+}

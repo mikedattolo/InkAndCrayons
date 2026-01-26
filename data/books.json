@@ -1,0 +1,19 @@
+{
+  "books": [
+    {
+      "title": "Growing Curiosity Reading List",
+      "description": "A curated list of early reader favorites.",
+      "url": "https://example.com/reading-list"
+    },
+    {
+      "title": "Printable Phonics Pack",
+      "description": "PDF worksheets for letter sounds.",
+      "url": "https://example.com/phonics-pack"
+    },
+    {
+      "title": "STEM Storytime Links",
+      "description": "Science-themed stories for classroom read-alouds.",
+      "url": "https://example.com/stem-stories"
+    }
+  ]
+}

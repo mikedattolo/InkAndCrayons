@@ -1,0 +1,57 @@
+{
+  "objects": {
+    "bookshelf": {
+      "title": "Bookshelf Resources",
+      "description": "Browse classroom reading, blog posts, and lesson-plan links.",
+      "items": [
+        {
+          "title": "Classroom Blog: Growing Curiosity",
+          "type": "Blog Post",
+          "url": "https://example.com/blog"
+        },
+        {
+          "title": "Lesson Plan Pack: Early Literacy",
+          "type": "Lesson Plan",
+          "url": "https://example.com/lessons"
+        },
+        {
+          "title": "Interactive Reading List",
+          "type": "Resource",
+          "url": "https://example.com/resources"
+        }
+      ]
+    },
+    "chalkboard": {
+      "title": "Chalkboard Lessons",
+      "description": "Peek at today’s focus and suggested discussion prompts.",
+      "items": [
+        {
+          "title": "Morning Message Ideas",
+          "type": "Lesson Prompt",
+          "url": "https://example.com/morning-message"
+        },
+        {
+          "title": "Shape of the Day",
+          "type": "Mini Lesson",
+          "url": "https://example.com/shapes"
+        }
+      ]
+    },
+    "activityTable": {
+      "title": "Activity Table",
+      "description": "Hands-on activities and classroom centers.",
+      "items": [
+        {
+          "title": "Counting Station",
+          "type": "Center Activity",
+          "url": "https://example.com/counting"
+        },
+        {
+          "title": "Sensory Bin Ideas",
+          "type": "Resource",
+          "url": "https://example.com/sensory"
+        }
+      ]
+    }
+  }
+}

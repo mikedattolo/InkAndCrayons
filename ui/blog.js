@@ -1,0 +1,189 @@
+const POSTS_KEY = "lrl_posts";
+const COMMENTS_KEY = "lrl_comments";
+const PROFANITY = ["badword", "dummy", "nasty"];
+
+function readJson(key, fallback) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return fallback;
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    console.warn("Blog data corrupted, resetting.");
+    return fallback;
+  }
+}
+
+function writeJson(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function sanitize(text) {
+  let safe = text;
+  PROFANITY.forEach((word) => {
+    const regex = new RegExp(`\\b${word}\\b`, "gi");
+    safe = safe.replace(regex, "****");
+  });
+  return safe;
+}
+
+export async function loadPosts() {
+  const response = await fetch("data/posts.json");
+  const data = await response.json();
+  const stored = readJson(POSTS_KEY, []);
+  return [...(data.posts || []), ...stored];
+}
+
+function savePost(post) {
+  const posts = readJson(POSTS_KEY, []);
+  posts.unshift(post);
+  writeJson(POSTS_KEY, posts);
+}
+
+function loadComments() {
+  return readJson(COMMENTS_KEY, {});
+}
+
+function saveComments(map) {
+  writeJson(COMMENTS_KEY, map);
+}
+
+export function createBlogUI({
+  postsContainer,
+  formEl,
+  titleInput,
+  bodyInput,
+  statusEl,
+  currentUser,
+}) {
+  let posts = [];
+  let user = currentUser;
+
+  function setUser(nextUser) {
+    user = nextUser;
+  }
+
+  function render() {
+    postsContainer.innerHTML = "";
+    const comments = loadComments();
+
+    posts.forEach((post) => {
+      const card = document.createElement("article");
+      card.className = "post";
+
+      const title = document.createElement("strong");
+      title.textContent = post.title;
+
+      const meta = document.createElement("div");
+      meta.className = "post__meta";
+      meta.textContent = `By ${post.author} · ${new Date(post.createdAt).toLocaleDateString()}`;
+
+      const body = document.createElement("div");
+      body.className = "modal__body-text";
+      body.textContent = post.body;
+
+      const commentsWrap = document.createElement("div");
+      commentsWrap.className = "post__comments";
+
+      const postComments = comments[post.id] || [];
+      postComments.forEach((comment) => {
+        const commentEl = document.createElement("div");
+        commentEl.className = "comment";
+
+        const commentMeta = document.createElement("div");
+        commentMeta.className = "comment__meta";
+        commentMeta.textContent = `${comment.author} · ${new Date(comment.createdAt).toLocaleDateString()}`;
+
+        const commentBody = document.createElement("div");
+        commentBody.textContent = comment.body;
+
+        commentEl.appendChild(commentMeta);
+        commentEl.appendChild(commentBody);
+        commentsWrap.appendChild(commentEl);
+      });
+
+      const commentForm = document.createElement("form");
+      commentForm.className = "comment__form";
+
+      const commentInput = document.createElement("input");
+      commentInput.type = "text";
+      commentInput.placeholder = user ? "Add a comment" : "Sign in to comment";
+      commentInput.disabled = !user;
+
+      const commentButton = document.createElement("button");
+      commentButton.type = "submit";
+      commentButton.textContent = "Post Comment";
+      commentButton.disabled = !user;
+
+      commentForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (!user) return;
+        const bodyText = commentInput.value.trim();
+        if (!bodyText) return;
+
+        const safeBody = sanitize(bodyText);
+        const nextComments = loadComments();
+        const entry = {
+          id: `comment_${Date.now()}`,
+          author: user.username,
+          body: safeBody,
+          createdAt: new Date().toISOString(),
+        };
+        nextComments[post.id] = [entry, ...(nextComments[post.id] || [])];
+        saveComments(nextComments);
+        commentInput.value = "";
+        render();
+      });
+
+      commentForm.appendChild(commentInput);
+      commentForm.appendChild(commentButton);
+
+      card.appendChild(title);
+      card.appendChild(meta);
+      card.appendChild(body);
+      card.appendChild(commentsWrap);
+      card.appendChild(commentForm);
+      postsContainer.appendChild(card);
+    });
+  }
+
+  formEl.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (!user) {
+      statusEl.textContent = "Sign in to create a post.";
+      return;
+    }
+
+    const title = titleInput.value.trim();
+    const body = bodyInput.value.trim();
+    if (!title || !body) {
+      statusEl.textContent = "Please add a title and post body.";
+      return;
+    }
+
+    const post = {
+      id: `post_${Date.now()}`,
+      title: sanitize(title),
+      body: sanitize(body),
+      author: user.username,
+      createdAt: new Date().toISOString(),
+    };
+
+    savePost(post);
+    titleInput.value = "";
+    bodyInput.value = "";
+    statusEl.textContent = "Post published locally.";
+    loadPosts().then((data) => {
+      posts = data;
+      render();
+    });
+  });
+
+  return {
+    async init() {
+      posts = await loadPosts();
+      render();
+    },
+    setUser,
+    render,
+  };
+}

@@ -1,0 +1,16 @@
+{
+  "items": [
+    {
+      "title": "Early Literacy Lesson Plan Pack",
+      "description": "Printable centers, word work, and phonics games.",
+      "price": "$12",
+      "url": "https://example.com/lesson-pack"
+    },
+    {
+      "title": "Seasonal Art Templates",
+      "description": "Classroom-friendly art projects for all seasons.",
+      "price": "$8",
+      "url": "https://example.com/art-pack"
+    }
+  ]
+}

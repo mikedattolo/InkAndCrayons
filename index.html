@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Little Roots Learning</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="app__header">
+        <h1>Little Roots Learning</h1>
+        <p>Explore the classroom and discover learning resources.</p>
+        <p id="userStatus" class="app__status" aria-live="polite"></p>
+        <button id="signOutBtn" class="app__signout" type="button">Sign out</button>
+      </header>
+
+      <section class="game" aria-label="Interactive classroom">
+        <div id="classroom" class="classroom" role="application">
+          <div class="decor decor--window decor--window-left" aria-hidden="true"></div>
+          <div class="decor decor--window decor--window-right" aria-hidden="true"></div>
+          <div class="decor decor--chalkline" aria-hidden="true"></div>
+          <div class="decor decor--rug" aria-hidden="true"></div>
+          <div class="decor decor--teacher-desk" aria-hidden="true"></div>
+          <div class="decor decor--plant" aria-hidden="true"></div>
+          <div id="player" class="player" aria-label="Player"></div>
+          <div id="bookshelf" class="object object--bookshelf" aria-label="Bookshelf"></div>
+          <div id="computer" class="object object--computer" aria-label="Computer"></div>
+          <div id="desk" class="object object--desk" aria-label="Desk"></div>
+          <div id="whiteboard" class="object object--whiteboard" aria-label="Whiteboard"></div>
+          <div id="door" class="object object--door" aria-label="Door"></div>
+          <div id="interactionPrompt" class="prompt" aria-live="polite"></div>
+        </div>
+      </section>
+    </main>
+
+    <div id="gate" class="gate" aria-hidden="true" role="dialog" aria-labelledby="gateTitle">
+      <div class="gate__backdrop"></div>
+      <div class="gate__content" role="document">
+        <h2 id="gateTitle">Welcome to Little Roots</h2>
+        <p>Create or sign in to access the classroom and blog resources.</p>
+        <form id="gateForm" class="gate__form">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required />
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" minlength="6" required />
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" maxlength="20" required />
+          <div class="gate__actions">
+            <button id="signUpBtn" type="submit" data-mode="signup">Create Account</button>
+            <button id="signInBtn" type="button" data-mode="signin">Sign In</button>
+          </div>
+        </form>
+        <small class="gate__note">Auth provider configuration required for live accounts.</small>
+      </div>
+    </div>
+
+    <div id="modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="modalTitle">
+      <div class="modal__backdrop" data-action="close"></div>
+      <div class="modal__content" role="document">
+        <button class="modal__close" type="button" data-action="close" aria-label="Close">
+          ×
+        </button>
+        <h2 id="modalTitle"></h2>
+        <p id="modalDescription"></p>
+        <div id="modalBody" class="modal__body"></div>
+      </div>
+    </div>
+
+    <section id="blogPage" class="blog" aria-hidden="true" aria-label="Classroom blog">
+      <div class="blog__header">
+        <div>
+          <h2>Classroom Blog</h2>
+          <p>Read, share, and discuss classroom ideas.</p>
+        </div>
+        <button id="blogClose" class="blog__close" type="button" aria-label="Close blog">
+          Back to Classroom
+        </button>
+      </div>
+
+      <div class="blog__layout">
+        <section class="blog__posts" aria-live="polite">
+          <h3>Posts</h3>
+          <div id="blogPosts" class="blog__posts-list"></div>
+        </section>
+
+        <aside class="blog__composer" aria-label="Create a post">
+          <h3>Create a New Post</h3>
+          <form id="blogForm" class="blog__form">
+            <label for="postTitle">Title</label>
+            <input id="postTitle" name="postTitle" type="text" maxlength="80" required />
+            <label for="postBody">Post</label>
+            <textarea id="postBody" name="postBody" rows="6" required></textarea>
+            <button id="postSubmit" type="submit">Publish Post</button>
+            <small id="blogStatus" class="blog__status"></small>
+          </form>
+        </aside>
+      </div>
+    </section>
+
+    <script type="module" src="game.js"></script>
+  </body>
+</html>

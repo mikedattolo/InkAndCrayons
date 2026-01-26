@@ -1,0 +1,97 @@
+const USERS_KEY = "lrl_users";
+const SESSION_KEY = "lrl_session";
+
+function readJson(key, fallback) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return fallback;
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    console.warn("Stored data corrupted, resetting.");
+    return fallback;
+  }
+}
+
+function writeJson(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function encodePassword(password) {
+  // Local demo-only encoding. Replace with real auth provider handling.
+  return btoa(unescape(encodeURIComponent(password)));
+}
+
+export function loadUsers() {
+  return readJson(USERS_KEY, []);
+}
+
+export function saveUsers(users) {
+  writeJson(USERS_KEY, users);
+}
+
+export function getSessionUserId() {
+  return readJson(SESSION_KEY, null);
+}
+
+export function setSessionUserId(userId) {
+  writeJson(SESSION_KEY, userId);
+}
+
+export function clearSession() {
+  localStorage.removeItem(SESSION_KEY);
+}
+
+export function getCurrentUser() {
+  const users = loadUsers();
+  const sessionId = getSessionUserId();
+  return users.find((user) => user.id === sessionId) || null;
+}
+
+export function createUser({ email, username, password }) {
+  const users = loadUsers();
+  const normalizedEmail = email.toLowerCase();
+
+  if (users.some((user) => user.email === normalizedEmail)) {
+    return { error: "Email already in use." };
+  }
+
+  if (users.some((user) => user.username.toLowerCase() === username.toLowerCase())) {
+    return { error: "Username already taken." };
+  }
+
+  const newUser = {
+    id: `user_${Date.now()}`,
+    email: normalizedEmail,
+    username,
+    passwordHash: encodePassword(password),
+    avatar: "default",
+    createdAt: new Date().toISOString(),
+  };
+
+  users.push(newUser);
+  saveUsers(users);
+  setSessionUserId(newUser.id);
+
+  return { user: newUser };
+}
+
+export function signInUser({ email, password }) {
+  const users = loadUsers();
+  const normalizedEmail = email.toLowerCase();
+  const passwordHash = encodePassword(password);
+
+  const user = users.find(
+    (item) => item.email === normalizedEmail && item.passwordHash === passwordHash
+  );
+
+  if (!user) {
+    return { error: "Invalid email or password." };
+  }
+
+  setSessionUserId(user.id);
+  return { user };
+}
+
+export function signOutUser() {
+  clearSession();
+}
