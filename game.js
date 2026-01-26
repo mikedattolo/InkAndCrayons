@@ -92,8 +92,8 @@ const player = createPlayer({
   element: playerEl,
   startX: 420,
   startY: 300,
-  width: 32,
-  height: 40,
+  width: 36,
+  height: 44,
 });
 
 const objects = [
