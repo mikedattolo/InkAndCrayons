@@ -401,6 +401,7 @@ async function init() {
     if (!isAdmin()) {
       adminStatusEl.textContent = "";
     }
+    blogUI.render();
   });
 
   await loadContent();
