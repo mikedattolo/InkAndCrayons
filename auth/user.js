@@ -110,3 +110,77 @@ export function signInUser({ email, password }) {
 export function signOutUser() {
   clearSession();
 }
+
+/* ── Account Management ─────────────────────────────────── */
+
+export function updateProfile({ username, avatarUrl }) {
+  const users = loadUsers();
+  const sessionId = getSessionUserId();
+  const user = users.find((u) => u.id === sessionId);
+  if (!user) return { error: "Not signed in." };
+
+  if (username && username !== user.username) {
+    const taken = users.some(
+      (u) => u.id !== user.id && u.username.toLowerCase() === username.toLowerCase()
+    );
+    if (taken) return { error: "Username already taken." };
+    user.username = username;
+  }
+
+  if (avatarUrl !== undefined) {
+    user.avatarUrl = avatarUrl;
+  }
+
+  saveUsers(users);
+  return { user };
+}
+
+export function changePassword({ currentPassword, newPassword }) {
+  const users = loadUsers();
+  const sessionId = getSessionUserId();
+  const user = users.find((u) => u.id === sessionId);
+  if (!user) return { error: "Not signed in." };
+
+  if (user.passwordHash !== encodePassword(currentPassword)) {
+    return { error: "Current password is incorrect." };
+  }
+
+  user.passwordHash = encodePassword(newPassword);
+  saveUsers(users);
+  return { success: true };
+}
+
+/* ── Payment Methods (localStorage demo) ─────────────── */
+const PAYMENTS_KEY = "lrl_payments";
+
+export function getPaymentMethods() {
+  const sessionId = getSessionUserId();
+  if (!sessionId) return [];
+  const all = readJson(PAYMENTS_KEY, {});
+  return all[sessionId] || [];
+}
+
+export function addPaymentMethod({ name, lastFour, expiry }) {
+  const sessionId = getSessionUserId();
+  if (!sessionId) return { error: "Not signed in." };
+  const all = readJson(PAYMENTS_KEY, {});
+  const methods = all[sessionId] || [];
+  methods.push({
+    id: `card_${Date.now()}`,
+    name,
+    lastFour,
+    expiry,
+    addedAt: new Date().toISOString(),
+  });
+  all[sessionId] = methods;
+  writeJson(PAYMENTS_KEY, all);
+  return { success: true };
+}
+
+export function removePaymentMethod(cardId) {
+  const sessionId = getSessionUserId();
+  if (!sessionId) return;
+  const all = readJson(PAYMENTS_KEY, {});
+  all[sessionId] = (all[sessionId] || []).filter((c) => c.id !== cardId);
+  writeJson(PAYMENTS_KEY, all);
+}

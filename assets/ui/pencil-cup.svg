@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260" fill="none">
+  <defs>
+    <!-- soft watercolor edge -->
+    <filter id="pc-wc" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" seed="7" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <!-- gentle shadow -->
+    <filter id="pc-sh">
+      <feDropShadow dx="1" dy="2" stdDeviation="2.5" flood-color="#7a5abf" flood-opacity="0.13"/>
+    </filter>
+    <!-- subtle grain -->
+    <filter id="pc-grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="2" seed="12" result="g"/>
+      <feColorMatrix in="g" type="saturate" values="0" result="gm"/>
+      <feBlend in="SourceGraphic" in2="gm" mode="soft-light"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#pc-sh)">
+    <!-- cup body — soft lavender -->
+    <g filter="url(#pc-wc)">
+      <!-- slightly tapered cup -->
+      <path d="M52 110 L58 230 Q60 245 100 245 Q140 245 142 230 L148 110 Z"
+            fill="#d4bffa" opacity="0.85"/>
+      <!-- cup rim -->
+      <ellipse cx="100" cy="110" rx="50" ry="10" fill="#c9a8f7" opacity="0.9"/>
+      <!-- inner rim shadow -->
+      <ellipse cx="100" cy="112" rx="42" ry="7" fill="#b894f0" opacity="0.35"/>
+      <!-- subtle highlight stripe -->
+      <rect x="72" y="130" width="8" height="90" rx="4" fill="white" opacity="0.18"/>
+    </g>
+
+    <!-- pencil 1 — yellow -->
+    <g filter="url(#pc-grain)">
+      <rect x="75" y="30" width="10" height="90" rx="1.5" fill="#fce68a" transform="rotate(-6 80 75)"/>
+      <polygon points="74,30 80,14 86,30" fill="#fce68a" transform="rotate(-6 80 75)"/>
+      <polygon points="77,25 80,16 83,25" fill="#f5d06e" transform="rotate(-6 80 75)"/>
+      <rect x="75" y="100" width="10" height="8" rx="0.5" fill="#c8c8c8" opacity="0.5" transform="rotate(-6 80 75)"/>
+      <!-- tip -->
+      <circle cx="80" cy="16" r="1.5" fill="#4a4a4a" transform="rotate(-6 80 75)"/>
+    </g>
+
+    <!-- pencil 2 — pink -->
+    <g filter="url(#pc-grain)">
+      <rect x="95" y="22" width="10" height="96" rx="1.5" fill="#f7a8c4" transform="rotate(3 100 70)"/>
+      <polygon points="94,22 100,6 106,22" fill="#f7a8c4" transform="rotate(3 100 70)"/>
+      <polygon points="97,18 100,8 103,18" fill="#e8899f" transform="rotate(3 100 70)"/>
+      <rect x="95" y="100" width="10" height="8" rx="0.5" fill="#c8c8c8" opacity="0.5" transform="rotate(3 100 70)"/>
+      <circle cx="100" cy="8" r="1.5" fill="#4a4a4a" transform="rotate(3 100 70)"/>
+    </g>
+
+    <!-- pencil 3 — blue -->
+    <g filter="url(#pc-grain)">
+      <rect x="112" y="36" width="10" height="82" rx="1.5" fill="#a8d4f7" transform="rotate(8 117 77)"/>
+      <polygon points="111,36 117,20 123,36" fill="#a8d4f7" transform="rotate(8 117 77)"/>
+      <polygon points="114,32 117,22 120,32" fill="#89bce0" transform="rotate(8 117 77)"/>
+      <rect x="112" y="100" width="10" height="8" rx="0.5" fill="#c8c8c8" opacity="0.5" transform="rotate(8 117 77)"/>
+      <circle cx="117" cy="22" r="1.5" fill="#4a4a4a" transform="rotate(8 117 77)"/>
+    </g>
+
+    <!-- ruler sticking out — warm cream -->
+    <g filter="url(#pc-grain)" opacity="0.75">
+      <rect x="60" y="40" width="7" height="78" rx="1" fill="#fce4a8" transform="rotate(-14 63 79)"/>
+      <!-- ruler marks -->
+      <line x1="61" y1="50" x2="65" y2="50" stroke="#d4a84a" stroke-width="0.6" transform="rotate(-14 63 79)"/>
+      <line x1="61" y1="58" x2="64" y2="58" stroke="#d4a84a" stroke-width="0.6" transform="rotate(-14 63 79)"/>
+      <line x1="61" y1="66" x2="65" y2="66" stroke="#d4a84a" stroke-width="0.6" transform="rotate(-14 63 79)"/>
+      <line x1="61" y1="74" x2="64" y2="74" stroke="#d4a84a" stroke-width="0.6" transform="rotate(-14 63 79)"/>
+      <line x1="61" y1="82" x2="65" y2="82" stroke="#d4a84a" stroke-width="0.6" transform="rotate(-14 63 79)"/>
+    </g>
+
+    <!-- paintbrush — green handle -->
+    <g filter="url(#pc-grain)">
+      <rect x="128" y="28" width="8" height="84" rx="1.5" fill="#8fd4a8" transform="rotate(12 132 70)"/>
+      <!-- ferrule -->
+      <rect x="128" y="28" width="8" height="10" rx="0.5" fill="#c8c8c8" opacity="0.6" transform="rotate(12 132 70)"/>
+      <!-- brush tip -->
+      <path d="M129,28 L132,12 L135,28 Z" fill="#e8c878" opacity="0.8" transform="rotate(12 132 70)"/>
+    </g>
+
+    <!-- white highlight on cup for depth -->
+    <path d="M70 130 Q72 180 74 220" stroke="white" stroke-width="3" fill="none" opacity="0.15" stroke-linecap="round"/>
+  </g>
+</svg>

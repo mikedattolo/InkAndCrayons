@@ -3,43 +3,283 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Little Roots Learning</title>
-    <link rel="stylesheet" href="style.css" />
+    <title>Ink &amp; Crayons — teach &bull; learn &bull; love</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Dancing+Script:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700&family=Caveat:wght@400;600;700&family=Patrick+Hand&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css?v=34" />
   </head>
   <body>
-    <main class="app">
-      <header class="app__header">
-        <h1>Little Roots Learning</h1>
-        <p>Explore the classroom and discover learning resources.</p>
-        <p id="userStatus" class="app__status" aria-live="polite"></p>
-        <button id="signOutBtn" class="app__signout" type="button">Sign out</button>
-      </header>
+    <!-- ===== WATERCOLOR BACKGROUND ===== -->
+    <div class="wc-bg" aria-hidden="true"></div>
 
-      <section class="game" aria-label="Interactive classroom">
-        <div id="classroom" class="classroom" role="application">
-          <div class="decor decor--bunting" aria-hidden="true"></div>
-          <div class="decor decor--clock" aria-hidden="true"></div>
-          <div class="decor decor--window decor--window-left" aria-hidden="true"></div>
-          <div class="decor decor--window decor--window-right" aria-hidden="true"></div>
-          <div class="decor decor--rug" aria-hidden="true"></div>
-          <div class="decor decor--teacher-desk" aria-hidden="true"></div>
-          <div class="decor decor--plant" aria-hidden="true"></div>
-          <div id="player" class="player" aria-label="Player"></div>
-          <div id="bookshelf" class="object object--bookshelf" aria-label="Bookshelf"></div>
-          <div id="computer" class="object object--computer" aria-label="Computer"></div>
-          <div id="desk" class="object object--desk" aria-label="Desk"></div>
-          <div id="whiteboard" class="object object--whiteboard" aria-label="Whiteboard"></div>
-          <div id="door" class="object object--door" aria-label="Door"></div>
-          <div id="interactionPrompt" class="prompt" aria-live="polite"></div>
+    <!-- ===== HEADER / NAVIGATION BAR ===== -->
+    <header class="site-header">
+      <div class="site-header__inner">
+        <!-- Pill-shaped nav links -->
+        <nav class="nav-pills" aria-label="Main navigation">
+          <div class="nav-dropdown">
+            <button id="navLessons" class="btn btn--pill nav-dropdown__trigger" type="button">Education Worksheets &amp; More &#9662;</button>
+            <div class="nav-dropdown__menu">
+              <button class="nav-dropdown__item" data-category="name-tracing" type="button">Name Tracing</button>
+              <button class="nav-dropdown__item" data-category="cutting-pages" type="button">Cutting Pages</button>
+              <button class="nav-dropdown__item" data-category="abcs" type="button">ABC's</button>
+              <button class="nav-dropdown__item" data-category="number-tracing" type="button">Number Tracing</button>
+              <button class="nav-dropdown__item" data-category="fine-motor" type="button">Fine Motor Skills</button>
+            </div>
+          </div>
+          <button id="navMilestones" class="btn btn--pill" type="button">Educational Milestones</button>
+          <button id="navCoaching" class="btn btn--pill" type="button">Parent Coaching</button>
+          <button id="navAbout" class="btn btn--pill" type="button">About Me</button>
+        </nav>
+
+        <!-- Centered logo -->
+        <div class="site-header__brand">
+          <a href="/" class="site-header__logo" aria-label="Ink &amp; Crayons home">
+            <img src="assets/ui/logo.gif" alt="Ink &amp; Crayons" class="site-header__logo-img" />
+          </a>
+          <p class="site-header__tagline">teach &bull; learn &bull; love</p>
         </div>
-      </section>
-    </main>
 
+        <!-- CTA buttons -->
+        <div class="site-header__cta">
+          <button id="ctaExplore" class="btn btn--primary" type="button">Explore Learning Resources</button>
+          <button id="navBlogCta" class="btn btn--soft" type="button">Articles</button>
+        </div>
+
+        <!-- Auth avatar -->
+        <button id="accountBtn" class="site-header__avatar-btn" type="button" title="Account" hidden aria-label="Account">
+          <span id="avatarInitial" class="site-header__avatar-initial">?</span>
+        </button>
+        <p id="userStatus" class="site-header__status" aria-live="polite" hidden></p>
+      </div>
+    </header>
+
+    <!-- ===== HERO SECTION ===== -->
+    <section class="hero" aria-label="Welcome">
+      <div class="hero__inner">
+        <!-- Left: headline + copy -->
+        <div class="hero__text">
+          <h1 class="hero__title">
+            Helping Parents<br />
+            <span class="hero__highlight">Understand Learning</span>
+          </h1>
+          <p class="hero__body">
+            Every child is unique. We equip parents and teachers with playful,
+            research-backed resources — from lesson plans and music to coaching
+            guides — so learning feels like magic, not a chore.
+          </p>
+          <div class="hero__actions">
+            <button id="heroCta" class="btn btn--primary btn--lg" type="button">Get Started</button>
+          </div>
+        </div>
+
+        <!-- Right: illustration -->
+        <div class="hero__illustration">
+          <img src="assets/ui/book.gif" alt="Animated book" class="hero__books" />
+        </div>
+
+      </div>
+      <!-- Watercolor divider -->
+      <div class="section-divider" aria-hidden="true">
+        <img src="assets/ui/divider-watercolor.svg" alt="" />
+      </div>
+    </section>
+
+    <!-- ===== HOW IT WORKS — STICKY NOTES ===== -->
+    <section class="how-it-works" id="howItWorks" aria-label="How it works">
+      <div class="how-it-works__inner">
+        <h2 class="section-title">How It Works</h2>
+
+        <div class="sticky-grid">
+          <button class="sticky-card sticky-card--pink" id="stickyBlog" type="button">
+            <img src="assets/ui/sticky-pink.svg" alt="" class="sticky-card__bg" aria-hidden="true" />
+            <span class="sticky-card__label">Articles</span>
+          </button>
+
+          <button class="sticky-card sticky-card--purple" id="stickyChat" type="button">
+            <img src="assets/ui/sticky-purple.svg" alt="" class="sticky-card__bg" aria-hidden="true" />
+            <span class="sticky-card__label">Let's Chat!</span>
+          </button>
+
+          <button class="sticky-card sticky-card--mint" id="stickyGuides" type="button">
+            <img src="assets/ui/sticky-mint.svg" alt="" class="sticky-card__bg" aria-hidden="true" />
+            <span class="sticky-card__label">Parent Guides</span>
+          </button>
+
+          <button class="sticky-card sticky-card--blue" id="stickyMusic" type="button">
+            <img src="assets/ui/sticky-blue.svg" alt="" class="sticky-card__bg" aria-hidden="true" />
+            <span class="sticky-card__label">Music</span>
+          </button>
+        </div>
+      </div>
+      <!-- Watercolor divider -->
+      <div class="section-divider" aria-hidden="true">
+        <img src="assets/ui/divider-watercolor.svg" alt="" />
+      </div>
+    </section>
+
+    <!-- ===== STEPS SECTION ===== -->
+    <section class="steps" id="steps" aria-label="Steps to understanding your child">
+      <div class="steps__inner">
+        <h2 class="section-title">Steps to Understanding Your Child</h2>
+
+        <div class="steps-grid">
+          <div class="step-card">
+            <img src="assets/ui/step-1.svg" alt="Step 1" class="step-card__num" />
+            <h3 class="step-card__title">Understand Your Child</h3>
+            <p class="step-card__text">
+              Learn how your child thinks, plays, and absorbs the world around them.
+              Recognizing their unique learning style is the first step.
+            </p>
+          </div>
+
+          <div class="step-card">
+            <img src="assets/ui/step-2.svg" alt="Step 2" class="step-card__num" />
+            <h3 class="step-card__title">Use Simple Tools</h3>
+            <p class="step-card__text">
+              Our lesson sheets, music, and activity guides are designed to be easy
+              for any parent to pick up — no teaching degree needed.
+            </p>
+          </div>
+
+          <div class="step-card">
+            <img src="assets/ui/step-3.svg" alt="Step 3" class="step-card__num" />
+            <h3 class="step-card__title">Feel Confident Again</h3>
+            <p class="step-card__text">
+              Watch your child light up as learning clicks — and feel the joy of
+              knowing you made it happen.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Watercolor divider -->
+    <div class="section-divider" aria-hidden="true">
+      <img src="assets/ui/divider-watercolor.svg" alt="" />
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <nav class="site-footer__nav" aria-label="Footer navigation">
+          <button id="footBlog" class="btn btn--text" type="button">Articles</button>
+          <button id="footResources" class="btn btn--text" type="button">Resources</button>
+          <button id="footCoaching" class="btn btn--text" type="button">Parent Coaching</button>
+          <button id="footContact" class="btn btn--text" type="button">Contact</button>
+        </nav>
+        <p class="site-footer__slogan">Teach with care. Learn with joy.</p>
+        <p class="site-footer__copy">&copy; 2026 Ink &amp; Crayons. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <!-- ===== CHAT MODAL ===== -->
+    <div id="chatModal" class="chat-modal" aria-hidden="true" role="dialog" aria-labelledby="chatModalTitle">
+      <div class="chat-modal__backdrop"></div>
+      <div class="chat-modal__content" role="document">
+        <div class="chat-modal__header">
+          <h2 id="chatModalTitle" class="chat-modal__title">Let's Chat!</h2>
+          <button class="chat-modal__close" type="button" aria-label="Close">&times;</button>
+        </div>
+        <div id="chatMessages" class="chat-modal__messages"></div>
+        <form id="chatForm" class="chat-modal__form">
+          <input id="chatInput" type="text" maxlength="500" required placeholder="Type a message..." class="chat-modal__input" autocomplete="off" />
+          <button type="submit" class="chat-modal__send">Send</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===== ACCOUNT SETTINGS MODAL ===== -->
+    <div id="accountModal" class="account-modal" aria-hidden="true" role="dialog" aria-labelledby="accountModalTitle">
+      <div class="account-modal__backdrop" data-action="close-account"></div>
+      <div class="account-modal__content" role="document">
+        <button class="account-modal__close" type="button" data-action="close-account" aria-label="Close">&times;</button>
+        <h2 id="accountModalTitle" class="account-modal__title">Account Settings</h2>
+
+        <!-- Profile section -->
+        <div class="account-section">
+          <h3 class="account-section__heading">Profile</h3>
+          <div class="account-profile">
+            <div id="accountAvatar" class="account-profile__avatar">?</div>
+            <div class="account-profile__info">
+              <p id="accountUsername" class="account-profile__name"></p>
+              <p id="accountEmail" class="account-profile__email"></p>
+              <p id="accountRole" class="account-profile__role"></p>
+            </div>
+          </div>
+          <form id="profileForm" class="account-form">
+            <label for="profileUsername">Display Name</label>
+            <input id="profileUsername" type="text" maxlength="20" required />
+            <label for="profilePicUrl">Profile Picture URL</label>
+            <input id="profilePicUrl" type="url" placeholder="https://example.com/photo.jpg" />
+            <button type="submit" class="btn btn--primary">Save Profile</button>
+          </form>
+          <small id="profileStatus" class="account-status"></small>
+        </div>
+
+        <!-- Password section -->
+        <div class="account-section">
+          <h3 class="account-section__heading">Reset Password</h3>
+          <form id="passwordForm" class="account-form">
+            <label for="currentPassword">Current Password</label>
+            <input id="currentPassword" type="password" minlength="6" required />
+            <label for="newPassword">New Password</label>
+            <input id="newPassword" type="password" minlength="6" required />
+            <label for="confirmPassword">Confirm New Password</label>
+            <input id="confirmPassword" type="password" minlength="6" required />
+            <button type="submit" class="btn btn--primary">Update Password</button>
+          </form>
+          <small id="passwordStatus" class="account-status"></small>
+        </div>
+
+        <!-- Payment methods section -->
+        <div class="account-section">
+          <h3 class="account-section__heading">Payment Methods</h3>
+          <div id="paymentMethods" class="account-payments"></div>
+          <form id="paymentForm" class="account-form">
+            <label for="cardName">Name on Card</label>
+            <input id="cardName" type="text" maxlength="50" required />
+            <label for="cardNumber">Card Number</label>
+            <input id="cardNumber" type="text" maxlength="19" required placeholder="**** **** **** ****" />
+            <div class="account-form__row">
+              <div>
+                <label for="cardExpiry">Expiry</label>
+                <input id="cardExpiry" type="text" maxlength="5" required placeholder="MM/YY" />
+              </div>
+              <div>
+                <label for="cardCvc">CVC</label>
+                <input id="cardCvc" type="text" maxlength="4" required placeholder="***" />
+              </div>
+            </div>
+            <button type="submit" class="btn btn--primary">Save Card</button>
+          </form>
+          <small id="paymentStatus" class="account-status"></small>
+        </div>
+
+        <!-- Account info -->
+        <div class="account-section">
+          <h3 class="account-section__heading">Account Info</h3>
+          <p id="accountCreated" class="account-meta"></p>
+          <p id="accountId" class="account-meta"></p>
+        </div>
+
+        <!-- Sign out -->
+        <div class="account-section account-section--signout">
+          <button id="signOutBtn" class="btn btn--soft account-signout-btn" type="button">Sign Out</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== AUTH GATE MODAL ===== -->
     <div id="gate" class="gate" aria-hidden="true" role="dialog" aria-labelledby="gateTitle">
       <div class="gate__backdrop"></div>
       <div class="gate__content" role="document">
-        <h2 id="gateTitle">Welcome to Little Roots</h2>
-        <p>Create or sign in to access the classroom and blog resources.</p>
+        <h2 id="gateTitle">Welcome to Ink &amp; Crayons</h2>
+        <p>Create or sign in to access all resources.</p>
         <form id="gateForm" class="gate__form">
           <label for="email">Email</label>
           <input id="email" name="email" type="email" required />
@@ -48,103 +288,175 @@
           <label for="username">Username</label>
           <input id="username" name="username" type="text" maxlength="20" required />
           <div class="gate__actions">
-            <button id="signUpBtn" type="submit" data-mode="signup">Create Account</button>
-            <button id="signInBtn" type="button" data-mode="signin">Sign In</button>
+            <button id="signUpBtn" type="submit" data-mode="signup" class="btn btn--primary">Create Account</button>
+            <button id="signInBtn" type="button" data-mode="signin" class="btn btn--soft">Sign In</button>
           </div>
         </form>
         <small class="gate__note">Auth provider configuration required for live accounts.</small>
       </div>
     </div>
 
+    <!-- ===== GENERIC MODAL ===== -->
     <div id="modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="modalTitle">
       <div class="modal__backdrop" data-action="close"></div>
       <div class="modal__content" role="document">
-        <button class="modal__close" type="button" data-action="close" aria-label="Close">
-          ×
-        </button>
+        <button class="modal__close" type="button" data-action="close" aria-label="Close">&times;</button>
         <h2 id="modalTitle"></h2>
         <p id="modalDescription"></p>
         <div id="modalBody" class="modal__body"></div>
       </div>
     </div>
 
-    <section id="blogPage" class="blog" aria-hidden="true" aria-label="Classroom blog">
-      <div class="blog__header">
-        <div>
-          <h2>Classroom Blog</h2>
-          <p>Read, share, and discuss classroom ideas.</p>
-        </div>
-        <button id="blogClose" class="blog__close" type="button" aria-label="Close blog">
-          Back to Classroom
+    <!-- ===== ABOUT ME PAGE ===== -->
+    <section id="aboutPage" class="about-page" aria-hidden="true" aria-label="About Me">
+      <div class="about-page__topbar">
+        <button id="aboutClose" class="about-page__back-btn" type="button" aria-label="Close about me">
+          &larr;
         </button>
+        <h2 class="about-page__topbar-title">About Me</h2>
+        <span class="about-page__topbar-spacer"></span>
       </div>
 
-      <div class="blog__layout">
-        <section class="blog__posts" aria-live="polite">
-          <h3>Posts</h3>
-          <div id="blogPosts" class="blog__posts-list"></div>
-        </section>
+      <div class="about-page__content">
+        <div class="about-page__card">
+          <div class="about-page__avatar">
+            <span class="about-page__avatar-emoji">&#128075;</span>
+          </div>
+          <h3 class="about-page__name">Hi, I'm the creator of Ink &amp; Crayons!</h3>
+          <p class="about-page__bio">
+            I'm a passionate educator and parent who believes that early learning should be joyful,
+            creative, and rooted in love. Ink &amp; Crayons was born from my desire to help families
+            navigate the beautiful (and sometimes overwhelming!) world of early childhood education.
+          </p>
+          <p class="about-page__bio">
+            With years of experience in early learning, I create hands-on worksheets, tracing activities,
+            and resources that make foundational skills fun for little ones. Every resource is designed
+            with care &mdash; because I know how important these early years are.
+          </p>
+          <p class="about-page__bio">
+            Whether you're a first-time parent, a seasoned homeschooler, or a teacher looking for fresh
+            ideas, I'm so glad you're here. Let's help our little roots grow strong together! &#127793;
+          </p>
 
-        <aside class="blog__composer" aria-label="Create a post">
-          <h3>Create a New Post</h3>
-          <form id="blogForm" class="blog__form">
-            <label for="postTitle">Title</label>
-            <input id="postTitle" name="postTitle" type="text" maxlength="80" required />
-            <label for="postBody">Post</label>
-            <textarea id="postBody" name="postBody" rows="6" required></textarea>
-            <button id="postSubmit" type="submit">Publish Post</button>
-            <small id="blogStatus" class="blog__status"></small>
-          </form>
+          <div class="about-page__mission">
+            <h4 class="about-page__mission-title">Our Mission</h4>
+            <p class="about-page__mission-text">
+              To empower parents and educators with thoughtful, creative resources that nurture
+              curiosity, build confidence, and celebrate the magic of early learning.
+            </p>
+          </div>
 
-          <section id="adminPanel" class="admin" aria-hidden="true" aria-label="Admin controls">
-            <div class="admin__header">
-              <h3>Admin Panel</h3>
-              <span class="admin__badge">Admin</span>
+          <div class="about-page__values">
+            <div class="about-page__value">
+              <span class="about-page__value-icon">&#127912;</span>
+              <h5>Creativity First</h5>
+              <p>Learning through art, play, and imagination.</p>
             </div>
-
-            <details class="admin__section">
-              <summary>Add Announcement</summary>
-              <form id="adminAnnouncementForm" class="admin__form">
-                <label for="adminAnnouncementTitle">Title</label>
-                <input id="adminAnnouncementTitle" type="text" maxlength="80" required />
-                <label for="adminAnnouncementMessage">Message</label>
-                <textarea id="adminAnnouncementMessage" rows="3" required></textarea>
-                <button type="submit">Save Announcement</button>
-              </form>
-            </details>
-
-            <details class="admin__section">
-              <summary>Add Resource Link (Bookshelf)</summary>
-              <form id="adminResourceForm" class="admin__form">
-                <label for="adminResourceTitle">Title</label>
-                <input id="adminResourceTitle" type="text" maxlength="80" required />
-                <label for="adminResourceDesc">Description</label>
-                <textarea id="adminResourceDesc" rows="2" required></textarea>
-                <label for="adminResourceUrl">URL</label>
-                <input id="adminResourceUrl" type="url" required />
-                <button type="submit">Save Resource</button>
-              </form>
-            </details>
-
-            <details class="admin__section">
-              <summary>Add Shop Item</summary>
-              <form id="adminShopForm" class="admin__form">
-                <label for="adminShopTitle">Title</label>
-                <input id="adminShopTitle" type="text" maxlength="80" required />
-                <label for="adminShopDesc">Description</label>
-                <textarea id="adminShopDesc" rows="2" required></textarea>
-                <label for="adminShopPrice">Price</label>
-                <input id="adminShopPrice" type="text" maxlength="20" required />
-                <label for="adminShopUrl">URL</label>
-                <input id="adminShopUrl" type="url" required />
-                <button type="submit">Save Shop Item</button>
-              </form>
-            </details>
-
-            <small id="adminStatus" class="admin__status" aria-live="polite"></small>
-          </section>
-        </aside>
+            <div class="about-page__value">
+              <span class="about-page__value-icon">&#128155;</span>
+              <h5>Made with Love</h5>
+              <p>Every resource crafted with care and intention.</p>
+            </div>
+            <div class="about-page__value">
+              <span class="about-page__value-icon">&#127793;</span>
+              <h5>Growing Together</h5>
+              <p>Supporting families at every stage of the journey.</p>
+            </div>
+          </div>
+        </div>
       </div>
+    </section>
+
+    <!-- ===== BLOG PAGE ===== -->
+    <section id="blogPage" class="blog" aria-hidden="true" aria-label="Blog">
+      <div class="blog__topbar">
+        <button id="blogClose" class="blog__back-btn" type="button" aria-label="Close articles">
+          &larr;
+        </button>
+        <h2 class="blog__topbar-title">Articles</h2>
+        <span class="blog__topbar-spacer"></span>
+      </div>
+
+      <div class="blog__feed-layout">
+        <!-- Composer — only visible to admin / designated writers -->
+        <div class="blog__composer-card" style="display:none">
+          <div class="blog__composer-avatar">&#9998;</div>
+          <form id="blogForm" class="blog__composer-form">
+            <input id="postTitle" name="postTitle" type="text" maxlength="120" required placeholder="Article title..." class="blog__composer-title" />
+            <textarea id="postBody" name="postBody" rows="4" required placeholder="Write your article..." class="blog__composer-body"></textarea>
+            <div class="blog__composer-footer">
+              <small id="blogStatus" class="blog__status"></small>
+              <button id="postSubmit" type="submit" class="btn btn--primary blog__share-btn">Publish</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Articles feed -->
+        <div id="blogPosts" class="blog__feed"></div>
+      </div>
+
+      <!-- Admin panel slides out from bottom -->
+      <section id="adminPanel" class="admin" aria-hidden="true" aria-label="Admin controls">
+        <div class="admin__header">
+          <h3>Admin Panel</h3>
+          <span class="admin__badge">Admin</span>
+        </div>
+
+        <details class="admin__section">
+          <summary>Manage Article Writers</summary>
+          <p style="font-size:0.85rem;color:#666;margin:8px 0 12px;">Grant users permission to publish articles. Enter their username below.</p>
+          <form id="adminWriterForm" class="admin__form">
+            <label for="adminWriterUsername">Username</label>
+            <input id="adminWriterUsername" type="text" maxlength="20" required placeholder="e.g. ms_rivera" />
+            <div style="display:flex;gap:8px;">
+              <button type="submit" class="btn btn--primary">Add Writer</button>
+              <button type="button" id="adminRemoveWriter" class="btn btn--soft">Remove Writer</button>
+            </div>
+          </form>
+          <div id="writersList" style="margin-top:10px;font-size:0.82rem;color:#555;"></div>
+        </details>
+
+        <details class="admin__section">
+          <summary>Add Announcement</summary>
+          <form id="adminAnnouncementForm" class="admin__form">
+            <label for="adminAnnouncementTitle">Title</label>
+            <input id="adminAnnouncementTitle" type="text" maxlength="80" required />
+            <label for="adminAnnouncementMessage">Message</label>
+            <textarea id="adminAnnouncementMessage" rows="3" required></textarea>
+            <button type="submit" class="btn btn--primary">Save Announcement</button>
+          </form>
+        </details>
+
+        <details class="admin__section">
+          <summary>Add Resource Link</summary>
+          <form id="adminResourceForm" class="admin__form">
+            <label for="adminResourceTitle">Title</label>
+            <input id="adminResourceTitle" type="text" maxlength="80" required />
+            <label for="adminResourceDesc">Description</label>
+            <textarea id="adminResourceDesc" rows="2" required></textarea>
+            <label for="adminResourceUrl">URL</label>
+            <input id="adminResourceUrl" type="url" required />
+            <button type="submit" class="btn btn--primary">Save Resource</button>
+          </form>
+        </details>
+
+        <details class="admin__section">
+          <summary>Add Shop Item</summary>
+          <form id="adminShopForm" class="admin__form">
+            <label for="adminShopTitle">Title</label>
+            <input id="adminShopTitle" type="text" maxlength="80" required />
+            <label for="adminShopDesc">Description</label>
+            <textarea id="adminShopDesc" rows="2" required></textarea>
+            <label for="adminShopPrice">Price</label>
+            <input id="adminShopPrice" type="text" maxlength="20" required />
+            <label for="adminShopUrl">URL</label>
+            <input id="adminShopUrl" type="url" required />
+            <button type="submit" class="btn btn--primary">Save Shop Item</button>
+          </form>
+        </details>
+
+        <small id="adminStatus" class="admin__status" aria-live="polite"></small>
+      </section>
     </section>
 
     <script type="module" src="game.js"></script>

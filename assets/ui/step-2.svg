@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="none">
+  <defs>
+    <filter id="s2-wc" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="4" seed="16" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="3.5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="s2-grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" seed="35" result="g"/>
+      <feColorMatrix in="g" type="saturate" values="0"/>
+      <feBlend in="SourceGraphic" in2="g" mode="soft-light"/>
+      <feComposite in2="SourceGraphic" operator="in"/>
+    </filter>
+    <filter id="s2-shadow" x="-15%" y="-10%" width="130%" height="135%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feOffset dx="2" dy="3" result="o"/>
+      <feFlood flood-color="#6a5088" flood-opacity="0.10" result="c"/>
+      <feComposite in="c" in2="o" operator="in" result="s"/>
+      <feMerge><feMergeNode in="s"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="s2splat" cx="0.45" cy="0.48" r="0.55">
+      <stop offset="0%" stop-color="#c9a8f7" stop-opacity="0.30"/>
+      <stop offset="60%" stop-color="#c9a8f7" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#c9a8f7" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="s2inner" cx="0.48" cy="0.46" r="0.45">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.85"/>
+      <stop offset="80%" stop-color="#fff" stop-opacity="0.65"/>
+      <stop offset="100%" stop-color="#ede4fc" stop-opacity="0.5"/>
+    </radialGradient>
+  </defs>
+  <g filter="url(#s2-shadow)">
+    <ellipse cx="40" cy="40" rx="38" ry="36" fill="url(#s2splat)" filter="url(#s2-wc)"/>
+    <circle cx="40" cy="40" r="28" fill="url(#s2inner)" stroke="#c9a8f7" stroke-width="2.2" filter="url(#s2-grain)"/>
+    <circle cx="40" cy="40" r="25" fill="none" stroke="#c9a8f7" stroke-width="0.5" opacity="0.20"/>
+    <text x="40" y="49" font-size="22" fill="#7a5abf" font-family="Georgia,serif" font-weight="700" text-anchor="middle">2</text>
+  </g>
+</svg>

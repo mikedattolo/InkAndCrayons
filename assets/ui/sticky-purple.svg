@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <filter id="sp2-grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.1 0.5" numOctaves="4" seed="15" result="g"/>
+      <feColorMatrix in="g" type="saturate" values="0" result="gBW"/>
+      <feBlend in="SourceGraphic" in2="gBW" mode="multiply" result="grained"/>
+      <feComposite in="grained" in2="SourceGraphic" operator="in"/>
+    </filter>
+    <filter id="sp2-wc" x="-4%" y="-4%" width="108%" height="108%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.025" numOctaves="5" seed="28" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="sp2-shadow" x="-8%" y="-5%" width="120%" height="130%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feOffset dx="3" dy="6" result="o"/>
+      <feFlood flood-color="#6a5888" flood-opacity="0.10" result="c"/>
+      <feComposite in="c" in2="o" operator="in" result="sh"/>
+      <feMerge><feMergeNode in="sh"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="sp2-tape" x="-5%" y="-10%" width="110%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.07 0.2" numOctaves="3" seed="50" result="tw"/>
+      <feDisplacementMap in="SourceGraphic" in2="tw" scale="1.5"/>
+    </filter>
+
+    <linearGradient id="sp2Grad" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0%" stop-color="#f0e8fa"/>
+      <stop offset="25%" stop-color="#ddd0f8"/>
+      <stop offset="60%" stop-color="#d5c5f2"/>
+      <stop offset="85%" stop-color="#d8c8f4"/>
+      <stop offset="100%" stop-color="#cebce8"/>
+    </linearGradient>
+    <radialGradient id="sp2Pool" cx="0.15" cy="0.9" r="0.5">
+      <stop offset="0%" stop-color="#b8a0d8" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#b8a0d8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <g filter="url(#sp2-shadow)">
+    <g filter="url(#sp2-wc)">
+      <path d="M 12,12 L 188,10 Q 190,12 188,174 Q 187,190 173,189 L 14,186 Q 11,185 12,12 Z"
+            fill="url(#sp2Grad)"/>
+      <path d="M 12,12 L 188,10 Q 190,12 188,174 Q 187,190 173,189 L 14,186 Q 11,185 12,12 Z"
+            fill="#fff" opacity="0.04" filter="url(#sp2-grain)"/>
+      <path d="M 12,12 L 188,10 Q 190,12 188,174 Q 187,190 173,189 L 14,186 Q 11,185 12,12 Z"
+            fill="url(#sp2Pool)"/>
+      <line x1="18" y1="55" x2="184" y2="53" stroke="#b8a0c8" stroke-width="0.3" opacity="0.10"/>
+      <line x1="16" y1="100" x2="186" y2="98" stroke="#b8a0c8" stroke-width="0.3" opacity="0.08"/>
+      <line x1="18" y1="148" x2="182" y2="146" stroke="#b8a0c8" stroke-width="0.3" opacity="0.07"/>
+    </g>
+
+    <!-- Corner curl -->
+    <g opacity="0.5">
+      <path d="M 172,172 Q 184,170 188,174 L 188,190 Q 180,192 173,189 Z" fill="#b0a0c8"/>
+      <path d="M 174,174 Q 182,173 185,176 L 185,186 Q 179,188 175,187 Z" fill="#ede4fc" opacity="0.5"/>
+    </g>
+
+    <!-- Tape (translucent, wrinkled) -->
+    <g filter="url(#sp2-tape)">
+      <rect x="66" y="0" width="62" height="22" rx="1.5"
+            fill="#fce68a" opacity="0.45" transform="rotate(1.5, 97, 11)"/>
+      <line x1="70" y1="6" x2="124" y2="7" stroke="#fff" stroke-width="0.8" opacity="0.25" transform="rotate(1.5, 97, 11)"/>
+      <line x1="72" y1="14" x2="122" y2="15" stroke="#e8d45a" stroke-width="0.5" opacity="0.15" transform="rotate(1.5, 97, 11)"/>
+      <line x1="66" y1="1" x2="128" y2="2" stroke="#e8d45a" stroke-width="0.3" opacity="0.2" transform="rotate(1.5, 97, 11)"/>
+      <line x1="66" y1="21" x2="128" y2="22" stroke="#e8d45a" stroke-width="0.3" opacity="0.15" transform="rotate(1.5, 97, 11)"/>
+    </g>
+  </g>
+</svg>

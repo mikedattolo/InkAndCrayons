@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 310" fill="none">
+  <defs>
+    <!-- Gentle watercolor edge -->
+    <filter id="bk-wc" x="-2%" y="-2%" width="104%" height="104%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="8"/>
+      <feDisplacementMap in="SourceGraphic" scale="2.5"/>
+    </filter>
+    <!-- Soft drop shadow -->
+    <filter id="bk-sh" x="-6%" y="-4%" width="115%" height="120%">
+      <feDropShadow dx="3" dy="5" stdDeviation="5" flood-color="#7a5a8a" flood-opacity="0.09"/>
+    </filter>
+    <!-- Between-book shadow -->
+    <filter id="bk-layer">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#8a6f9a" flood-opacity="0.07"/>
+    </filter>
+    <!-- Gradients for covers -->
+    <linearGradient id="bPink" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fac5d8"/><stop offset="100%" stop-color="#f09ab0"/>
+    </linearGradient>
+    <linearGradient id="bPurple" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d4befa"/><stop offset="100%" stop-color="#b898ee"/>
+    </linearGradient>
+    <linearGradient id="bBlue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#bee0fa"/><stop offset="100%" stop-color="#94c8ee"/>
+    </linearGradient>
+    <linearGradient id="bYellow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fdf0a8"/><stop offset="100%" stop-color="#f0d870"/>
+    </linearGradient>
+    <!-- Mug body -->
+    <linearGradient id="mugG" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#fef5f8"/><stop offset="100%" stop-color="#f0ccd8"/>
+    </linearGradient>
+    <!-- Steam -->
+    <linearGradient id="stG" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#c8a0b8" stop-opacity="0.28"/><stop offset="100%" stop-color="#c8a0b8" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <g filter="url(#bk-sh)">
+    <!-- ====== BOOK STACK ====== -->
+
+    <!-- Book 4 (bottom) — Yellow, slightly wider -->
+    <g transform="translate(38,210)" filter="url(#bk-layer)">
+      <rect x="0" y="0" width="170" height="36" rx="4" fill="url(#bYellow)" filter="url(#bk-wc)"/>
+      <rect x="0" y="0" width="170" height="36" rx="4" fill="#fff" opacity="0.10"/>
+      <!-- Spine -->
+      <rect x="0" y="0" width="9" height="36" rx="2" fill="#e0c860" opacity="0.45"/>
+      <!-- Page edges -->
+      <rect x="9" y="34" width="152" height="2" rx="1" fill="#f5eed8" opacity="0.45"/>
+    </g>
+
+    <!-- Book 3 — Blue -->
+    <g transform="translate(33,175)" filter="url(#bk-layer)">
+      <rect x="0" y="0" width="178" height="36" rx="4" fill="url(#bBlue)" filter="url(#bk-wc)"/>
+      <rect x="0" y="0" width="178" height="36" rx="4" fill="#fff" opacity="0.10"/>
+      <rect x="0" y="0" width="9" height="36" rx="2" fill="#80b8e0" opacity="0.45"/>
+      <rect x="9" y="34" width="160" height="2" rx="1" fill="#f5eed8" opacity="0.45"/>
+    </g>
+
+    <!-- Book 2 — Purple -->
+    <g transform="translate(40,140)" filter="url(#bk-layer)">
+      <rect x="0" y="0" width="164" height="36" rx="4" fill="url(#bPurple)" filter="url(#bk-wc)"/>
+      <rect x="0" y="0" width="164" height="36" rx="4" fill="#fff" opacity="0.10"/>
+      <rect x="0" y="0" width="9" height="36" rx="2" fill="#a080d8" opacity="0.45"/>
+      <rect x="9" y="34" width="146" height="2" rx="1" fill="#f5eed8" opacity="0.45"/>
+    </g>
+
+    <!-- Book 1 (top) — Pink -->
+    <g transform="translate(36,105)" filter="url(#bk-layer)">
+      <rect x="0" y="0" width="172" height="36" rx="4" fill="url(#bPink)" filter="url(#bk-wc)"/>
+      <rect x="0" y="0" width="172" height="36" rx="4" fill="#fff" opacity="0.10"/>
+      <rect x="0" y="0" width="9" height="36" rx="2" fill="#e080a0" opacity="0.45"/>
+      <rect x="9" y="34" width="154" height="2" rx="1" fill="#f5eed8" opacity="0.45"/>
+    </g>
+
+    <!-- ====== COFFEE MUG sitting on top of book stack ====== -->
+    <g transform="translate(80,20)">
+      <!-- Mug body -->
+      <path d="M 18,82 L 18,24 Q 18,12 30,12 L 78,12 Q 90,12 90,24 L 90,82 Q 90,96 54,96 Q 18,96 18,82 Z"
+            fill="url(#mugG)" stroke="#e0b8c8" stroke-width="1.5" filter="url(#bk-wc)"/>
+      <!-- Rim highlight -->
+      <ellipse cx="54" cy="14" rx="33" ry="4.5" fill="#fef8fa" opacity="0.45"/>
+      <!-- Coffee surface -->
+      <ellipse cx="54" cy="18" rx="28" ry="5" fill="#8B6543" opacity="0.55"/>
+      <!-- Foam dots -->
+      <circle cx="44" cy="17" r="2.5" fill="#c8a87a" opacity="0.30"/>
+      <circle cx="54" cy="15" r="3" fill="#d4b890" opacity="0.25"/>
+      <circle cx="63" cy="17" r="2" fill="#c0a070" opacity="0.25"/>
+      <!-- Handle -->
+      <path d="M 90,30 Q 114,30 114,54 Q 114,76 90,76"
+            fill="none" stroke="#e0b8c8" stroke-width="4.5" stroke-linecap="round" filter="url(#bk-wc)"/>
+      <!-- Handle highlight -->
+      <path d="M 92,34 Q 108,34 108,54 Q 108,72 92,72"
+            fill="none" stroke="#fff" stroke-width="1" opacity="0.20" stroke-linecap="round"/>
+      <!-- Heart -->
+      <path d="M 51,48 C 51,42 42,39 42,46 C 42,52 51,58 51,58 C 51,58 60,52 60,46 C 60,39 51,42 51,48 Z"
+            fill="#f7a8c4" opacity="0.30" filter="url(#bk-wc)"/>
+      <!-- Steam wisps -->
+      <path d="M 38,6 C 36,-2 34,-8 38,-14" stroke="url(#stG)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M 54,4 C 52,-5 50,-12 55,-18" stroke="url(#stG)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M 68,6 C 71,-2 74,-9 69,-15" stroke="url(#stG)" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </g>
+  </g>
+</svg>

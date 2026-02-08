@@ -3,6 +3,11 @@ import {
   getCurrentUser,
   signInUser,
   signOutUser,
+  updateProfile,
+  changePassword,
+  getPaymentMethods,
+  addPaymentMethod,
+  removePaymentMethod,
 } from "./user.js";
 
 const listeners = new Set();
@@ -46,3 +51,15 @@ export function signOut() {
 export function getUserProfile() {
   return getCurrentUser();
 }
+
+export function updateUserProfile(data) {
+  const result = updateProfile(data);
+  if (result.user) notify(result.user);
+  return result;
+}
+
+export function changeUserPassword(data) {
+  return changePassword(data);
+}
+
+export { getPaymentMethods, addPaymentMethod, removePaymentMethod };

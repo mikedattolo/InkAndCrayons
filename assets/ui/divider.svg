@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 50" preserveAspectRatio="none" fill="none">
+  <defs>
+    <filter id="dv-wc" x="-3%" y="-20%" width="106%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.025" numOctaves="4" seed="9" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="dv-grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" seed="71" result="g"/>
+      <feColorMatrix in="g" type="saturate" values="0"/>
+      <feBlend in="SourceGraphic" in2="g" mode="soft-light"/>
+      <feComposite in2="SourceGraphic" operator="in"/>
+    </filter>
+    <linearGradient id="dvGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#f7a8c4" stop-opacity="0"/>
+      <stop offset="12%" stop-color="#f7a8c4" stop-opacity="0.40"/>
+      <stop offset="30%" stop-color="#e8a0c0" stop-opacity="0.45"/>
+      <stop offset="48%" stop-color="#c9a8f7" stop-opacity="0.45"/>
+      <stop offset="65%" stop-color="#a8d4f7" stop-opacity="0.40"/>
+      <stop offset="82%" stop-color="#fce68a" stop-opacity="0.40"/>
+      <stop offset="100%" stop-color="#fce68a" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- Main watercolor line -->
+  <g filter="url(#dv-wc)">
+    <path d="M 0,25 Q 200,12 400,22 Q 600,32 800,20 Q 1000,10 1200,25"
+          stroke="url(#dvGrad)" stroke-width="4" fill="none" stroke-linecap="round" filter="url(#dv-grain)"/>
+    <!-- Subtle secondary stroke for depth -->
+    <path d="M 0,27 Q 250,18 500,26 Q 750,34 1000,22 Q 1100,16 1200,27"
+          stroke="url(#dvGrad)" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.3"/>
+  </g>
+</svg>

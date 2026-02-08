@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" preserveAspectRatio="none" fill="none">
+  <defs>
+    <!-- Organic watercolor bleed -->
+    <filter id="bg-wc" x="-15%" y="-15%" width="130%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="6" seed="5" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="22" xChannelSelector="R" yChannelSelector="G"/>
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+    <!-- Paper grain texture (full-page overlay) -->
+    <filter id="bg-paper" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.7 0.4" numOctaves="5" seed="77" result="paper"/>
+      <feColorMatrix in="paper" type="saturate" values="0" result="paperBW"/>
+      <feBlend in="SourceGraphic" in2="paperBW" mode="multiply"/>
+    </filter>
+    <!-- Subtle brush strokes -->
+    <filter id="bg-brush" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.008 0.04" numOctaves="3" seed="88" result="brush"/>
+      <feDisplacementMap in="SourceGraphic" in2="brush" scale="30" xChannelSelector="G" yChannelSelector="R"/>
+      <feGaussianBlur stdDeviation="25"/>
+    </filter>
+
+    <!-- Splash gradients with organic edges -->
+    <radialGradient id="bgPink" cx="0.25" cy="0.3" r="0.45" fx="0.3" fy="0.35">
+      <stop offset="0%" stop-color="#f8d0da" stop-opacity="0.22"/>
+      <stop offset="50%" stop-color="#f8d0da" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#f8d0da" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bgPurple" cx="0.72" cy="0.22" r="0.42" fx="0.68" fy="0.25">
+      <stop offset="0%" stop-color="#ddd0ea" stop-opacity="0.20"/>
+      <stop offset="50%" stop-color="#ddd0ea" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#ddd0ea" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bgBlue" cx="0.82" cy="0.75" r="0.40" fx="0.78" fy="0.72">
+      <stop offset="0%" stop-color="#d0e4f8" stop-opacity="0.18"/>
+      <stop offset="50%" stop-color="#d0e4f8" stop-opacity="0.06"/>
+      <stop offset="100%" stop-color="#d0e4f8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bgYellow" cx="0.18" cy="0.82" r="0.38" fx="0.22" fy="0.78">
+      <stop offset="0%" stop-color="#fcf0c8" stop-opacity="0.20"/>
+      <stop offset="50%" stop-color="#fcf0c8" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#fcf0c8" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Secondary washes for depth -->
+    <radialGradient id="bgPink2" cx="0.55" cy="0.55" r="0.35">
+      <stop offset="0%" stop-color="#f5c8d5" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#f5c8d5" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bgWarm" cx="0.45" cy="0.4" r="0.55">
+      <stop offset="0%" stop-color="#fdf6ee" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#fdf6ee" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Base cream -->
+  <rect width="1440" height="900" fill="#fef9f5"/>
+
+  <!-- Primary watercolor washes -->
+  <g filter="url(#bg-wc)">
+    <ellipse cx="360" cy="270" rx="520" ry="340" fill="url(#bgPink)"/>
+    <ellipse cx="1040" cy="200" rx="480" ry="320" fill="url(#bgPurple)"/>
+    <ellipse cx="1180" cy="680" rx="420" ry="280" fill="url(#bgBlue)"/>
+    <ellipse cx="260" cy="740" rx="460" ry="240" fill="url(#bgYellow)"/>
+  </g>
+
+  <!-- Secondary depth washes (brush strokes direction) -->
+  <g filter="url(#bg-brush)">
+    <ellipse cx="720" cy="450" rx="500" ry="300" fill="url(#bgPink2)"/>
+    <ellipse cx="600" cy="350" rx="600" ry="400" fill="url(#bgWarm)"/>
+  </g>
+
+  <!-- Paper grain overlay -->
+  <rect width="1440" height="900" fill="#f5efe8" opacity="0.035" filter="url(#bg-paper)"/>
+
+  <!-- Subtle warm undertone vignette -->
+  <rect width="1440" height="900" fill="url(#bgWarm)" opacity="0.08"/>
+</svg>

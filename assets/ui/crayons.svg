@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 120" fill="none">
+  <defs>
+    <filter id="c-soft" x="-4%" y="-4%" width="108%" height="112%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="5"/>
+      <feDisplacementMap in="SourceGraphic" scale="2"/>
+    </filter>
+    <filter id="c-sh" x="-8%" y="-6%" width="120%" height="128%">
+      <feDropShadow dx="2" dy="4" stdDeviation="3.5" flood-color="#7a5a8a" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <!-- Pink crayon -->
+  <g transform="translate(15,10) rotate(-12,90,22)" filter="url(#c-sh)">
+    <rect x="24" y="10" width="96" height="20" rx="3" fill="#f7a8c4" filter="url(#c-soft)"/>
+    <rect x="24" y="10" width="96" height="20" rx="3" fill="#fff" opacity="0.12"/>
+    <path d="M24,10 L12,20 L24,30" fill="#e88aab" filter="url(#c-soft)"/>
+    <rect x="120" y="9" width="12" height="22" rx="2" fill="#fad0de" opacity="0.7"/>
+  </g>
+
+  <!-- Purple crayon -->
+  <g transform="translate(22,30) rotate(-3,90,22)" filter="url(#c-sh)">
+    <rect x="24" y="10" width="100" height="20" rx="3" fill="#c9a8f7" filter="url(#c-soft)"/>
+    <rect x="24" y="10" width="100" height="20" rx="3" fill="#fff" opacity="0.12"/>
+    <path d="M24,10 L10,20 L24,30" fill="#a07fe8" filter="url(#c-soft)"/>
+    <rect x="124" y="9" width="12" height="22" rx="2" fill="#ddc8f8" opacity="0.7"/>
+  </g>
+
+  <!-- Yellow crayon -->
+  <g transform="translate(10,52) rotate(5,90,22)" filter="url(#c-sh)">
+    <rect x="24" y="10" width="94" height="20" rx="3" fill="#fce68a" filter="url(#c-soft)"/>
+    <rect x="24" y="10" width="94" height="20" rx="3" fill="#fff" opacity="0.12"/>
+    <path d="M24,10 L11,20 L24,30" fill="#e8d45a" filter="url(#c-soft)"/>
+    <rect x="118" y="9" width="12" height="22" rx="2" fill="#f8eeb8" opacity="0.7"/>
+  </g>
+
+  <!-- Blue crayon -->
+  <g transform="translate(20,52) rotate(12,90,22)" filter="url(#c-sh)">
+    <rect x="24" y="10" width="98" height="20" rx="3" fill="#a8d4f7" filter="url(#c-soft)"/>
+    <rect x="24" y="10" width="98" height="20" rx="3" fill="#fff" opacity="0.12"/>
+    <path d="M24,10 L10,20 L24,30" fill="#6aafe8" filter="url(#c-soft)"/>
+    <rect x="122" y="9" width="12" height="22" rx="2" fill="#c8e2f8" opacity="0.7"/>
+  </g>
+</svg>

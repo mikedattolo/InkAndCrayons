@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 90" fill="none">
+  <!-- Simple, elegant wordmark -->
+  <!-- "ink" in italic serif -->
+  <text x="8" y="52" font-size="42" fill="#7a5abf" font-family="Georgia,'Times New Roman',serif" font-weight="700" font-style="italic" letter-spacing="1">ink</text>
+  <!-- "&" ampersand -->
+  <text x="100" y="52" font-size="28" fill="#c9a8f7" font-family="Georgia,serif" font-style="italic" opacity="0.8">&amp;</text>
+  <!-- "crayons" in lighter serif -->
+  <text x="128" y="52" font-size="36" fill="#e88aab" font-family="Georgia,'Times New Roman',serif" font-weight="400" letter-spacing="3">crayons</text>
+  <!-- Minimal decorative accent — a small crayon tip -->
+  <g transform="translate(320,20)" opacity="0.6">
+    <rect x="0" y="8" width="6" height="28" rx="1.5" fill="#c9a8f7"/>
+    <polygon points="0,8 3,0 6,8" fill="#a07fe8"/>
+  </g>
+</svg>

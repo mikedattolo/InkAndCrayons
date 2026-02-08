@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <!-- Paper fiber grain -->
+    <filter id="sp-grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.1 0.5" numOctaves="4" seed="10" result="g"/>
+      <feColorMatrix in="g" type="saturate" values="0" result="gBW"/>
+      <feBlend in="SourceGraphic" in2="gBW" mode="multiply" result="grained"/>
+      <feComposite in="grained" in2="SourceGraphic" operator="in"/>
+    </filter>
+    <!-- Watercolor pigment pooling -->
+    <filter id="sp-wc" x="-4%" y="-4%" width="108%" height="108%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.025" numOctaves="5" seed="22" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <!-- Realistic shadow with warm falloff -->
+    <filter id="sp-shadow" x="-8%" y="-5%" width="120%" height="130%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feOffset dx="3" dy="6" result="o"/>
+      <feFlood flood-color="#8a6878" flood-opacity="0.10" result="c"/>
+      <feComposite in="c" in2="o" operator="in" result="sh"/>
+      <feMerge><feMergeNode in="sh"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Tape wrinkle texture -->
+    <filter id="sp-tape" x="-5%" y="-10%" width="110%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.07 0.2" numOctaves="3" seed="44" result="tw"/>
+      <feDisplacementMap in="SourceGraphic" in2="tw" scale="1.5"/>
+    </filter>
+
+    <!-- Uneven watercolor wash -->
+    <linearGradient id="spGrad" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0%" stop-color="#fce8ef"/>
+      <stop offset="25%" stop-color="#f8d0da"/>
+      <stop offset="60%" stop-color="#f5c4d0"/>
+      <stop offset="85%" stop-color="#f8ccd6"/>
+      <stop offset="100%" stop-color="#f2b8c5"/>
+    </linearGradient>
+    <!-- Edge pooling pigment -->
+    <radialGradient id="spPool" cx="0.8" cy="0.85" r="0.5">
+      <stop offset="0%" stop-color="#eeaabb" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#eeaabb" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <g filter="url(#sp-shadow)">
+    <!-- Paper body with slight warp -->
+    <g filter="url(#sp-wc)">
+      <path d="M 14,10 L 186,13 Q 187,14 186,172 Q 185,188 170,187 L 14,184 Q 12,183 14,10 Z"
+            fill="url(#spGrad)"/>
+      <!-- Grain overlay -->
+      <path d="M 14,10 L 186,13 Q 187,14 186,172 Q 185,188 170,187 L 14,184 Q 12,183 14,10 Z"
+            fill="#fff" opacity="0.04" filter="url(#sp-grain)"/>
+      <!-- Pigment pooling at edges -->
+      <path d="M 14,10 L 186,13 Q 187,14 186,172 Q 185,188 170,187 L 14,184 Q 12,183 14,10 Z"
+            fill="url(#spPool)"/>
+      <!-- Subtle fiber lines -->
+      <line x1="20" y1="50" x2="180" y2="52" stroke="#e8a0b0" stroke-width="0.3" opacity="0.12"/>
+      <line x1="18" y1="90" x2="182" y2="91" stroke="#e8a0b0" stroke-width="0.3" opacity="0.10"/>
+      <line x1="16" y1="140" x2="180" y2="142" stroke="#e8a0b0" stroke-width="0.3" opacity="0.08"/>
+    </g>
+
+    <!-- Corner curl -->
+    <g opacity="0.55">
+      <path d="M 168,170 Q 180,168 186,172 L 186,188 Q 178,190 170,187 Z" fill="#e8a0b8"/>
+      <path d="M 170,172 Q 178,171 183,174 L 183,184 Q 177,186 172,185 Z" fill="#fce4ec" opacity="0.5"/>
+    </g>
+
+    <!-- Masking tape strip (translucent, wrinkled) -->
+    <g filter="url(#sp-tape)">
+      <rect x="68" y="0" width="60" height="22" rx="1.5"
+            fill="#fce68a" opacity="0.45" transform="rotate(-2.5, 98, 11)"/>
+      <!-- Tape wrinkle highlights -->
+      <line x1="72" y1="6" x2="124" y2="5" stroke="#fff" stroke-width="0.8" opacity="0.25" transform="rotate(-2.5, 98, 11)"/>
+      <line x1="74" y1="14" x2="122" y2="13" stroke="#e8d45a" stroke-width="0.5" opacity="0.15" transform="rotate(-2.5, 98, 11)"/>
+      <!-- Tape edges (slightly visible) -->
+      <line x1="68" y1="1" x2="128" y2="-1" stroke="#e8d45a" stroke-width="0.3" opacity="0.2" transform="rotate(-2.5, 98, 11)"/>
+      <line x1="68" y1="21" x2="128" y2="19" stroke="#e8d45a" stroke-width="0.3" opacity="0.15" transform="rotate(-2.5, 98, 11)"/>
+    </g>
+  </g>
+</svg>

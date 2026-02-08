@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <filter id="sy-grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.1 0.5" numOctaves="4" seed="18" result="g"/>
+      <feColorMatrix in="g" type="saturate" values="0" result="gBW"/>
+      <feBlend in="SourceGraphic" in2="gBW" mode="multiply" result="grained"/>
+      <feComposite in="grained" in2="SourceGraphic" operator="in"/>
+    </filter>
+    <filter id="sy-wc" x="-4%" y="-4%" width="108%" height="108%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.025" numOctaves="5" seed="35" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="sy-shadow" x="-8%" y="-5%" width="120%" height="130%">
+      <feGaussianBlur stdDeviation="6" result="b"/>
+      <feOffset dx="3" dy="6" result="o"/>
+      <feFlood flood-color="#887048" flood-opacity="0.09" result="c"/>
+      <feComposite in="c" in2="o" operator="in" result="sh"/>
+      <feMerge><feMergeNode in="sh"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="sy-tape" x="-5%" y="-10%" width="110%" height="130%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.07 0.2" numOctaves="3" seed="58" result="tw"/>
+      <feDisplacementMap in="SourceGraphic" in2="tw" scale="1.5"/>
+    </filter>
+
+    <linearGradient id="syGrad" x1="0" y1="0" x2="0.25" y2="1">
+      <stop offset="0%" stop-color="#fef9e8"/>
+      <stop offset="25%" stop-color="#fcf0c8"/>
+      <stop offset="60%" stop-color="#f8e8b0"/>
+      <stop offset="85%" stop-color="#faeab8"/>
+      <stop offset="100%" stop-color="#f2dea0"/>
+    </linearGradient>
+    <radialGradient id="syPool" cx="0.85" cy="0.15" r="0.5">
+      <stop offset="0%" stop-color="#e0c860" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#e0c860" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <g filter="url(#sy-shadow)">
+    <g filter="url(#sy-wc)">
+      <path d="M 13,11 L 187,14 Q 188,16 186,175 Q 185,190 172,189 L 16,186 Q 13,184 13,11 Z"
+            fill="url(#syGrad)"/>
+      <path d="M 13,11 L 187,14 Q 188,16 186,175 Q 185,190 172,189 L 16,186 Q 13,184 13,11 Z"
+            fill="#fff" opacity="0.04" filter="url(#sy-grain)"/>
+      <path d="M 13,11 L 187,14 Q 188,16 186,175 Q 185,190 172,189 L 16,186 Q 13,184 13,11 Z"
+            fill="url(#syPool)"/>
+      <line x1="20" y1="52" x2="182" y2="54" stroke="#d8c060" stroke-width="0.3" opacity="0.10"/>
+      <line x1="18" y1="98" x2="184" y2="100" stroke="#d8c060" stroke-width="0.3" opacity="0.08"/>
+      <line x1="20" y1="145" x2="180" y2="147" stroke="#d8c060" stroke-width="0.3" opacity="0.07"/>
+    </g>
+
+    <!-- Corner curl -->
+    <g opacity="0.5">
+      <path d="M 170,173 Q 182,171 186,175 L 186,190 Q 178,192 172,189 Z" fill="#d8c870"/>
+      <path d="M 172,175 Q 180,174 183,177 L 183,187 Q 177,189 174,188 Z" fill="#fef9e4" opacity="0.5"/>
+    </g>
+
+    <!-- Tape (using purple-tinted tape for contrast) -->
+    <g filter="url(#sy-tape)">
+      <rect x="65" y="1" width="64" height="20" rx="1.5"
+            fill="#c9a8f7" opacity="0.32" transform="rotate(-1.2, 97, 11)"/>
+      <line x1="69" y1="6" x2="125" y2="5" stroke="#fff" stroke-width="0.8" opacity="0.22" transform="rotate(-1.2, 97, 11)"/>
+      <line x1="71" y1="13" x2="123" y2="12" stroke="#b8a0d8" stroke-width="0.5" opacity="0.12" transform="rotate(-1.2, 97, 11)"/>
+      <line x1="65" y1="1" x2="129" y2="0" stroke="#b8a0d8" stroke-width="0.3" opacity="0.18" transform="rotate(-1.2, 97, 11)"/>
+    </g>
+  </g>
+</svg>

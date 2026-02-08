@@ -21,11 +21,11 @@ export function createAuthGate({
   function setStatus(user) {
     if (user) {
       statusEl.textContent = `Signed in as ${user.username}`;
-      signOutButton.hidden = false;
+      if (signOutButton) signOutButton.hidden = false;
       return;
     }
     statusEl.textContent = "Please sign in to begin.";
-    signOutButton.hidden = true;
+    if (signOutButton) signOutButton.hidden = true;
   }
 
   function handleSubmit(mode) {
@@ -63,7 +63,7 @@ export function createAuthGate({
     setGateOpen(false);
   });
 
-  signOutButton.addEventListener("click", () => {
+  signOutButton?.addEventListener("click", () => {
     signOut();
     setGateOpen(true);
   });
