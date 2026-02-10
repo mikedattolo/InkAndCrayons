@@ -188,11 +188,15 @@ async function loadContent() {
 function openBlog() {
   if (!ensureSignedIn()) return;
   blogPageEl.setAttribute("aria-hidden", "false");
+  const marketControl = document.getElementById('marketControl');
+  if (marketControl) marketControl.style.display = 'none';
   blogUI.init();
 }
 
 function closeBlog() {
   blogPageEl.setAttribute("aria-hidden", "true");
+  const marketControl = document.getElementById('marketControl');
+  if (marketControl) marketControl.style.display = '';
 }
 
 function openAbout() {

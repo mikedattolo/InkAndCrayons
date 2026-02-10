@@ -4,13 +4,15 @@
       "title": "Welcome to Ink & Crayons Articles",
       "author": "Ink & Crayons Team",
       "body": "<p>We share gentle routines, creative centers, and classroom wins. Check back weekly for new articles from our team.</p>",
-      "image": ""
+      "image": "",
+      "category": "all"
     },
     {
       "title": "5 Calm Corner Essentials",
       "author": "Ms. Rivera",
       "body": "<ul><li>Soft seating</li><li>Breathing cards</li><li>Fidget tools</li><li>Feelings chart</li><li>Cozy lighting</li></ul>",
-      "image": ""
+      "image": "",
+      "category": "healthy-choices"
     }
   ]
 }

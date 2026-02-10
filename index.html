@@ -19,6 +19,66 @@
     <!-- ===== HEADER / NAVIGATION BAR ===== -->
     <header class="site-header">
       <div class="site-header__inner">
+        <!-- Marketplace control: wooden stand icon + animated label -->
+        <div id="marketControl" class="market-control" aria-hidden="false">
+          <button id="marketBtn" class="site-header__market-btn" aria-haspopup="true" aria-expanded="false" title="Marketplace">
+            <svg width="140" height="140" viewBox="0 0 64 80" fill="none" xmlns="http://www.w3.org/2000/svg" class="market-icon" aria-hidden="true">
+              <defs>
+                <pattern id="awnStrip" patternUnits="userSpaceOnUse" width="16" height="16" patternTransform="translate(0,0)">
+                  <rect width="16" height="16" fill="#ffffff" />
+                  <rect width="8" height="16" fill="#f7a8c4" />
+                  <!-- animate the pattern so white/pink stripes shift -->
+                  <animateTransform attributeName="patternTransform" type="translate" from="0 0" to="16 0" dur="3s" repeatCount="indefinite" />
+                </pattern>
+
+                <!-- soft gradients to match site pastel palette -->
+                <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#d6a87a"/>
+                  <stop offset="100%" stop-color="#c99a72"/>
+                </linearGradient>
+                <linearGradient id="baseGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#f1d7b8"/>
+                  <stop offset="100%" stop-color="#e8caa8"/>
+                </linearGradient>
+
+                <!-- subtle paper grain / watercolor texture filter -->
+                <filter id="wcFilter" x="-20%" y="-20%" width="140%" height="140%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="n"/>
+                  <feColorMatrix in="n" type="saturate" values="0" result="n2"/>
+                  <feGaussianBlur in="n2" stdDeviation="0.6" result="n3"/>
+                  <feComponentTransfer in="n3" result="noiseAlpha">
+                    <feFuncA type="table" tableValues="0 0.08"/>
+                  </feComponentTransfer>
+                  <feBlend in="SourceGraphic" in2="n3" mode="overlay"/>
+                </filter>
+              </defs>
+              <!-- Grouped stand graphic with soft texture to blend with site style -->
+              <g filter="url(#wcFilter)" class="market-graphic">
+                <!-- posts (lighter brown) with gentle gradient and subtle outline -->
+                <rect x="9" y="32" width="8" height="42" rx="1" fill="url(#woodGrad)" stroke="#000" stroke-opacity="0.18" stroke-width="0.9"/>
+                <rect x="47" y="32" width="8" height="42" rx="1" fill="url(#woodGrad)" stroke="#000" stroke-opacity="0.18" stroke-width="0.9"/>
+                <!-- counter shelf (lighter brown) enlarged and moved up so it fully covers the posts, with soft gradient -->
+                <rect x="6" y="60" width="52" height="18" rx="2" fill="url(#baseGrad)" stroke="#000" stroke-opacity="0.16" stroke-width="0.9"/>
+                <!-- striped awning (pink & white) - filled with pattern and thin outline to read like fabric -->
+                <rect x="6" y="14" width="52" height="22" rx="3" fill="url(#awnStrip)" stroke="#000" stroke-opacity="0.16" stroke-width="0.9" stroke-linejoin="round"/>
+                <!-- scalloped lower edge to mimic fabric awning (slightly overlaps the awning rect to avoid seams) -->
+                <path d="M8 33 a6 6 0 0 0 12 0 a6 6 0 0 0 12 0 a6 6 0 0 0 12 0 a6 6 0 0 0 12 0" fill="url(#awnStrip)" stroke="#000" stroke-opacity="0.16" stroke-width="0.9" stroke-linejoin="round"/>
+              </g>
+            </svg>
+            <span class="market-label">market place</span>
+          </button>
+
+          <div id="marketMenu" class="market-menu" aria-hidden="true">
+            <div class="market-menu__inner">
+              <div class="market-menu__title">Available — Amazon Shop!</div>
+              <button class="market-menu__item">Fine motor worksheets</button>
+              <button class="market-menu__item">ABC cards and tracing</button>
+              <button class="market-menu__item">Hands-on activity guides</button>
+              <button class="market-menu__item">Number activities and tracing</button>
+              <button class="market-menu__item">Name activities and worksheets</button>
+            </div>
+          </div>
+        </div>
         <!-- Pill-shaped nav links -->
         <nav class="nav-pills" aria-label="Main navigation">
           <div class="nav-dropdown">
@@ -28,7 +88,7 @@
               <button class="nav-dropdown__item" data-category="cutting-pages" type="button">Cutting Pages</button>
               <button class="nav-dropdown__item" data-category="abcs" type="button">ABC's</button>
               <button class="nav-dropdown__item" data-category="number-tracing" type="button">Number Tracing</button>
-              <button class="nav-dropdown__item" data-category="fine-motor" type="button">Fine Motor Skills</button>
+              
             </div>
           </div>
           <button id="navMilestones" class="btn btn--pill" type="button">Educational Milestones</button>
@@ -68,9 +128,7 @@
             <span class="hero__highlight">Understand Learning</span>
           </h1>
           <p class="hero__body">
-            Every child is unique. We equip parents and teachers with playful,
-            research-backed resources — from lesson plans and music to coaching
-            guides — so learning feels like magic, not a chore.
+            Every child is unique. We support parents and teachers with teacher-tested, hands-on tools and activities designed specifically for early childhood education. Our resources are intentionally used to support developmental growth, communication, social-emotional skills, play-based learning, and everyday routines. They are practical, easy for parents to understand, and engaging for young children—making learning feel natural, meaningful, and effective from the very start.
           </p>
           <div class="hero__actions">
             <button id="heroCta" class="btn btn--primary btn--lg" type="button">Get Started</button>
@@ -324,18 +382,12 @@
           </div>
           <h3 class="about-page__name">Hi, I'm the creator of Ink &amp; Crayons!</h3>
           <p class="about-page__bio">
-            I'm a passionate educator and parent who believes that early learning should be joyful,
-            creative, and rooted in love. Ink &amp; Crayons was born from my desire to help families
-            navigate the beautiful (and sometimes overwhelming!) world of early childhood education.
+            I am a passionate Early Childhood Education head teacher with nine years of experience in the field. My mission is to help children thrive through simple, meaningful, hands-on activities that support healthy growth and development. I am dedicated to helping parents better understand their child's developmental journey and feel confident in how to support and encourage that growth at home. I believe hands-on learning is essential in early childhood and that strong parent involvement during these early years benefits both the child and the family as a whole.
           </p>
+          
+          <h4 class="about-page__bio" style="margin-top: 1.5rem; font-weight: 600;">Español</h4>
           <p class="about-page__bio">
-            With years of experience in early learning, I create hands-on worksheets, tracing activities,
-            and resources that make foundational skills fun for little ones. Every resource is designed
-            with care &mdash; because I know how important these early years are.
-          </p>
-          <p class="about-page__bio">
-            Whether you're a first-time parent, a seasoned homeschooler, or a teacher looking for fresh
-            ideas, I'm so glad you're here. Let's help our little roots grow strong together! &#127793;
+            Soy una apasionada educadora y maestra líder en Educación Infantil, con nueve años de experiencia en el campo. Mi misión es ayudar a los niños a desarrollarse plenamente a través de actividades sencillas, significativas y prácticas que apoyen su crecimiento y desarrollo. Me dedico a ayudar a los padres a comprender mejor el desarrollo de sus hijos y a sentirse seguros al acompañarlos y apoyarlos desde el hogar. Creo firmemente que el aprendizaje práctico es esencial en la primera infancia y que una fuerte participación de los padres durante estos primeros años beneficia tanto al niño como a la familia en su conjunto.
           </p>
 
           <div class="about-page__mission">
@@ -377,6 +429,16 @@
         <span class="blog__topbar-spacer"></span>
       </div>
 
+      <div class="blog__tabs-container">
+        <div class="blog__tabs">
+          <button class="blog__tab blog__tab--active" data-category="all" aria-selected="true">All Articles</button>
+          <button class="blog__tab" data-category="potty-training" aria-selected="false">Potty Training Tips</button>
+          <button class="blog__tab" data-category="learning-toys" aria-selected="false">Toys That Teach</button>
+          <button class="blog__tab" data-category="healthy-choices" aria-selected="false">Healthy Choices</button>
+          <button class="blog__tab" data-category="development" aria-selected="false">Developmental Growth</button>
+        </div>
+      </div>
+
       <div class="blog__feed-layout">
         <!-- Composer — only visible to admin / designated writers -->
         <div class="blog__composer-card" style="display:none">
@@ -391,8 +453,19 @@
           </form>
         </div>
 
-        <!-- Articles feed -->
-        <div id="blogPosts" class="blog__feed"></div>
+        <!-- Newspaper-style layout: main article + sidebar -->
+        <div class="blog__newspaper-layout">
+          <!-- Main feature article -->
+          <div class="blog__main-article">
+            <div id="blogPosts" class="blog__feed"></div>
+          </div>
+          
+          <!-- Related articles sidebar -->
+          <aside class="blog__sidebar">
+            <h3 class="blog__sidebar-title">Related Reading</h3>
+            <div id="blogRelated" class="blog__related-list"></div>
+          </aside>
+        </div>
       </div>
 
       <!-- Admin panel slides out from bottom -->
@@ -459,6 +532,46 @@
       </section>
     </section>
 
+    <script>
+      (function(){
+        const marketBtn = document.getElementById('marketBtn');
+        const marketMenu = document.getElementById('marketMenu');
+        if (!marketBtn || !marketMenu) return;
+
+        function showMenu(show){
+          if (show) {
+            marketMenu.style.display = 'block';
+            marketMenu.setAttribute('aria-hidden','false');
+            marketBtn.setAttribute('aria-expanded','true');
+          } else {
+            marketMenu.style.display = 'none';
+            marketMenu.setAttribute('aria-hidden','true');
+            marketBtn.setAttribute('aria-expanded','false');
+          }
+        }
+
+        marketBtn.addEventListener('click', function(e){
+          e.stopPropagation();
+          const isOpen = marketBtn.getAttribute('aria-expanded') === 'true';
+          showMenu(!isOpen);
+        });
+
+        marketMenu.addEventListener('click', function(e){
+          // simple behavior: clicking an item will close the menu
+          const target = e.target.closest('.market-menu__item');
+          if (target) showMenu(false);
+        });
+
+        document.addEventListener('click', function(e){
+          if (!marketBtn.contains(e.target) && !marketMenu.contains(e.target)) {
+            showMenu(false);
+          }
+        });
+
+        // close with escape
+        document.addEventListener('keydown', function(e){ if (e.key === 'Escape') showMenu(false); });
+      })();
+    </script>
     <script type="module" src="game.js"></script>
   </body>
 </html>

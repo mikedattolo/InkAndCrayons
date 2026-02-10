@@ -48,6 +48,13 @@ function escapeHtml(text) {
 }
 
 function renderMarkdown(text) {
+  /* Check if text is already HTML (contains HTML tags) */
+  if (/<[a-z]|<\/[a-z]/i.test(text)) {
+    /* Already HTML, don't process with markdown */
+    return text;
+  }
+  
+  /* Process as markdown */
   let safe = escapeHtml(text);
   safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
   safe = safe.replace(/\*(.+?)\*/g, "<em>$1</em>");
@@ -138,8 +145,10 @@ export async function loadPosts() {
   const deleted = new Set(readJson(DELETED_POSTS_KEY, []));
 
   const combined = [...(data.posts || []), ...stored].map((post, index) => {
-    if (post.id) return post;
-    return { ...post, id: `builtin_${index}` };
+    let p = post.id ? post : { ...post, id: `builtin_${index}` };
+    /* Ensure all posts have a category */
+    if (!p.category) p.category = "all";
+    return p;
   });
 
   return combined.filter((post) => !deleted.has(post.id));
@@ -179,6 +188,7 @@ export function createBlogUI({
 }) {
   let posts = [];
   let user = currentUser;
+  let currentCategory = "all";
 
   function setUser(nextUser) {
     user = nextUser;
@@ -196,7 +206,21 @@ export function createBlogUI({
       composerCard.style.display = canPost(user) ? "flex" : "none";
     }
 
-    posts.forEach((post) => {
+    /* Filter posts by category */
+    let categoryPosts = posts;
+    if (currentCategory !== "all") {
+      categoryPosts = posts.filter(post => post.category === currentCategory);
+    }
+
+    /* Filter out the welcome post and get posts for display */
+    const filteredPosts = categoryPosts.filter(post => post.title !== "Welcome to Ink & Crayons Articles");
+    
+    /* Show only the first post (most recent) in main feed */
+    const mainPost = filteredPosts.length > 0 ? [filteredPosts[0]] : [];
+    const relatedPosts = filteredPosts.length > 1 ? filteredPosts.slice(1) : [];
+    
+    /* Render main featured article */
+    mainPost.forEach((post) => {
       const card = document.createElement("article");
       card.className = "post";
 
@@ -387,6 +411,28 @@ export function createBlogUI({
 
       postsContainer.appendChild(card);
     });
+
+    /* Render related articles in sidebar */
+    const relatedContainer = document.getElementById("blogRelated");
+    if (relatedContainer) {
+      relatedContainer.innerHTML = "";
+      relatedPosts.forEach((post) => {
+        const item = document.createElement("div");
+        item.className = "blog__related-item";
+        
+        const itemTitle = document.createElement("h4");
+        itemTitle.className = "blog__related-title";
+        itemTitle.textContent = post.title;
+        
+        const itemAuthor = document.createElement("p");
+        itemAuthor.className = "blog__related-author";
+        itemAuthor.textContent = "by " + (post.author || "Anonymous");
+        
+        item.appendChild(itemTitle);
+        item.appendChild(itemAuthor);
+        relatedContainer.appendChild(item);
+      });
+    }
   }
 
   /* ---------- Composer submit ---------- */
@@ -429,6 +475,26 @@ export function createBlogUI({
     async init() {
       posts = await loadPosts();
       render();
+      
+      /* Set up category tab event listeners */
+      const tabButtons = document.querySelectorAll(".blog__tab");
+      tabButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const category = btn.getAttribute("data-category");
+          currentCategory = category || "all";
+          
+          /* Update active state */
+          tabButtons.forEach((b) => {
+            b.classList.remove("blog__tab--active");
+            b.setAttribute("aria-selected", "false");
+          });
+          btn.classList.add("blog__tab--active");
+          btn.setAttribute("aria-selected", "true");
+          
+          /* Re-render posts with new category */
+          render();
+        });
+      });
     },
     setUser,
     render,
