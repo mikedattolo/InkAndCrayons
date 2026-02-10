@@ -1,4 +1,4 @@
-export function createModal({ modalEl, titleEl, descriptionEl, bodyEl }) {
+export function createModal({ modalEl, titleEl, descriptionEl, bodyEl, onClose }) {
   function setOpen(isOpen) {
     modalEl.setAttribute("aria-hidden", String(!isOpen));
   }
@@ -19,6 +19,7 @@ export function createModal({ modalEl, titleEl, descriptionEl, bodyEl }) {
 
   function close() {
     setOpen(false);
+    if (onClose) onClose();
   }
 
   modalEl.addEventListener("click", (event) => {

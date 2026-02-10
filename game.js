@@ -131,6 +131,10 @@ const modal = createModal({
   titleEl: modalTitle,
   descriptionEl: modalDescription,
   bodyEl: modalBody,
+  onClose: () => {
+    const mc = document.getElementById('marketControl');
+    if (mc) mc.style.display = '';
+  },
 });
 
 const blogUI = createBlogUI({
@@ -185,30 +189,36 @@ async function loadContent() {
 }
 
 /* ── Navigation Actions ─────────────────────────────────── */
+const marketControlEl = document.getElementById('marketControl');
+function setMarketVisible(visible) {
+  if (marketControlEl) marketControlEl.style.display = visible ? '' : 'none';
+}
+
 function openBlog() {
   if (!ensureSignedIn()) return;
   blogPageEl.setAttribute("aria-hidden", "false");
-  const marketControl = document.getElementById('marketControl');
-  if (marketControl) marketControl.style.display = 'none';
+  setMarketVisible(false);
   blogUI.init();
 }
 
 function closeBlog() {
   blogPageEl.setAttribute("aria-hidden", "true");
-  const marketControl = document.getElementById('marketControl');
-  if (marketControl) marketControl.style.display = '';
+  setMarketVisible(true);
 }
 
 function openAbout() {
   aboutPageEl.setAttribute("aria-hidden", "false");
+  setMarketVisible(false);
 }
 
 function closeAbout() {
   aboutPageEl.setAttribute("aria-hidden", "true");
+  setMarketVisible(true);
 }
 
 function openResources() {
   if (!ensureSignedIn()) return;
+  setMarketVisible(false);
   modal.open({
     title: "Bookshelf Resources",
     description: "Browse online books and classroom resources.",
@@ -218,6 +228,7 @@ function openResources() {
 
 function openLessons() {
   if (!ensureSignedIn()) return;
+  setMarketVisible(false);
   modal.open({
     title: "Education Worksheets & More",
     description: "Browse all our printable worksheets and learning resources.",
@@ -252,6 +263,7 @@ function openWorksheetCategory(category) {
   if (!ensureSignedIn()) return;
   const info = worksheetCategories[category];
   if (!info) return openLessons();
+  setMarketVisible(false);
   modal.open({
     title: info.title,
     description: info.description,
@@ -261,6 +273,7 @@ function openWorksheetCategory(category) {
 
 function openMilestones() {
   if (!ensureSignedIn()) return;
+  setMarketVisible(false);
   modal.open({
     title: "Educational Milestones",
     description: "Track key milestones in your child's learning journey.",
@@ -270,6 +283,7 @@ function openMilestones() {
 
 function openGuides() {
   if (!ensureSignedIn()) return;
+  setMarketVisible(false);
   modal.open({
     title: "Parent Coaching",
     description: "Helpful guides and coaching resources for parents and caregivers.",
@@ -279,6 +293,7 @@ function openGuides() {
 
 function openMusic() {
   if (!ensureSignedIn()) return;
+  setMarketVisible(false);
   modal.open({
     title: "Music & Activities",
     description: "Songs, rhymes, and creative activities for little learners.",
@@ -367,6 +382,7 @@ function attachEvents() {
 
   function openChat() {
     if (!ensureSignedIn()) return;
+    setMarketVisible(false);
     renderChatMessages();
     chatModal?.setAttribute("aria-hidden", "false");
     chatInput?.focus();
@@ -374,6 +390,7 @@ function attachEvents() {
 
   function closeChat() {
     chatModal?.setAttribute("aria-hidden", "true");
+    setMarketVisible(true);
   }
 
   chatModal?.querySelector(".chat-modal__backdrop")?.addEventListener("click", closeChat);
@@ -443,12 +460,14 @@ function attachEvents() {
   /* ── Account Modal ─────────────────────────────────────── */
   function openAccountModal() {
     if (!currentUser) return;
+    setMarketVisible(false);
     populateAccountModal();
     accountModal?.setAttribute("aria-hidden", "false");
   }
 
   function closeAccountModal() {
     accountModal?.setAttribute("aria-hidden", "true");
+    setMarketVisible(true);
   }
 
   function getInitials(name) {
