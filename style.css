@@ -1597,9 +1597,9 @@ body::before {
 
 /* --- Newspaper-style layout --- */
 .blog__newspaper-layout {
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   max-width: 1400px;
   margin: 40px auto;
   padding: 0 40px;
@@ -1620,8 +1620,7 @@ body::before {
   gap: 24px;
   max-height: calc(100vh - 260px);
   overflow-y: auto;
-  padding-right: 20px;
-  padding-left: 176px;
+  padding: 0 20px;
   scrollbar-width: thin;
   scrollbar-color: rgba(40, 40, 40, 0.35) transparent;
   width: 100%;
@@ -1718,6 +1717,9 @@ body::before {
   padding: 0;
   position: relative;
   z-index: 1;
+  width: 100%;
+  max-width: 620px;
+  margin: 0 auto;
 }
 
 .post__masthead {
@@ -1757,19 +1759,21 @@ body::before {
   letter-spacing: -0.02em;
   text-transform: none;
   max-width: 100%;
+  text-align: center;
 }
 
 .post__text {
   font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: 0.95rem;
-  line-height: 1.65;
+  font-size: 1.08rem;
+  line-height: 1.8;
   color: #1a1a1a;
   margin: 0;
   column-count: 2;
-  column-gap: 32px;
+  column-gap: 36px;
   column-rule: 1px solid rgba(0,0,0,0.15);
   text-align: justify;
   hyphens: auto;
+  column-fill: balance;
 }
 
 .post__text::first-letter {
@@ -1815,6 +1819,7 @@ body::before {
   .post__text {
     column-count: 1;
     column-rule: none;
+    font-size: 1rem;
   }
   
   .post__title {
