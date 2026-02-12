@@ -3,6 +3,8 @@ const COMMENTS_KEY = "lrl_comments";
 const DELETED_POSTS_KEY = "lrl_deleted_posts";
 const LIKES_KEY = "lrl_likes";
 const WRITERS_KEY = "lrl_writers"; // usernames allowed to post articles
+const SEED_VERSION_KEY = "lrl_posts_seed_version";
+const SEED_VERSION = "2026-02-12-2";
 
 /* --- Profanity word list (auto-censored, no admin action needed) --- */
 const PROFANITY = [
@@ -139,6 +141,13 @@ function saveLikes(map) {
 
 /* ---- Data layer ---- */
 export async function loadPosts() {
+  const currentSeed = localStorage.getItem(SEED_VERSION_KEY);
+  if (currentSeed !== SEED_VERSION) {
+    localStorage.removeItem(POSTS_KEY);
+    localStorage.removeItem(DELETED_POSTS_KEY);
+    localStorage.setItem(SEED_VERSION_KEY, SEED_VERSION);
+  }
+
   const response = await fetch("data/posts.json");
   const data = await response.json();
   const stored = readJson(POSTS_KEY, []);
@@ -224,39 +233,44 @@ export function createBlogUI({
       const card = document.createElement("article");
       card.className = "post";
 
-      /* -- Header: avatar + author + time -- */
-      const header = document.createElement("div");
-      header.className = "post__header";
+      /* -- Flipbook newspaper layout -- */
+      const sheet = document.createElement("div");
+      sheet.className = "post__sheet";
 
-      const avatar = document.createElement("div");
-      avatar.className = "post__avatar";
-      avatar.textContent = getInitials(post.author);
+      const page = document.createElement("div");
+      page.className = "post__page";
 
-      const authorEl = document.createElement("span");
-      authorEl.className = "post__author";
-      authorEl.textContent = post.author || "Anonymous";
-
-      const timeEl = document.createElement("span");
-      timeEl.className = "post__time";
-      timeEl.textContent = timeAgo(post.createdAt);
-
-      header.append(avatar, authorEl, timeEl);
-
-      /* -- Body: title + text -- */
-      const body = document.createElement("div");
-      body.className = "post__body";
+      const masthead = document.createElement("div");
+      masthead.className = "post__masthead";
+      masthead.textContent = "Ink & Crayons Journal";
 
       if (post.title) {
         const titleEl = document.createElement("h3");
         titleEl.className = "post__title";
         titleEl.textContent = post.title;
-        body.appendChild(titleEl);
+        page.appendChild(titleEl);
+      }
+
+      const meta = document.createElement("div");
+      meta.className = "post__meta";
+      const authorEl = document.createElement("span");
+      authorEl.className = "post__author";
+      authorEl.textContent = post.author || "Anonymous";
+      const timeEl = document.createElement("span");
+      timeEl.className = "post__time";
+      timeEl.textContent = timeAgo(post.createdAt);
+      meta.appendChild(authorEl);
+      if (timeEl.textContent) {
+        meta.appendChild(timeEl);
       }
 
       const textEl = document.createElement("div");
       textEl.className = "post__text";
       textEl.innerHTML = renderMarkdown(post.body);
-      body.appendChild(textEl);
+
+      page.prepend(masthead, meta);
+      page.appendChild(textEl);
+      sheet.appendChild(page);
 
       /* -- Action bar: like, comment toggle, delete -- */
       const actionBar = document.createElement("div");
@@ -401,8 +415,7 @@ export function createBlogUI({
       commentForm.append(commentInput, commentSubmit);
 
       /* -- Assemble card -- */
-      card.appendChild(header);
-      card.appendChild(body);
+      card.appendChild(sheet);
       card.appendChild(actionBar);
       if (likeLine) card.appendChild(likeLine);
       if (viewAllBtn) card.appendChild(viewAllBtn);
