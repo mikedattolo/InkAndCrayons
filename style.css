@@ -1657,7 +1657,8 @@ body::before {
   position: relative;
   display: flex;
   justify-content: center;
-  margin-bottom: 40px;
+  align-items: center;
+  margin: 0 auto 40px auto;
 }
 
 .post__sheet {
@@ -1667,7 +1668,7 @@ body::before {
   width: 816px;
   /* height auto to accommodate content, min-height for 8.5x11 ratio */
   min-height: 1056px;
-  background: #ffffff;
+  background: #faf8f3;
   border: 1px solid rgba(30, 30, 30, 0.15);
   box-shadow: 
     0 2px 4px rgba(0,0,0,0.1),
@@ -1683,8 +1684,8 @@ body::before {
   min-height: 1056px;
   position: relative;
   background:
-    linear-gradient(0deg, rgba(250,248,245,0.4), rgba(255,255,255,0.9)),
-    repeating-linear-gradient(0deg, transparent 0px, transparent 31px, rgba(0,100,200,0.025) 31px, rgba(0,100,200,0.025) 32px);
+    linear-gradient(0deg, rgba(245,243,238,0.5), rgba(250,248,243,0.9)),
+    repeating-linear-gradient(0deg, transparent 0px, transparent 31px, rgba(0,100,200,0.02) 31px, rgba(0,100,200,0.02) 32px);
   /* Add subtle paper texture */
   background-blend-mode: multiply;
 }
