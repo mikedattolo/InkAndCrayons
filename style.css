@@ -1620,13 +1620,13 @@ body::before {
   gap: 24px;
   max-height: calc(100vh - 260px);
   overflow-y: auto;
-  padding-right: 20px;
+  padding: 20px;
   scrollbar-width: thin;
   scrollbar-color: rgba(40, 40, 40, 0.35) transparent;
   width: 100%;
   max-width: none;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 .blog__main-article::-webkit-scrollbar {
@@ -1649,6 +1649,7 @@ body::before {
   width: 100%;
   align-items: center;
   justify-content: center;
+  min-height: 100%;
 }
 
 .post {
