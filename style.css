@@ -1626,6 +1626,7 @@ body::before {
   width: 100%;
   max-width: none;
   align-items: center;
+  justify-content: flex-start;
 }
 
 .blog__main-article::-webkit-scrollbar {
@@ -1646,6 +1647,8 @@ body::before {
   flex-direction: column;
   gap: 24px;
   width: 100%;
+  align-items: center;
+  justify-content: center;
 }
 
 .post {
@@ -1653,9 +1656,11 @@ body::before {
   border: none;
   border-radius: 0;
   padding: 0;
-  max-width: 100%;
+  max-width: 816px;
+  width: 100%;
   position: relative;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   margin: 0 auto 40px auto;
