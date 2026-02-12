@@ -249,9 +249,10 @@ body::before {
 
 .nav-pills {
   display: flex;
-  gap: 10px;
+  gap: 14px;
   flex-wrap: wrap;
   justify-content: center;
+  width: 100%;
 }
 
 /* --- Nav Dropdown --- */
