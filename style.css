@@ -1598,11 +1598,11 @@ body::before {
 /* --- Newspaper-style layout --- */
 .blog__newspaper-layout {
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 60px;
-  max-width: 2000px;
+  grid-template-columns: 1fr 300px;
+  gap: 48px;
+  max-width: 1400px;
   margin: 40px auto;
-  padding: 0 60px;
+  padding: 0 40px;
   min-height: calc(100vh - 220px);
 }
 
@@ -1620,11 +1620,12 @@ body::before {
   gap: 24px;
   max-height: calc(100vh - 260px);
   overflow-y: auto;
-  padding-right: 12px;
+  padding-right: 20px;
   scrollbar-width: thin;
   scrollbar-color: rgba(40, 40, 40, 0.35) transparent;
   width: 100%;
   max-width: none;
+  align-items: center;
 }
 
 .blog__main-article::-webkit-scrollbar {
@@ -1654,31 +1655,38 @@ body::before {
   padding: 0;
   max-width: 100%;
   position: relative;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
 }
 
 .post__sheet {
   position: relative;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0;
-  background: #fff8e8;
-  border: 1px solid rgba(30, 30, 30, 0.12);
-  box-shadow: 0 16px 40px rgba(20, 20, 20, 0.12);
+  display: block;
+  /* 8.5 x 11 inch ratio = 0.7727 aspect ratio */
+  width: 816px;
+  /* height auto to accommodate content, min-height for 8.5x11 ratio */
+  min-height: 1056px;
+  background: #ffffff;
+  border: 1px solid rgba(30, 30, 30, 0.15);
+  box-shadow: 
+    0 2px 4px rgba(0,0,0,0.1),
+    0 8px 16px rgba(0,0,0,0.08),
+    0 16px 32px rgba(0,0,0,0.06);
   transform-style: preserve-3d;
-  perspective: 1200px;
-  overflow: hidden;
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
+  overflow: visible;
+  margin: 0 auto;
 }
 
 .post__page {
-  padding: 90px 100px;
-  min-height: 1200px;
+  padding: 72px 68px 68px;
+  min-height: 1056px;
   position: relative;
   background:
-    linear-gradient(0deg, rgba(255,255,255,0.6), rgba(255,255,255,0.6)),
-    repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    linear-gradient(0deg, rgba(250,248,245,0.4), rgba(255,255,255,0.9)),
+    repeating-linear-gradient(0deg, transparent 0px, transparent 31px, rgba(0,100,200,0.025) 31px, rgba(0,100,200,0.025) 32px);
+  /* Add subtle paper texture */
+  background-blend-mode: multiply;
 }
 
 
@@ -1707,22 +1715,29 @@ body::before {
 
 .post__masthead {
   font-family: 'Times New Roman', serif;
-  font-size: 0.78rem;
-  letter-spacing: 0.28em;
+  font-size: 0.85rem;
+  letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: #444;
-  margin-bottom: 14px;
+  color: #222;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 3px double #333;
+  font-weight: 700;
+  text-align: center;
 }
 
 .post__meta {
   display: flex;
   gap: 12px;
   align-items: center;
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   color: #666;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 16px;
+  letter-spacing: 0.1em;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #ddd;
+  justify-content: center;
 }
 
 .post__title {
@@ -1739,22 +1754,25 @@ body::before {
 
 .post__text {
   font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: 1.12rem;
-  line-height: 1.85;
-  color: #2a2a2a;
-  margin: 0 0 18px 0;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: #1a1a1a;
+  margin: 0;
   column-count: 2;
-  column-gap: 28px;
-  column-rule: 1px solid rgba(0,0,0,0.08);
+  column-gap: 32px;
+  column-rule: 1px solid rgba(0,0,0,0.15);
+  text-align: justify;
+  hyphens: auto;
 }
 
 .post__text::first-letter {
   float: left;
-  font-size: 3.2rem;
-  line-height: 0.9;
-  padding: 6px 8px 0 0;
+  font-size: 3.8rem;
+  line-height: 0.85;
+  padding: 4px 10px 0 0;
   font-weight: 700;
-  color: #111;
+  color: #000;
+  font-family: 'Times New Roman', serif;
 }
 
 .post__text ul {
@@ -1769,18 +1787,31 @@ body::before {
 
 @media (max-width: 900px) {
   .post__sheet {
-    grid-template-columns: 1fr;
+    width: 90vw;
+    min-height: auto;
+  }
+  
+  .post__page {
+    padding: 48px 36px;
   }
 }
 
 @media (max-width: 640px) {
+  .post__sheet {
+    width: 95vw;
+  }
+  
   .post__page {
-    padding: 36px 26px;
+    padding: 32px 24px;
   }
 
   .post__text {
     column-count: 1;
     column-rule: none;
+  }
+  
+  .post__title {
+    font-size: 1.8rem;
   }
 }
 
