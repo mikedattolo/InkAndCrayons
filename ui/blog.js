@@ -4,7 +4,7 @@ const DELETED_POSTS_KEY = "lrl_deleted_posts";
 const LIKES_KEY = "lrl_likes";
 const WRITERS_KEY = "lrl_writers"; // usernames allowed to post articles
 const SEED_VERSION_KEY = "lrl_posts_seed_version";
-const SEED_VERSION = "2026-02-12-2";
+const SEED_VERSION = "2026-02-13-2";
 
 /* --- Profanity word list (auto-censored, no admin action needed) --- */
 const PROFANITY = [
@@ -489,25 +489,8 @@ export function createBlogUI({
       posts = await loadPosts();
       render();
       
-      /* Set up category tab event listeners */
-      const tabButtons = document.querySelectorAll(".blog__tab");
-      tabButtons.forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const category = btn.getAttribute("data-category");
-          currentCategory = category || "all";
-          
-          /* Update active state */
-          tabButtons.forEach((b) => {
-            b.classList.remove("blog__tab--active");
-            b.setAttribute("aria-selected", "false");
-          });
-          btn.classList.add("blog__tab--active");
-          btn.setAttribute("aria-selected", "true");
-          
-          /* Re-render posts with new category */
-          render();
-        });
-      });
+      /* Tab functionality removed - showing all articles */
+      currentCategory = "all";
     },
     setUser,
     render,

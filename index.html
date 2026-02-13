@@ -104,7 +104,7 @@
         <!-- CTA buttons -->
         <div class="site-header__cta">
           <button id="ctaExplore" class="btn btn--primary" type="button">Explore Learning Resources</button>
-          <button id="navBlogCta" class="btn btn--soft" type="button">Articles</button>
+          <button id="navBlogCta" class="btn btn--soft" type="button">BLOG</button>
         </div>
 
         <!-- Auth avatar -->
@@ -152,17 +152,17 @@
         <div class="sticky-grid">
           <button class="sticky-card sticky-card--pink" id="stickyBlog" type="button">
             <img src="assets/ui/sticky-pink.svg" alt="" class="sticky-card__bg" aria-hidden="true" />
-            <span class="sticky-card__label">Articles</span>
+            <span class="sticky-card__label">BLOG!</span>
           </button>
 
           <button class="sticky-card sticky-card--purple" id="stickyChat" type="button">
             <img src="assets/ui/sticky-purple.svg" alt="" class="sticky-card__bg" aria-hidden="true" />
-            <span class="sticky-card__label">Let's Chat!</span>
+            <span class="sticky-card__label">Online Activities and Videos</span>
           </button>
 
           <button class="sticky-card sticky-card--mint" id="stickyGuides" type="button">
             <img src="assets/ui/sticky-mint.svg" alt="" class="sticky-card__bg" aria-hidden="true" />
-            <span class="sticky-card__label">Parent Guides</span>
+            <span class="sticky-card__label">Helpful Tips</span>
           </button>
 
           <button class="sticky-card sticky-card--blue" id="stickyMusic" type="button">
@@ -237,14 +237,33 @@
       <div class="chat-modal__backdrop"></div>
       <div class="chat-modal__content" role="document">
         <div class="chat-modal__header">
-          <h2 id="chatModalTitle" class="chat-modal__title">Let's Chat!</h2>
+          <h2 id="chatModalTitle" class="chat-modal__title">Online Activities and Videos</h2>
           <button class="chat-modal__close" type="button" aria-label="Close">&times;</button>
         </div>
-        <div id="chatMessages" class="chat-modal__messages"></div>
-        <form id="chatForm" class="chat-modal__form">
-          <input id="chatInput" type="text" maxlength="500" required placeholder="Type a message..." class="chat-modal__input" autocomplete="off" />
-          <button type="submit" class="chat-modal__send">Send</button>
-        </form>
+        <div class="chat-modal__scrollable">
+          <section class="activity-section">
+            <h3 class="activity-section__title">1. Indoor Movement</h3>
+            <p class="activity-section__intro">Here are some of my favorite indoor movement channels!</p>
+            <p class="activity-section__highlight">My class loves DannyGo!</p>
+            <ul class="activity-list">
+              <li class="activity-item">
+                <a href="https://www.youtube.com/@DannyGo" target="_blank" rel="noopener noreferrer" class="activity-link">
+                  <strong>DannyGo</strong> - youtube.com/@DannyGo
+                </a>
+              </li>
+              <li class="activity-item">
+                <a href="https://www.gonoodle.com/" target="_blank" rel="noopener noreferrer" class="activity-link">
+                  <strong>GoNoodle</strong> - So much on here not just for indoor movement and learning!
+                </a>
+              </li>
+              <li class="activity-item">
+                <a href="https://www.youtube.com/@kidzbop" target="_blank" rel="noopener noreferrer" class="activity-link">
+                  <strong>Kidz Bop</strong> - My kids just love the songs on this channel
+                </a>
+              </li>
+            </ul>
+          </section>
+        </div>
       </div>
     </div>
 
@@ -422,17 +441,8 @@
         <button id="blogClose" class="blog__back-btn" type="button" aria-label="Close articles">
           &larr;
         </button>
-        <h2 class="blog__topbar-title">Articles</h2>
+        <h2 class="blog__topbar-title">❤ The Teacher Tribune ❤</h2>
         <span class="blog__topbar-spacer"></span>
-      </div>
-
-      <div class="blog__tabs-container">
-        <div class="blog__tabs">
-          <button class="blog__tab blog__tab--active" data-category="all" aria-selected="true">All Articles</button>
-          <button class="blog__tab" data-category="potty-training" aria-selected="false">Potty Training Tips</button>
-          <button class="blog__tab" data-category="learning-toys" aria-selected="false">Toys That Teach</button>
-          <button class="blog__tab" data-category="healthy-choices" aria-selected="false">Healthy Choices</button>
-        </div>
       </div>
 
       <div class="blog__feed-layout">

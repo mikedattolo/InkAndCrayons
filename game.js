@@ -383,9 +383,7 @@ function attachEvents() {
   function openChat() {
     if (!ensureSignedIn()) return;
     setMarketVisible(false);
-    renderChatMessages();
     chatModal?.setAttribute("aria-hidden", "false");
-    chatInput?.focus();
   }
 
   function closeChat() {
@@ -396,6 +394,7 @@ function attachEvents() {
   chatModal?.querySelector(".chat-modal__backdrop")?.addEventListener("click", closeChat);
   chatModal?.querySelector(".chat-modal__close")?.addEventListener("click", closeChat);
 
+  /* Commented out - chat form removed
   chatForm?.addEventListener("submit", (e) => {
     e.preventDefault();
     if (!currentUser) return;
@@ -411,6 +410,8 @@ function attachEvents() {
     chatInput.value = "";
     renderChatMessages();
   });
+  */
+  
   stickyGuidesBtn?.addEventListener("click", openGuides);
   stickyMusicBtn?.addEventListener("click", openMusic);
 
