@@ -1,19 +1,9 @@
 {
   "books": [
     {
-      "title": "Growing Curiosity Reading List",
-      "description": "A curated list of early reader favorites.",
-      "url": "https://example.com/reading-list"
-    },
-    {
-      "title": "Printable Phonics Pack",
-      "description": "PDF worksheets for letter sounds.",
-      "url": "https://example.com/phonics-pack"
-    },
-    {
-      "title": "STEM Storytime Links",
-      "description": "Science-themed stories for classroom read-alouds.",
-      "url": "https://example.com/stem-stories"
+      "title": "Music for Little Chickadees",
+      "description": "Music is powerful for little chickadees. Through singing, clapping, and dancing, children build language, memory, coordination, and confidence. Rhythm supports early math skills, while lyrics strengthen vocabulary and listening. Most importantly, music brings joy — and joyful learning helps our chickadees grow beautifully. 🎶",
+      "url": "https://open.spotify.com/playlist/228RF677UXL78KeMxnqXr3?si=xJL3iz5URLm-ril5smPqdg"
     }
   ]
 }
