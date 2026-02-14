@@ -242,7 +242,13 @@ body::before {
   position: relative;
   padding: 0 var(--gutter);
   background:
-    radial-gradient(ellipse 80% 100% at 50% 0%, rgba(201,168,247,0.08) 0%, transparent 70%);
+    repeating-linear-gradient(
+      90deg,
+      #faf8f3 0px,
+      #faf8f3 60px,
+      #111111 60px,
+      #111111 120px
+    );
 }
 
 .site-header__inner {
