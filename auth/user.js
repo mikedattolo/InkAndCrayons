@@ -1,3 +1,28 @@
+/**
+ * auth/user.js — Local demo auth layer
+ *
+ * ⚠️  DEV_MODE only — Replace with Firebase / Supabase in production.
+ *
+ * This module uses localStorage for persistence and a simple hash
+ * placeholder.  It is NOT suitable for any public-facing deployment.
+ * Swap in a real AuthProvider implementation before going live.
+ */
+
+const DEV_MODE = true; // Set to false to disable localStorage auth entirely
+
+/* ── AuthProvider stub ──────────────────────────────────── *
+ * Implement this interface with Firebase, Supabase, or any backend.
+ *
+ * interface AuthProvider {
+ *   signIn(email: string, password: string): Promise<{ user?, error? }>
+ *   signUp(email: string, password: string, username: string): Promise<{ user?, error? }>
+ *   signOut(): Promise<void>
+ *   getCurrentUser(): User | null
+ *   updateProfile(data: { username?, avatarUrl? }): Promise<{ user?, error? }>
+ *   changePassword(data: { currentPassword, newPassword }): Promise<{ success?, error? }>
+ * }
+ * ─────────────────────────────────────────────────────────── */
+
 const USERS_KEY = "lrl_users";
 const SESSION_KEY = "lrl_session";
 
@@ -16,16 +41,41 @@ function writeJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
-function encodePassword(password) {
-  // Local demo-only encoding. Replace with real auth provider handling.
-  return btoa(unescape(encodeURIComponent(password)));
+/**
+ * Simple hash placeholder for demo passwords.
+ * Uses SubtleCrypto-style approach (sync, non-reversible).
+ * NOT cryptographically secure — replace with server-side hashing.
+ */
+function hashPassword(password) {
+  let hash = 0;
+  for (let i = 0; i < password.length; i++) {
+    const ch = password.charCodeAt(i);
+    hash = ((hash << 5) - hash + ch) | 0;
+  }
+  return "demo_" + Math.abs(hash).toString(36);
 }
 
 export function loadUsers() {
-  return readJson(USERS_KEY, []);
+  if (!DEV_MODE) return [];
+  const users = readJson(USERS_KEY, []);
+  /* Seed admin account if it doesn't exist yet */
+  if (!users.some(u => u.email === "admin@inkandcrayons.com")) {
+    users.push({
+      id: "user_admin_seed",
+      email: "admin@inkandcrayons.com",
+      username: "Admin",
+      passwordHash: "demo_nyipc3",
+      avatar: "default",
+      role: "admin",
+      createdAt: "2025-01-01T00:00:00.000Z",
+    });
+    writeJson(USERS_KEY, users);
+  }
+  return users;
 }
 
 export function saveUsers(users) {
+  if (!DEV_MODE) return;
   writeJson(USERS_KEY, users);
 }
 
@@ -42,12 +92,15 @@ export function clearSession() {
 }
 
 export function getCurrentUser() {
+  if (!DEV_MODE) return null;
   const users = loadUsers();
   const sessionId = getSessionUserId();
   return users.find((user) => user.id === sessionId) || null;
 }
 
 export function createUser({ email, username, password }) {
+  if (!DEV_MODE) return { error: "Auth disabled — enable DEV_MODE or connect a real provider." };
+
   const users = loadUsers();
   const normalizedEmail = email.toLowerCase();
 
@@ -63,7 +116,7 @@ export function createUser({ email, username, password }) {
     id: `user_${Date.now()}`,
     email: normalizedEmail,
     username,
-    passwordHash: encodePassword(password),
+    passwordHash: hashPassword(password),
     avatar: "default",
     role: "user",
     createdAt: new Date().toISOString(),
@@ -77,26 +130,14 @@ export function createUser({ email, username, password }) {
 }
 
 export function signInUser({ email, password }) {
+  if (!DEV_MODE) return { error: "Auth disabled — enable DEV_MODE or connect a real provider." };
+
   const users = loadUsers();
   const normalizedEmail = email.toLowerCase();
-  const passwordHash = encodePassword(password);
-
-  // Built-in local admin for offline management
-  if (normalizedEmail === "admin@local" && password === "admin123") {
-    const admin = {
-      id: "admin_local",
-      email: "admin@local",
-      username: "Admin",
-      role: "admin",
-      avatar: "default",
-      createdAt: new Date().toISOString(),
-    };
-    setSessionUserId(admin.id);
-    return { user: admin };
-  }
+  const pw = hashPassword(password);
 
   const user = users.find(
-    (item) => item.email === normalizedEmail && item.passwordHash === passwordHash
+    (item) => item.email === normalizedEmail && item.passwordHash === pw,
   );
 
   if (!user) {
@@ -114,6 +155,7 @@ export function signOutUser() {
 /* ── Account Management ─────────────────────────────────── */
 
 export function updateProfile({ username, avatarUrl }) {
+  if (!DEV_MODE) return { error: "Auth disabled." };
   const users = loadUsers();
   const sessionId = getSessionUserId();
   const user = users.find((u) => u.id === sessionId);
@@ -121,7 +163,7 @@ export function updateProfile({ username, avatarUrl }) {
 
   if (username && username !== user.username) {
     const taken = users.some(
-      (u) => u.id !== user.id && u.username.toLowerCase() === username.toLowerCase()
+      (u) => u.id !== user.id && u.username.toLowerCase() === username.toLowerCase(),
     );
     if (taken) return { error: "Username already taken." };
     user.username = username;
@@ -136,16 +178,17 @@ export function updateProfile({ username, avatarUrl }) {
 }
 
 export function changePassword({ currentPassword, newPassword }) {
+  if (!DEV_MODE) return { error: "Auth disabled." };
   const users = loadUsers();
   const sessionId = getSessionUserId();
   const user = users.find((u) => u.id === sessionId);
   if (!user) return { error: "Not signed in." };
 
-  if (user.passwordHash !== encodePassword(currentPassword)) {
+  if (user.passwordHash !== hashPassword(currentPassword)) {
     return { error: "Current password is incorrect." };
   }
 
-  user.passwordHash = encodePassword(newPassword);
+  user.passwordHash = hashPassword(newPassword);
   saveUsers(users);
   return { success: true };
 }

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>❤ The Teacher Tribune ❤ — Ink &amp; Crayons</title>
+    <meta name="description" content="Articles, tips, and stories for early childhood educators and parents — from the Ink & Crayons community." />
+    <link rel="icon" href="assets/ui/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Dancing+Script:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700&family=Caveat:wght@400;600;700&family=Patrick+Hand&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css?v=64" />
+  </head>
+  <body class="blog-standalone">
+    <!-- ===== BLOG PAGE ===== -->
+    <div class="blog blog--standalone">
+      <div class="blog__topbar">
+        <a href="index.html" class="blog__back-btn" aria-label="Back to home">
+          &larr;
+        </a>
+        <h2 class="blog__topbar-title">❤ The Teacher Tribune ❤</h2>
+        <div class="blog__search-wrap">
+          <input id="blogSearch" type="text" class="blog__search-input" placeholder="Search articles..." aria-label="Search articles" />
+          <span class="blog__search-icon" aria-hidden="true">&#128269;</span>
+        </div>
+      </div>
+
+      <div class="blog__feed-layout">
+        <!-- Composer — only visible to admin / designated writers -->
+        <div class="blog__composer-card" style="display:none">
+          <div class="blog__composer-avatar">&#9998;</div>
+          <form id="blogForm" class="blog__composer-form">
+            <input id="postTitle" name="postTitle" type="text" maxlength="120" required placeholder="Article title..." class="blog__composer-title" />
+            <textarea id="postBody" name="postBody" rows="4" required placeholder="Write your article..." class="blog__composer-body"></textarea>
+            <div class="blog__composer-footer">
+              <small id="blogStatus" class="blog__status"></small>
+              <button id="postSubmit" type="submit" class="btn btn--primary blog__share-btn">Publish</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Newspaper-style layout: main article -->
+        <div class="blog__newspaper-layout">
+          <div class="blog__main-article">
+            <div id="blogPosts" class="blog__feed"></div>
+          </div>
+        </div>
+
+        <!-- Archive — scrollable article list with arrows -->
+        <div class="blog__archive">
+          <div class="blog__archive-header">
+            <h3 class="blog__archive-heading">More from the Tribune</h3>
+          </div>
+
+          <div class="blog__archive-carousel">
+            <button id="archivePrev" class="blog__archive-arrow blog__archive-arrow--left" type="button" aria-label="Previous articles">&lsaquo;</button>
+            <div id="archiveGrid" class="blog__archive-grid">
+              <!-- JS populates article buttons here -->
+            </div>
+            <button id="archiveNext" class="blog__archive-arrow blog__archive-arrow--right" type="button" aria-label="Next articles">&rsaquo;</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin controls live in the editor modal + inline edit/delete buttons -->
+    </div>
+
+    <!-- Admin FAB — only shown for admin users -->
+    <button id="adminNewPost" class="blog-fab" type="button" aria-label="New article" title="New article" hidden>
+      <span class="blog-fab__icon">+</span>
+    </button>
+
+    <!-- Article editor modal — shared for create & edit -->
+    <div id="articleEditorBackdrop" class="editor-backdrop" aria-hidden="true">
+      <div class="editor-modal" role="dialog" aria-labelledby="editorModalTitle">
+        <div class="editor-modal__header">
+          <h3 id="editorModalTitle" class="editor-modal__title">New Article</h3>
+          <button id="editorClose" class="editor-modal__close" type="button" aria-label="Close editor">&times;</button>
+        </div>
+        <form id="editorForm" class="editor-modal__form">
+          <div class="editor-modal__field">
+            <label for="editorTitle" class="editor-modal__label">Title</label>
+            <input id="editorTitle" type="text" maxlength="200" required placeholder="Article title..." class="editor-modal__input" />
+          </div>
+          <div class="editor-modal__field">
+            <label for="editorAuthor" class="editor-modal__label">Author</label>
+            <input id="editorAuthor" type="text" maxlength="60" placeholder="Author name..." class="editor-modal__input" />
+          </div>
+          <div class="editor-modal__field">
+            <label for="editorDate" class="editor-modal__label">Date</label>
+            <input id="editorDate" type="date" class="editor-modal__input" />
+          </div>
+          <div class="editor-modal__field">
+            <label for="editorBody" class="editor-modal__label">Article Body</label>
+            <div class="editor-modal__toolbar">
+              <button type="button" class="editor-modal__fmt-btn" data-fmt="bold" title="Bold"><strong>B</strong></button>
+              <button type="button" class="editor-modal__fmt-btn" data-fmt="italic" title="Italic"><em>I</em></button>
+              <button type="button" class="editor-modal__fmt-btn" data-fmt="h2" title="Heading">H</button>
+              <button type="button" class="editor-modal__fmt-btn" data-fmt="ul" title="Bullet list">• List</button>
+              <button type="button" class="editor-modal__fmt-btn" data-fmt="link" title="Insert link">🔗</button>
+            </div>
+            <textarea id="editorBody" rows="14" required placeholder="Write your article... (supports HTML)" class="editor-modal__textarea"></textarea>
+          </div>
+          <div class="editor-modal__footer">
+            <small id="editorStatus" class="editor-modal__status"></small>
+            <div class="editor-modal__actions">
+              <button type="button" id="editorCancel" class="btn btn--soft">Cancel</button>
+              <button type="submit" id="editorSubmit" class="btn btn--primary">Publish</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script type="module" src="blog-page.js?v=3"></script>
+  </body>
+</html>

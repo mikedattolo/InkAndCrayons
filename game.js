@@ -12,7 +12,7 @@ import {
 import { createAuthGate } from "./ui/auth.js";
 import { createModal } from "./ui/modal.js";
 import { loadBooks, renderBooks, addBookOverride } from "./ui/bookshelf.js";
-import { createBlogUI, addWriter, removeWriter, getWriters } from "./ui/blog.js";
+import { createBlogUI, addWriter, removeWriter, getWriters, loadPosts } from "./ui/blog.js";
 import { loadShopItems, renderShopItems, addShopOverride } from "./ui/shop.js";
 import {
   loadAnnouncements,
@@ -94,6 +94,7 @@ const usernameInput = document.getElementById("username");
 const signOutButton = document.getElementById("signOutBtn");
 const avatarInitialEl = document.getElementById("avatarInitial");
 const signInButton = document.getElementById("signInBtn");
+const headerSignInBtn = document.getElementById("headerSignIn");
 const signUpButton = document.getElementById("signUpBtn");
 const userStatusEl = document.getElementById("userStatus");
 
@@ -137,14 +138,14 @@ const modal = createModal({
   },
 });
 
-const blogUI = createBlogUI({
+const blogUI = blogPostsEl ? createBlogUI({
   postsContainer: blogPostsEl,
   formEl: blogFormEl,
   titleInput: blogTitleInput,
   bodyInput: blogBodyInput,
   statusEl: blogStatusEl,
   currentUser: getUserProfile(),
-});
+}) : null;
 
 const authGate = createAuthGate({
   gateEl,
@@ -158,8 +159,35 @@ const authGate = createAuthGate({
 });
 
 /* ── Helpers ────────────────────────────────────────────── */
-function ensureSignedIn() {
+
+/**
+ * Sections that are freely browsable without signing in.
+ * Everything else (downloads, purchases, posting, admin) requires auth.
+ */
+const PUBLIC_SECTIONS = new Set([
+  "blog",
+  "about",
+  "resources",
+  "milestones",
+  "lessons",
+  "guides",
+  "music",
+  "chat",
+]);
+
+/** Returns true if the section can be viewed without sign-in */
+function allowOpenSection(sectionName) {
+  return PUBLIC_SECTIONS.has(sectionName);
+}
+
+/**
+ * Gate protected actions (download, purchase, post, admin).
+ * Shows the sign-in modal with a contextual CTA if not authenticated.
+ * Returns true when the user IS signed in and may proceed.
+ */
+function requireAuthFor(action) {
   if (currentUser) return true;
+  // Show sign-in gate with contextual message
   authGate.setGateOpen(true);
   return false;
 }
@@ -169,7 +197,7 @@ function isAdmin() {
 }
 
 function setAdminVisibility(visible) {
-  adminPanelEl.setAttribute("aria-hidden", String(!visible));
+  adminPanelEl?.setAttribute("aria-hidden", String(!visible));
 }
 
 /* ── Content Loading ────────────────────────────────────── */
@@ -195,15 +223,12 @@ function setMarketVisible(visible) {
 }
 
 function openBlog() {
-  if (!ensureSignedIn()) return;
-  blogPageEl.setAttribute("aria-hidden", "false");
-  setMarketVisible(false);
-  blogUI.init();
+  // Navigate to the standalone blog page
+  window.location.href = "blog.html";
 }
 
 function closeBlog() {
-  blogPageEl.setAttribute("aria-hidden", "true");
-  setMarketVisible(true);
+  // No longer used — blog is a separate page
 }
 
 function openAbout() {
@@ -217,21 +242,25 @@ function closeAbout() {
 }
 
 function openResources() {
-  if (!ensureSignedIn()) return;
+  // Resources are publicly browsable; downloads require auth
   setMarketVisible(false);
   modal.open({
     title: "Bookshelf Resources",
-    description: "Browse online books and classroom resources.",
+    description: currentUser
+      ? "Browse online books and classroom resources."
+      : "Browse resources — sign in to download.",
     contentNodes: renderBooks(contentStore.books),
   });
 }
 
 function openLessons() {
-  if (!ensureSignedIn()) return;
+  // Lessons are publicly browsable; purchases require auth
   setMarketVisible(false);
   modal.open({
     title: "Education Worksheets & More",
-    description: "Browse all our printable worksheets and learning resources.",
+    description: currentUser
+      ? "Browse all our printable worksheets and learning resources."
+      : "Browse worksheets — sign in to purchase.",
     contentNodes: renderShopItems(contentStore.shop),
   });
 }
@@ -260,19 +289,19 @@ const worksheetCategories = {
 };
 
 function openWorksheetCategory(category) {
-  if (!ensureSignedIn()) return;
   const info = worksheetCategories[category];
   if (!info) return openLessons();
   setMarketVisible(false);
   modal.open({
     title: info.title,
-    description: info.description,
+    description: currentUser
+      ? info.description
+      : info.description + " Sign in to download.",
     contentNodes: renderShopItems(contentStore.shop),
   });
 }
 
 function openMilestones() {
-  if (!ensureSignedIn()) return;
   setMarketVisible(false);
   modal.open({
     title: "Educational Milestones",
@@ -282,7 +311,6 @@ function openMilestones() {
 }
 
 function openGuides() {
-  if (!ensureSignedIn()) return;
   setMarketVisible(false);
   modal.open({
     title: "Parent Coaching",
@@ -292,7 +320,6 @@ function openGuides() {
 }
 
 function openMusic() {
-  if (!ensureSignedIn()) return;
   setMarketVisible(false);
   modal.open({
     title: "Music & Activities",
@@ -381,7 +408,7 @@ function attachEvents() {
   }
 
   function openChat() {
-    if (!ensureSignedIn()) return;
+    // Chat is publicly viewable; posting requires auth
     setMarketVisible(false);
     chatModal?.setAttribute("aria-hidden", "false");
   }
@@ -520,8 +547,12 @@ function attachEvents() {
   }
 
   accountBtn?.addEventListener("click", () => {
-    if (!ensureSignedIn()) return;
+    if (!requireAuthFor("account")) return;
     openAccountModal();
+  });
+
+  headerSignInBtn?.addEventListener("click", () => {
+    authGate.setGateOpen(true);
   });
 
   accountModal?.querySelector(".account-modal__close")?.addEventListener("click", closeAccountModal);
@@ -642,13 +673,16 @@ async function init() {
 
   onAuthStateChanged((user) => {
     currentUser = user;
-    blogUI.setUser(user);
-    blogStatusEl.textContent = user
-      ? ""
-      : "Sign in to read articles and comment.";
+    blogUI?.setUser(user);
+    if (blogStatusEl) {
+      blogStatusEl.textContent = user
+        ? ""
+        : "Sign in to read articles and comment.";
+    }
     setAdminVisibility(isAdmin());
-    if (!isAdmin()) adminStatusEl.textContent = "";
+    if (!isAdmin() && adminStatusEl) adminStatusEl.textContent = "";
     if (accountBtn) accountBtn.hidden = !user;
+    if (headerSignInBtn) headerSignInBtn.hidden = !!user;
     /* Update avatar initial */
     if (avatarInitialEl && user) {
       const name = user.username || user.email || "?";
@@ -660,12 +694,54 @@ async function init() {
         accountBtn.innerHTML = `<span id="avatarInitial" class="site-header__avatar-initial">${name.charAt(0).toUpperCase()}</span>`;
       }
     }
-    blogUI.render();
+    blogUI?.render();
   });
 
   await loadContent();
   attachEvents();
   modal.setOpen(false);
+
+  /* ── Home-page blog preview ──────────────────────────── */
+  await populateHomeBlogPreview();
+}
+
+async function populateHomeBlogPreview() {
+  const cardEl = document.getElementById("homeBlogCard");
+  const readMoreBtn = document.getElementById("homeBlogReadMore");
+  if (!cardEl) return;
+
+  /* Load posts directly — blogUI may not be available on the home page */
+  const posts = await loadPosts();
+  const filtered = posts.filter(p => p.title !== "Welcome to Ink & Crayons Articles");
+  const latest = filtered.length > 0 ? filtered[0] : null;
+  if (!latest) {
+    cardEl.innerHTML = '<p style="color:#999;text-align:center;">No articles yet — check back soon!</p>';
+    return;
+  }
+
+  /* Build the preview card */
+  const title = document.createElement("h3");
+  title.className = "home-blog-preview__title";
+  title.textContent = latest.title;
+
+  const meta = document.createElement("p");
+  meta.className = "home-blog-preview__meta";
+  meta.textContent = "by " + (latest.author || "Anonymous");
+
+  const snippet = document.createElement("p");
+  snippet.className = "home-blog-preview__snippet";
+  const plain = latest.body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  snippet.textContent = plain.length > 260 ? plain.slice(0, 260) + "…" : plain;
+
+  cardEl.innerHTML = "";
+  cardEl.appendChild(title);
+  cardEl.appendChild(meta);
+  cardEl.appendChild(snippet);
+
+  /* Wire the Read More button */
+  readMoreBtn?.addEventListener("click", () => {
+    window.location.href = "blog.html";
+  });
 }
 
 init();

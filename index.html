@@ -4,34 +4,54 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ink &amp; Crayons — teach &bull; learn &bull; love</title>
+    <meta name="description" content="Early childhood preschool resources, creative activities, and simple teaching ideas for parents and educators. Helping little learners grow and shine." />
+    <meta property="og:title" content="Ink & Crayons — teach · learn · love" />
+    <meta property="og:description" content="Early childhood preschool resources, creative activities, and simple teaching ideas for parents and educators." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="assets/ui/logo.gif" />
+    <link rel="icon" href="assets/ui/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Dancing+Script:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700&family=Caveat:wght@400;600;700&family=Patrick+Hand&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css?v=46" />
+    <link rel="stylesheet" href="style.css?v=63" />
   </head>
   <body>
+    <!-- Skip to content -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <!-- ===== WATERCOLOR BACKGROUND ===== -->
     <div class="wc-bg" aria-hidden="true"></div>
 
     <!-- ===== HEADER / NAVIGATION BAR ===== -->
     <header class="site-header">
       <div class="site-header__inner">
-        <!-- Marketplace control: wooden stand icon + animated label -->
-        <div id="marketControl" class="market-control" aria-hidden="false">
+        <!-- CTA buttons (above logo, even width) -->
+        <div class="site-header__cta">
+          <button id="ctaExplore" class="btn btn--primary btn--header-even" type="button">Explore Learning Resources</button>
+          <a href="blog.html" id="navBlogCta" class="btn btn--soft btn--header-even">Blog Posts</a>
+        </div>
+
+        <!-- Centered logo -->
+        <div class="site-header__brand">
+          <a href="/" class="site-header__logo" aria-label="Ink &amp; Crayons home">
+            <img src="assets/ui/logo.gif" alt="Ink &amp; Crayons" class="site-header__logo-img" />
+          </a>
+          <p class="site-header__tagline">teach &bull; learn &bull; love</p>
+        </div>
+
+        <!-- Marketplace control: hidden from header, triggered via sidebar -->
+        <div id="marketControl" class="market-control" aria-hidden="false" hidden>
           <button id="marketBtn" class="site-header__market-btn" aria-haspopup="true" aria-expanded="false" title="Marketplace">
             <svg width="140" height="140" viewBox="0 0 64 80" fill="none" xmlns="http://www.w3.org/2000/svg" class="market-icon" aria-hidden="true">
               <defs>
                 <pattern id="awnStrip" patternUnits="userSpaceOnUse" width="16" height="16" patternTransform="translate(0,0)">
                   <rect width="16" height="16" fill="#ffffff" />
                   <rect width="8" height="16" fill="#f7a8c4" />
-                  <!-- animate the pattern so white/pink stripes shift -->
                   <animateTransform attributeName="patternTransform" type="translate" from="0 0" to="16 0" dur="3s" repeatCount="indefinite" />
                 </pattern>
-
-                <!-- soft gradients to match site pastel palette -->
                 <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stop-color="#d6a87a"/>
                   <stop offset="100%" stop-color="#c99a72"/>
@@ -40,8 +60,6 @@
                   <stop offset="0%" stop-color="#f1d7b8"/>
                   <stop offset="100%" stop-color="#e8caa8"/>
                 </linearGradient>
-
-                <!-- subtle paper grain / watercolor texture filter -->
                 <filter id="wcFilter" x="-5%" y="-5%" width="110%" height="110%">
                   <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="n"/>
                   <feColorMatrix in="n" type="saturate" values="0" result="n2"/>
@@ -50,16 +68,11 @@
                   <feBlend in="SourceGraphic" in2="noiseMasked" mode="overlay"/>
                 </filter>
               </defs>
-              <!-- Grouped stand graphic with soft texture to blend with site style -->
               <g filter="url(#wcFilter)" class="market-graphic">
-                <!-- posts (lighter brown) with gentle gradient and subtle outline -->
                 <rect x="9" y="32" width="8" height="42" rx="1" fill="url(#woodGrad)" stroke="#000" stroke-opacity="0.18" stroke-width="0.9"/>
                 <rect x="47" y="32" width="8" height="42" rx="1" fill="url(#woodGrad)" stroke="#000" stroke-opacity="0.18" stroke-width="0.9"/>
-                <!-- counter shelf (lighter brown) enlarged and moved up so it fully covers the posts, with soft gradient -->
                 <rect x="6" y="60" width="52" height="18" rx="2" fill="url(#baseGrad)" stroke="#000" stroke-opacity="0.16" stroke-width="0.9"/>
-                <!-- striped awning (pink & white) - filled with pattern and thin outline to read like fabric -->
                 <rect x="6" y="14" width="52" height="22" rx="3" fill="url(#awnStrip)" stroke="#000" stroke-opacity="0.16" stroke-width="0.9" stroke-linejoin="round"/>
-                <!-- scalloped lower edge to mimic fabric awning (slightly overlaps the awning rect to avoid seams) -->
                 <path d="M8 33 a6 6 0 0 0 12 0 a6 6 0 0 0 12 0 a6 6 0 0 0 12 0 a6 6 0 0 0 12 0" fill="url(#awnStrip)" stroke="#000" stroke-opacity="0.16" stroke-width="0.9" stroke-linejoin="round"/>
               </g>
             </svg>
@@ -77,8 +90,9 @@
             </div>
           </div>
         </div>
-        <!-- Pill-shaped nav links -->
-        <nav class="nav-pills" aria-label="Main navigation">
+
+        <!-- Hidden nav buttons (still needed for sidebar wiring) -->
+        <nav class="nav-pills" aria-label="Main navigation" hidden>
           <div class="nav-dropdown">
             <button id="navLessons" class="btn btn--pill nav-dropdown__trigger" type="button">Education Worksheets &amp; More &#9662;</button>
             <div class="nav-dropdown__menu">
@@ -86,28 +100,14 @@
               <button class="nav-dropdown__item" data-category="cutting-pages" type="button">Cutting Pages</button>
               <button class="nav-dropdown__item" data-category="abcs" type="button">ABC's</button>
               <button class="nav-dropdown__item" data-category="number-tracing" type="button">Number Tracing</button>
-              
             </div>
           </div>
           <button id="navMilestones" class="btn btn--pill" type="button">Educational Milestones</button>
           <button id="navAbout" class="btn btn--pill" type="button">About Me</button>
         </nav>
 
-        <!-- Centered logo -->
-        <div class="site-header__brand">
-          <a href="/" class="site-header__logo" aria-label="Ink &amp; Crayons home">
-            <img src="assets/ui/logo.gif" alt="Ink &amp; Crayons" class="site-header__logo-img" />
-          </a>
-          <p class="site-header__tagline">teach &bull; learn &bull; love</p>
-        </div>
-
-        <!-- CTA buttons -->
-        <div class="site-header__cta">
-          <button id="ctaExplore" class="btn btn--primary" type="button">Explore Learning Resources</button>
-          <button id="navBlogCta" class="btn btn--soft" type="button">BLOG</button>
-        </div>
-
-        <!-- Auth avatar -->
+        <!-- Auth avatar / Sign-in button -->
+        <button id="headerSignIn" class="site-header__sign-in-btn" type="button" title="Sign In" aria-label="Sign In">Sign In</button>
         <button id="accountBtn" class="site-header__avatar-btn" type="button" title="Account" hidden aria-label="Account">
           <span id="avatarInitial" class="site-header__avatar-initial">?</span>
         </button>
@@ -115,21 +115,20 @@
       </div>
     </header>
 
+    <!-- ===== MAIN CONTENT ===== -->
+    <main id="main-content">
+
     <!-- ===== HERO SECTION ===== -->
     <section class="hero" aria-label="Welcome">
       <div class="hero__inner">
         <!-- Left: headline + copy -->
         <div class="hero__text">
           <h1 class="hero__title">
-            Helping Parents<br />
-            <span class="hero__highlight">Understand Learning</span>
+            WELCOME
           </h1>
           <p class="hero__body">
             Welcome to my early childhood preschool blog — a happy little hub made just for teachers, parents, and their growing chickadees! Here you’ll find engaging lessons, creative activities, and simple teaching ideas that make early learning feel exciting and meaningful. From literacy and math to social-emotional skills and everyday classroom routines, everything I share is designed to be developmentally appropriate and easy to use. Whether you’re in the classroom or teaching at home, this space is here to give you fresh inspiration, practical tools, and lots of encouragement as you help your chickadees learn, grow, and shine. 🌼
           </p>
-          <div class="hero__actions">
-            <button id="heroCta" class="btn btn--primary btn--lg" type="button">Get Started</button>
-          </div>
         </div>
 
         <!-- Right: illustration -->
@@ -137,6 +136,23 @@
           <img src="assets/ui/book.gif" alt="Animated book" class="hero__books" />
         </div>
 
+      </div>
+      <!-- Watercolor divider -->
+      <div class="section-divider" aria-hidden="true">
+        <img src="assets/ui/divider-watercolor.svg" alt="" />
+      </div>
+    </section>
+
+    <!-- ===== LATEST FROM THE BLOG ===== -->
+    <section class="home-blog-preview" id="homeBlogPreview" aria-label="Latest blog post">
+      <div class="home-blog-preview__inner">
+        <h2 class="section-title">Latest from the Blog</h2>
+        <div id="homeBlogCard" class="home-blog-preview__card">
+          <!-- JS fills this -->
+        </div>
+        <div class="home-blog-preview__cta">
+          <a href="blog.html" id="homeBlogReadMore" class="btn btn--primary">Read More on the Blog</a>
+        </div>
       </div>
       <!-- Watercolor divider -->
       <div class="section-divider" aria-hidden="true">
@@ -178,35 +194,64 @@
     </section>
 
     <!-- ===== STEPS SECTION ===== -->
-    <section class="steps" id="steps" aria-label="Steps to understanding your child">
+    <section class="steps" id="steps" aria-label="Teaching steps for ages 1 through 5">
       <div class="steps__inner">
-        <h2 class="section-title">Steps to Understanding Your Child</h2>
+        <h2 class="section-title">Teaching Steps for Ages 1–5</h2>
+        <p class="steps__subtitle">A simple roadmap for early childhood educators to nurture every stage of development.</p>
 
-        <div class="steps-grid">
-          <div class="step-card">
+        <div class="steps-grid steps-grid--5">
+          <div class="step-card step-card--age1">
             <img src="assets/ui/step-1.svg" alt="Step 1" class="step-card__num" />
-            <h3 class="step-card__title">Understand Your Child</h3>
+            <span class="step-card__age">Age 1</span>
+            <h3 class="step-card__title">Explore Through Senses</h3>
             <p class="step-card__text">
-              Learn how your child thinks, plays, and absorbs the world around them.
-              Recognizing their unique learning style is the first step.
+              At this stage, little ones learn by touching, tasting, and hearing.
+              Create safe sensory stations with textured materials, soft music,
+              and simple cause-and-effect toys to spark curiosity.
             </p>
           </div>
 
-          <div class="step-card">
+          <div class="step-card step-card--age2">
             <img src="assets/ui/step-2.svg" alt="Step 2" class="step-card__num" />
-            <h3 class="step-card__title">Use Simple Tools</h3>
+            <span class="step-card__age">Age 2</span>
+            <h3 class="step-card__title">Build Language &amp; Routines</h3>
             <p class="step-card__text">
-              Our lesson sheets, music, and activity guides are designed to be easy
-              for any parent to pick up — no teaching degree needed.
+              Two-year-olds are rapidly building vocabulary.
+              Use song circles, picture books, and consistent daily routines
+              to support language development and emotional security.
             </p>
           </div>
 
-          <div class="step-card">
+          <div class="step-card step-card--age3">
             <img src="assets/ui/step-3.svg" alt="Step 3" class="step-card__num" />
-            <h3 class="step-card__title">Feel Confident Again</h3>
+            <span class="step-card__age">Age 3</span>
+            <h3 class="step-card__title">Encourage Social Play</h3>
             <p class="step-card__text">
-              Watch your child light up as learning clicks — and feel the joy of
-              knowing you made it happen.
+              Three-year-olds are learning to share, take turns, and express feelings.
+              Set up small-group activities, dramatic play centers, and
+              guided art projects that foster cooperation.
+            </p>
+          </div>
+
+          <div class="step-card step-card--age4">
+            <span class="step-card__num step-card__num--text">4</span>
+            <span class="step-card__age">Age 4</span>
+            <h3 class="step-card__title">Introduce Pre-Academics</h3>
+            <p class="step-card__text">
+              Pre-K learners are ready for letter recognition, counting, and patterns.
+              Use tracing sheets, hands-on math manipulatives, and name-writing
+              practice to build school-readiness skills.
+            </p>
+          </div>
+
+          <div class="step-card step-card--age5">
+            <span class="step-card__num step-card__num--text">5</span>
+            <span class="step-card__age">Age 5</span>
+            <h3 class="step-card__title">Foster Independence</h3>
+            <p class="step-card__text">
+              Kindergarten-ready children thrive with responsibility.
+              Offer choice-based learning centers, journaling, and
+              collaborative projects that build confidence and problem-solving.
             </p>
           </div>
         </div>
@@ -218,6 +263,8 @@
       <img src="assets/ui/divider-watercolor.svg" alt="" />
     </div>
 
+    </main><!-- /main -->
+
     <!-- ===== FOOTER ===== -->
     <footer class="site-footer">
       <div class="site-footer__inner">
@@ -226,6 +273,8 @@
           <button id="footResources" class="btn btn--text" type="button">Resources</button>
           <button id="footCoaching" class="btn btn--text" type="button">Parent Coaching</button>
           <button id="footContact" class="btn btn--text" type="button">Contact</button>
+          <a href="#" class="btn btn--text">About</a>
+          <a href="#" class="btn btn--text">Privacy</a>
         </nav>
         <p class="site-footer__slogan">Teach with care. Learn with joy.</p>
         <p class="site-footer__copy">&copy; 2026 Ink &amp; Crayons. All rights reserved.</p>
@@ -435,107 +484,123 @@
       </div>
     </section>
 
-    <!-- ===== BLOG PAGE ===== -->
-    <section id="blogPage" class="blog" aria-hidden="true" aria-label="Blog">
-      <div class="blog__topbar">
-        <button id="blogClose" class="blog__back-btn" type="button" aria-label="Close articles">
-          &larr;
-        </button>
-        <h2 class="blog__topbar-title">❤ The Teacher Tribune ❤</h2>
-        <span class="blog__topbar-spacer"></span>
+    <!-- ===== PASTEL SIDEBAR ===== -->
+    <aside id="pastelSidebar" class="pastel-sidebar" aria-label="Quick links">
+      <!-- Toggle tab -->
+      <button id="sidebarToggle" class="pastel-sidebar__toggle" type="button" aria-label="Toggle sidebar" title="Toggle sidebar">
+        <!-- Crayon icon on the tab -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="2" width="12" height="20" rx="2" fill="#f7a8c4" stroke="#d4608a" stroke-width="1"/>
+          <rect x="8" y="2" width="8" height="5" rx="1" fill="#d4608a" opacity="0.5"/>
+          <polygon points="9,22 15,22 12,26" fill="#f7a8c4" stroke="#d4608a" stroke-width="0.8"/>
+        </svg>
+      </button>
+
+      <div class="pastel-sidebar__inner">
+        <!-- Decorative crayons at top -->
+        <div class="pastel-sidebar__crayons" aria-hidden="true">
+          <svg class="crayon crayon--pink" width="16" height="70" viewBox="0 0 16 70"><rect x="2" y="10" width="12" height="48" rx="2" fill="#f7a8c4"/><rect x="3" y="10" width="10" height="10" rx="1" fill="#d4608a" opacity="0.45"/><polygon points="4,58 12,58 8,68" fill="#f7a8c4"/><rect x="2" y="4" width="12" height="8" rx="2" fill="#f9c4d8"/></svg>
+          <svg class="crayon crayon--purple" width="16" height="70" viewBox="0 0 16 70"><rect x="2" y="10" width="12" height="48" rx="2" fill="#c9a8f7"/><rect x="3" y="10" width="10" height="10" rx="1" fill="#7a5abf" opacity="0.45"/><polygon points="4,58 12,58 8,68" fill="#c9a8f7"/><rect x="2" y="4" width="12" height="8" rx="2" fill="#dcc8fb"/></svg>
+          <svg class="crayon crayon--yellow" width="16" height="70" viewBox="0 0 16 70"><rect x="2" y="10" width="12" height="48" rx="2" fill="#fce68a"/><rect x="3" y="10" width="10" height="10" rx="1" fill="#b8a030" opacity="0.45"/><polygon points="4,58 12,58 8,68" fill="#fce68a"/><rect x="2" y="4" width="12" height="8" rx="2" fill="#fef3c0"/></svg>
+          <svg class="crayon crayon--blue" width="16" height="70" viewBox="0 0 16 70"><rect x="2" y="10" width="12" height="48" rx="2" fill="#a8d4f7"/><rect x="3" y="10" width="10" height="10" rx="1" fill="#5a9abf" opacity="0.45"/><polygon points="4,58 12,58 8,68" fill="#a8d4f7"/><rect x="2" y="4" width="12" height="8" rx="2" fill="#c8e4fb"/></svg>
+          <svg class="crayon crayon--mint" width="16" height="70" viewBox="0 0 16 70"><rect x="2" y="10" width="12" height="48" rx="2" fill="#a8f7c9"/><rect x="3" y="10" width="10" height="10" rx="1" fill="#5abf7a" opacity="0.45"/><polygon points="4,58 12,58 8,68" fill="#a8f7c9"/><rect x="2" y="4" width="12" height="8" rx="2" fill="#c8fbd8"/></svg>
+          <svg class="crayon crayon--peach" width="16" height="70" viewBox="0 0 16 70"><rect x="2" y="10" width="12" height="48" rx="2" fill="#f0b48c"/><rect x="3" y="10" width="10" height="10" rx="1" fill="#c07840" opacity="0.45"/><polygon points="4,58 12,58 8,68" fill="#f0b48c"/><rect x="2" y="4" width="12" height="8" rx="2" fill="#f8d4b8"/></svg>
+        </div>
+
+        <h3 class="pastel-sidebar__title">Quick Links</h3>
+
+        <!-- Sidebar nav buttons -->
+        <nav class="pastel-sidebar__nav">
+          <button class="pastel-sidebar__btn pastel-sidebar__btn--pink" id="sidebarWorksheets" type="button">
+            <span class="pastel-sidebar__btn-icon">📝</span>
+            <span class="pastel-sidebar__btn-text">Educational Worksheets &amp; More</span>
+          </button>
+
+          <button class="pastel-sidebar__btn pastel-sidebar__btn--purple" id="sidebarAbout" type="button">
+            <span class="pastel-sidebar__btn-icon">👋</span>
+            <span class="pastel-sidebar__btn-text">About Me</span>
+          </button>
+
+          <button class="pastel-sidebar__btn pastel-sidebar__btn--blue" id="sidebarMilestones" type="button">
+            <span class="pastel-sidebar__btn-icon">🌟</span>
+            <span class="pastel-sidebar__btn-text">Educational Milestones</span>
+          </button>
+
+          <button class="pastel-sidebar__btn pastel-sidebar__btn--yellow" id="sidebarAmazon" type="button">
+            <span class="pastel-sidebar__btn-icon">🛒</span>
+            <span class="pastel-sidebar__btn-text">Amazon Shop</span>
+          </button>
+
+          <button class="pastel-sidebar__btn pastel-sidebar__btn--mint" id="sidebarFreebies" type="button">
+            <span class="pastel-sidebar__btn-icon">🎁</span>
+            <span class="pastel-sidebar__btn-text">Freebies</span>
+          </button>
+
+          <button class="pastel-sidebar__btn pastel-sidebar__btn--peach" id="sidebarTPT" type="button">
+            <span class="pastel-sidebar__btn-icon pastel-sidebar__btn-icon--market">
+              <svg width="22" height="22" viewBox="0 0 64 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <pattern id="awnStripSb" patternUnits="userSpaceOnUse" width="16" height="16">
+                    <rect width="16" height="16" fill="#fff"/>
+                    <rect width="8" height="16" fill="#f7a8c4"/>
+                    <animateTransform attributeName="patternTransform" type="translate" from="0 0" to="16 0" dur="3s" repeatCount="indefinite"/>
+                  </pattern>
+                </defs>
+                <rect x="9" y="32" width="8" height="42" rx="1" fill="#d6a87a"/>
+                <rect x="47" y="32" width="8" height="42" rx="1" fill="#d6a87a"/>
+                <rect x="6" y="60" width="52" height="18" rx="2" fill="#f1d7b8"/>
+                <rect x="6" y="14" width="52" height="22" rx="3" fill="url(#awnStripSb)"/>
+                <path d="M8 33 a6 6 0 0 0 12 0 a6 6 0 0 0 12 0 a6 6 0 0 0 12 0 a6 6 0 0 0 12 0" fill="url(#awnStripSb)"/>
+              </svg>
+            </span>
+            <span class="pastel-sidebar__btn-text">Teachers Pay Teachers</span>
+          </button>
+        </nav>
+
+        <!-- Bottom decorative crayon scribble -->
+        <div class="pastel-sidebar__scribble" aria-hidden="true">
+          <svg width="140" height="30" viewBox="0 0 140 30" fill="none">
+            <path d="M10 20 Q30 5 50 18 T90 12 T130 20" stroke="#f7a8c4" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.5"/>
+            <path d="M10 24 Q40 10 70 22 T130 16" stroke="#c9a8f7" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.4"/>
+            <path d="M15 15 Q45 28 75 10 T125 22" stroke="#a8d4f7" stroke-width="1.8" fill="none" stroke-linecap="round" opacity="0.35"/>
+          </svg>
+        </div>
       </div>
+    </aside>
 
-      <div class="blog__feed-layout">
-        <!-- Composer — only visible to admin / designated writers -->
-        <div class="blog__composer-card" style="display:none">
-          <div class="blog__composer-avatar">&#9998;</div>
-          <form id="blogForm" class="blog__composer-form">
-            <input id="postTitle" name="postTitle" type="text" maxlength="120" required placeholder="Article title..." class="blog__composer-title" />
-            <textarea id="postBody" name="postBody" rows="4" required placeholder="Write your article..." class="blog__composer-body"></textarea>
-            <div class="blog__composer-footer">
-              <small id="blogStatus" class="blog__status"></small>
-              <button id="postSubmit" type="submit" class="btn btn--primary blog__share-btn">Publish</button>
-            </div>
-          </form>
-        </div>
-
-        <!-- Newspaper-style layout: main article + sidebar -->
-        <div class="blog__newspaper-layout">
-          <!-- Main feature article -->
-          <div class="blog__main-article">
-            <div id="blogPosts" class="blog__feed"></div>
-          </div>
-          
-          <!-- Related articles sidebar -->
-          <aside class="blog__sidebar">
-            <div id="blogRelated" class="blog__related-list"></div>
-          </aside>
-        </div>
-      </div>
-
-      <!-- Admin panel slides out from bottom -->
-      <section id="adminPanel" class="admin" aria-hidden="true" aria-label="Admin controls">
-        <div class="admin__header">
-          <h3>Admin Panel</h3>
-          <span class="admin__badge">Admin</span>
-        </div>
-
-        <details class="admin__section">
-          <summary>Manage Article Writers</summary>
-          <p style="font-size:0.85rem;color:#666;margin:8px 0 12px;">Grant users permission to publish articles. Enter their username below.</p>
-          <form id="adminWriterForm" class="admin__form">
-            <label for="adminWriterUsername">Username</label>
-            <input id="adminWriterUsername" type="text" maxlength="20" required placeholder="e.g. ms_rivera" />
-            <div style="display:flex;gap:8px;">
-              <button type="submit" class="btn btn--primary">Add Writer</button>
-              <button type="button" id="adminRemoveWriter" class="btn btn--soft">Remove Writer</button>
-            </div>
-          </form>
-          <div id="writersList" style="margin-top:10px;font-size:0.82rem;color:#555;"></div>
-        </details>
-
-        <details class="admin__section">
-          <summary>Add Announcement</summary>
-          <form id="adminAnnouncementForm" class="admin__form">
-            <label for="adminAnnouncementTitle">Title</label>
-            <input id="adminAnnouncementTitle" type="text" maxlength="80" required />
-            <label for="adminAnnouncementMessage">Message</label>
-            <textarea id="adminAnnouncementMessage" rows="3" required></textarea>
-            <button type="submit" class="btn btn--primary">Save Announcement</button>
-          </form>
-        </details>
-
-        <details class="admin__section">
-          <summary>Add Resource Link</summary>
-          <form id="adminResourceForm" class="admin__form">
-            <label for="adminResourceTitle">Title</label>
-            <input id="adminResourceTitle" type="text" maxlength="80" required />
-            <label for="adminResourceDesc">Description</label>
-            <textarea id="adminResourceDesc" rows="2" required></textarea>
-            <label for="adminResourceUrl">URL</label>
-            <input id="adminResourceUrl" type="url" required />
-            <button type="submit" class="btn btn--primary">Save Resource</button>
-          </form>
-        </details>
-
-        <details class="admin__section">
-          <summary>Add Shop Item</summary>
-          <form id="adminShopForm" class="admin__form">
-            <label for="adminShopTitle">Title</label>
-            <input id="adminShopTitle" type="text" maxlength="80" required />
-            <label for="adminShopDesc">Description</label>
-            <textarea id="adminShopDesc" rows="2" required></textarea>
-            <label for="adminShopPrice">Price</label>
-            <input id="adminShopPrice" type="text" maxlength="20" required />
-            <label for="adminShopUrl">URL</label>
-            <input id="adminShopUrl" type="url" required />
-            <button type="submit" class="btn btn--primary">Save Shop Item</button>
-          </form>
-        </details>
-
-        <small id="adminStatus" class="admin__status" aria-live="polite"></small>
-      </section>
-    </section>
+    <script>
+      // Sidebar: start open, toggle to close/open
+      (function(){
+        const sidebar = document.getElementById('pastelSidebar');
+        const toggle  = document.getElementById('sidebarToggle');
+        // Start open by default
+        if(sidebar) sidebar.classList.add('open');
+        if(sidebar && toggle){
+          toggle.addEventListener('click', function(){
+            sidebar.classList.toggle('open');
+          });
+        }
+        // Wire sidebar buttons to existing nav actions
+        const map = {
+          sidebarWorksheets: 'navLessons',
+          sidebarAbout:      'navAbout',
+          sidebarMilestones: 'navMilestones',
+          sidebarAmazon:     'marketBtn',
+          sidebarFreebies:   'ctaExplore',
+          sidebarTPT:        'marketBtn'
+        };
+        Object.entries(map).forEach(function([sbId, targetId]){
+          var sbBtn = document.getElementById(sbId);
+          var target = document.getElementById(targetId);
+          if(sbBtn && target){
+            sbBtn.addEventListener('click', function(){
+              target.click();
+              if(window.innerWidth < 900) sidebar.classList.remove('open');
+            });
+          }
+        });
+      })();
+    </script>
 
     <script>
       (function(){
@@ -577,6 +642,6 @@
         document.addEventListener('keydown', function(e){ if (e.key === 'Escape') showMenu(false); });
       })();
     </script>
-    <script type="module" src="game.js?v=40"></script>
+    <script type="module" src="game.js?v=48"></script>
   </body>
 </html>

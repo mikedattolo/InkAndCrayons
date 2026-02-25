@@ -70,9 +70,7 @@ export function createAuthGate({
 
   onAuthStateChanged((user) => {
     setStatus(user);
-    if (!user) {
-      setGateOpen(true);
-    }
+    // Don't auto-open the gate — allow public browsing
   });
 
   return {
