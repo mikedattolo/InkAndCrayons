@@ -1,77 +1,82 @@
-const POSTS_KEY = "lrl_posts";
-const COMMENTS_KEY = "lrl_comments";
-const DELETED_POSTS_KEY = "lrl_deleted_posts";
-const LIKES_KEY = "lrl_likes";
-const WRITERS_KEY = "lrl_writers"; // usernames allowed to post articles
-const SEED_VERSION_KEY = "lrl_posts_seed_version";
-const SEED_VERSION = "2026-02-16-3";
+import {
+  createComment,
+  createPost,
+  fetchComments,
+  fetchLikes,
+  fetchPosts,
+  listWriters,
+  patchPost,
+  removePost,
+  setWriterRole,
+  toggleLike,
+} from "../services/blogService.js";
+import { LEGACY_STORAGE_KEYS } from "../services/localStorageMigration.js";
+import { sanitizeMultiline, sanitizeSingleLine } from "../utils/validation.js";
 
-/* --- Content moderation (family-friendly filter) --- */
-/*
- * Strategy:
- *   1. Minimal deny-list of generic non-offensive "junk" words only.
- *      NO slurs, hate speech, or sensitive terms are stored in code.
- *   2. Block raw URLs in user-generated comments (reduce spam/phishing).
- *   3. Throttle posting: one comment per 15 seconds per user.
- *   4. First-time poster comments are flagged for admin review (TODO with backend).
- *   5. "Report" button on each comment lets community flag content.
- *
- * For production, integrate a cloud moderation API (e.g., Perspective API,
- * Azure Content Safety) rather than maintaining a word list.
- */
 const BLOCKED_PATTERNS = [
-  /https?:\/\/\S+/gi,            // block raw URLs in comments
-  /\b(spam|buy\s*now|click\s*here)\b/gi,  // common spam phrases
+  /https?:\/\/\S+/gi,
+  /\b(spam|buy\s*now|click\s*here)\b/gi,
 ];
 
-/** Rate-limit tracker: userId → last post timestamp */
 const _postTimestamps = new Map();
-const POST_COOLDOWN_MS = 15_000; // 15 seconds
+const POST_COOLDOWN_MS = 15_000;
 
-function readJson(key, fallback) {
+const ARCHIVE_PAGE_SIZE = 4;
+let _archivePage = 0;
+let _searchQuery = "";
+
+function readLegacyJson(key, fallback) {
   const raw = localStorage.getItem(key);
   if (!raw) return fallback;
   try {
     return JSON.parse(raw);
-  } catch (error) {
-    console.warn("Blog data corrupted, resetting.");
+  } catch {
     return fallback;
   }
 }
 
-function writeJson(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
+function loadLegacyLocalPostsFallback() {
+  const legacyPosts = readLegacyJson("lrl_posts", []);
+  const deletedIds = new Set(readLegacyJson("lrl_deleted_posts", []));
+  return (legacyPosts || [])
+    .filter((post) => !deletedIds.has(post.id))
+    .map((post, index) => ({
+      id: post.id || `legacy_${index}`,
+      title: sanitizeSingleLine(post.title || "Untitled", 200),
+      body: sanitizeMultiline(String(post.body || ""), 20000),
+      author: sanitizeSingleLine(post.author || "Legacy User", 80),
+      category: sanitizeSingleLine(post.category || "all", 60) || "all",
+      createdAt: post.createdAt || post.date || new Date().toISOString(),
+      date: post.date || post.createdAt || new Date().toISOString(),
+      source: "legacy-local",
+    }));
 }
 
-function escapeHtml(text) {
-  const map = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;",
-  };
-  return text.replace(/[&<>"']/g, (char) => map[char]);
+function loadLegacyCommentMap() {
+  const map = readLegacyJson("lrl_comments", {});
+  const normalized = {};
+  Object.entries(map || {}).forEach(([postId, comments]) => {
+    normalized[postId] = (comments || []).map((comment) => ({
+      id: comment.id || `${postId}_${Date.now()}`,
+      postId,
+      author: sanitizeSingleLine(comment.author || "Legacy User", 80),
+      body: sanitizeMultiline(String(comment.body || ""), 2000),
+      createdAt: comment.createdAt || new Date().toISOString(),
+    }));
+  });
+  return normalized;
 }
 
-function renderMarkdown(text) {
-  /* Check if text is already HTML (contains HTML tags) */
-  if (/<[a-z]|<\/[a-z]/i.test(text)) {
-    /* Already HTML, don't process with markdown */
-    return text;
-  }
-  
-  /* Process as markdown */
-  let safe = escapeHtml(text);
-  safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  safe = safe.replace(/\*(.+?)\*/g, "<em>$1</em>");
-  safe = safe.replace(/`(.+?)`/g, "<code>$1</code>");
-  safe = safe.replace(
-    /(https?:\/\/[^\s]+)/g,
-    '<a href="$1" target="_blank" rel="noreferrer">$1</a>'
-  );
-  safe = safe.replace(/\n/g, "<br />");
-  return safe;
+function loadLegacyLikesMap() {
+  const map = readLegacyJson("lrl_likes", {});
+  const normalized = {};
+  Object.entries(map || {}).forEach(([postId, likes]) => {
+    normalized[postId] = {
+      count: Number(likes?.count || 0),
+      users: Array.isArray(likes?.users) ? likes.users : [],
+    };
+  });
+  return normalized;
 }
 
 function sanitize(text) {
@@ -82,7 +87,6 @@ function sanitize(text) {
   return safe;
 }
 
-/** Check rate limit — returns true if user can post */
 function canPostNow(userId) {
   const last = _postTimestamps.get(userId);
   if (last && Date.now() - last < POST_COOLDOWN_MS) return false;
@@ -90,33 +94,6 @@ function canPostNow(userId) {
   return true;
 }
 
-/** Check if a user is allowed to publish articles */
-function canPost(userObj) {
-  if (!userObj) return false;
-  if (userObj.role === "admin") return true;
-  const writers = readJson(WRITERS_KEY, []);
-  return writers.includes(userObj.username);
-}
-
-/** Admin can grant/revoke writer privileges */
-export function addWriter(username) {
-  const writers = readJson(WRITERS_KEY, []);
-  if (!writers.includes(username)) {
-    writers.push(username);
-    writeJson(WRITERS_KEY, writers);
-  }
-}
-
-export function removeWriter(username) {
-  const writers = readJson(WRITERS_KEY, []).filter((w) => w !== username);
-  writeJson(WRITERS_KEY, writers);
-}
-
-export function getWriters() {
-  return readJson(WRITERS_KEY, []);
-}
-
-/* ---- Helpers ---- */
 function timeAgo(dateStr) {
   if (!dateStr) return "";
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -133,84 +110,159 @@ function timeAgo(dateStr) {
   return new Date(dateStr).toLocaleDateString();
 }
 
-function getInitials(name) {
-  if (!name) return "?";
-  return name
-    .split(/\s+/)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-function loadLikes() {
-  return readJson(LIKES_KEY, {});
-}
-function saveLikes(map) {
-  writeJson(LIKES_KEY, map);
+function roleCanPublish(userObj) {
+  return userObj?.role === "admin" || userObj?.role === "writer";
 }
 
-/* ---- Data layer ---- */
-export async function loadPosts() {
-  const currentSeed = localStorage.getItem(SEED_VERSION_KEY);
-  if (currentSeed !== SEED_VERSION) {
-    localStorage.removeItem(POSTS_KEY);
-    localStorage.removeItem(DELETED_POSTS_KEY);
-    localStorage.setItem(SEED_VERSION_KEY, SEED_VERSION);
-  }
-
-  const response = await fetch("data/posts.json?v=" + SEED_VERSION);
-  const data = await response.json();
-  const stored = readJson(POSTS_KEY, []);
-  const deleted = new Set(readJson(DELETED_POSTS_KEY, []));
-
-  const combined = [...stored, ...(data.posts || [])].map((post, index) => {
-    let p = post.id ? post : { ...post, id: `builtin_${index}` };
-    /* Ensure all posts have a category */
-    if (!p.category) p.category = "all";
-    return p;
-  });
-
-  return combined.filter((post) => !deleted.has(post.id));
-}
-
-function savePost(post) {
-  const posts = readJson(POSTS_KEY, []);
-  posts.unshift(post);
-  writeJson(POSTS_KEY, posts);
-}
-
-export function updatePost(postId, updates) {
-  /* Update in localStorage stored posts */
-  const posts = readJson(POSTS_KEY, []);
-  const idx = posts.findIndex(p => p.id === postId);
-  if (idx >= 0) {
-    Object.assign(posts[idx], updates, { updatedAt: new Date().toISOString() });
-    writeJson(POSTS_KEY, posts);
-    return true;
-  }
-  /* If it's a seed post, copy to stored posts with the update */
+function roleCanManagePost(userObj, post) {
+  if (!userObj || !post) return false;
+  if (userObj.role === "admin") return true;
+  if (userObj.role === "writer" && post.authorId && post.authorId === userObj.id) return true;
   return false;
 }
 
-function deletePost(postId) {
-  const posts = readJson(POSTS_KEY, []).filter((p) => p.id !== postId);
-  writeJson(POSTS_KEY, posts);
-
-  const deleted = new Set(readJson(DELETED_POSTS_KEY, []));
-  deleted.add(postId);
-  writeJson(DELETED_POSTS_KEY, Array.from(deleted));
+function stripMarkupToText(text) {
+  return String(text || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 }
 
-function loadComments() {
-  return readJson(COMMENTS_KEY, {});
+function appendInlineFormatted(container, text) {
+  const source = String(text || "");
+  const tokenRegex = /(https?:\/\/[^\s]+|\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g;
+  let cursor = 0;
+
+  for (const match of source.matchAll(tokenRegex)) {
+    const token = match[0];
+    const index = match.index || 0;
+
+    if (index > cursor) {
+      container.appendChild(document.createTextNode(source.slice(cursor, index)));
+    }
+
+    if (token.startsWith("http://") || token.startsWith("https://")) {
+      const link = document.createElement("a");
+      link.href = token;
+      link.target = "_blank";
+      link.rel = "noreferrer";
+      link.textContent = token;
+      container.appendChild(link);
+    } else if (token.startsWith("**") && token.endsWith("**")) {
+      const strong = document.createElement("strong");
+      strong.textContent = token.slice(2, -2);
+      container.appendChild(strong);
+    } else if (token.startsWith("*") && token.endsWith("*")) {
+      const em = document.createElement("em");
+      em.textContent = token.slice(1, -1);
+      container.appendChild(em);
+    } else if (token.startsWith("`") && token.endsWith("`")) {
+      const code = document.createElement("code");
+      code.textContent = token.slice(1, -1);
+      container.appendChild(code);
+    } else {
+      container.appendChild(document.createTextNode(token));
+    }
+
+    cursor = index + token.length;
+  }
+
+  if (cursor < source.length) {
+    container.appendChild(document.createTextNode(source.slice(cursor)));
+  }
 }
 
-function saveComments(map) {
-  writeJson(COMMENTS_KEY, map);
+function renderRichText(container, rawText) {
+  container.textContent = "";
+  const source = sanitizeMultiline(rawText || "", 20000);
+  const paragraphs = source.split(/\n{2,}/).filter(Boolean);
+
+  if (!paragraphs.length) {
+    const p = document.createElement("p");
+    p.textContent = "";
+    container.appendChild(p);
+    return;
+  }
+
+  paragraphs.forEach((paragraph) => {
+    const p = document.createElement("p");
+    const lines = paragraph.split("\n");
+
+    lines.forEach((line, index) => {
+      appendInlineFormatted(p, line);
+      if (index < lines.length - 1) {
+        p.appendChild(document.createElement("br"));
+      }
+    });
+
+    container.appendChild(p);
+  });
 }
 
-/* ---- UI ---- */
+async function loadSeedPostsFallback() {
+  try {
+    const response = await fetch("./data/posts.json");
+    if (!response.ok) return [];
+    const data = await response.json();
+    return (data.posts || []).map((post, index) => ({
+      id: `seed_${index}`,
+      title: post.title,
+      body: stripMarkupToText(post.body),
+      author: post.author || "Ink & Crayons Team",
+      category: post.category || "all",
+      createdAt: post.date || new Date().toISOString(),
+      date: post.date || new Date().toISOString(),
+      source: "seed",
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export async function loadPosts() {
+  const result = await fetchPosts();
+
+  // TEMPORARY MIGRATION FALLBACK:
+  // Keep reading legacy localStorage posts until migration is verified complete.
+  // localStorage is origin-bound; changing domain/origin will not transfer this data automatically.
+  const legacyLocal = loadLegacyLocalPostsFallback();
+
+  if (result.error) {
+    if (legacyLocal.length) return legacyLocal;
+    const seed = await loadSeedPostsFallback();
+    return seed;
+  }
+
+  if (!result.data.length) {
+    if (legacyLocal.length) return legacyLocal;
+    return loadSeedPostsFallback();
+  }
+
+  return result.data;
+}
+
+export async function updatePost(postId, updates) {
+  if (!postId || String(postId).startsWith("seed_")) return false;
+  const result = await patchPost(postId, updates);
+  return !result.error;
+}
+
+export async function addWriter(username) {
+  return setWriterRole(username, true);
+}
+
+export async function removeWriter(username) {
+  return setWriterRole(username, false);
+}
+
+export async function getWriters() {
+  const result = await listWriters();
+  return result.data || [];
+}
+
 export function createBlogUI({
   postsContainer,
   formEl,
@@ -223,59 +275,97 @@ export function createBlogUI({
   let posts = [];
   let user = currentUser;
   let currentCategory = "all";
+  let commentsMap = {};
+  let likesMap = {};
+  let pending = false;
+  const MIGRATION_KEYS = LEGACY_STORAGE_KEYS;
 
   function setUser(nextUser) {
     user = nextUser;
   }
 
-  /* ---------- render ---------- */
-  function render() {
-    postsContainer.innerHTML = "";
-    const comments = loadComments();
-    const likes = loadLikes();
-
-    /* Show/hide the composer based on write privileges */
-    const composerCard = formEl.closest(".blog__composer-card");
-    if (composerCard) {
-      composerCard.style.display = canPost(user) ? "flex" : "none";
+  async function hydratePostState() {
+    const hasLegacyPostsLoaded = posts.some((post) => post.source === "legacy-local");
+    if (hasLegacyPostsLoaded) {
+      commentsMap = loadLegacyCommentMap();
+      likesMap = loadLegacyLikesMap();
+      return;
     }
 
-    /* Filter posts by category */
+    const postIds = posts.map((post) => post.id);
+    const [commentsResult, likesResult] = await Promise.all([
+      fetchComments(postIds),
+      fetchLikes(postIds, user?.id || null),
+    ]);
+
+    commentsMap = {};
+    (commentsResult.data || []).forEach((comment) => {
+      if (!commentsMap[comment.postId]) commentsMap[comment.postId] = [];
+      commentsMap[comment.postId].push(comment);
+    });
+
+    likesMap = likesResult.data || {};
+  }
+
+  function filteredPosts() {
     let categoryPosts = posts;
     if (currentCategory !== "all") {
-      categoryPosts = posts.filter(post => post.category === currentCategory);
+      categoryPosts = posts.filter((post) => post.category === currentCategory);
     }
 
-    /* Filter out the welcome post and get posts for display */
-    let filteredPosts = categoryPosts.filter(post => post.title !== "Welcome to Ink & Crayons Articles");
+    let list = categoryPosts.filter((post) => post.title !== "Welcome to Ink & Crayons Articles");
 
-    /* Apply search filter */
     if (_searchQuery) {
       const q = _searchQuery.toLowerCase();
-      filteredPosts = filteredPosts.filter(p => {
-        const plain = p.body.replace(/<[^>]+>/g, " ").toLowerCase();
-        return p.title.toLowerCase().includes(q) || plain.includes(q) || (p.author || "").toLowerCase().includes(q);
+      list = list.filter((p) => {
+        const plain = stripMarkupToText(p.body).toLowerCase();
+        return (
+          String(p.title || "").toLowerCase().includes(q) ||
+          plain.includes(q) ||
+          String(p.author || "").toLowerCase().includes(q)
+        );
       });
     }
-    
-    /* Show only the first post (most recent) in main feed */
-    const mainPost = filteredPosts.length > 0 ? [filteredPosts[0]] : [];
-    const relatedPosts = filteredPosts.length > 1 ? filteredPosts.slice(1) : [];
 
-    /* Show "no results" if search is active and nothing matched */
-    if (_searchQuery && filteredPosts.length === 0) {
+    return list;
+  }
+
+  async function render() {
+    if (pending) return;
+    pending = true;
+    statusEl.textContent = "Loading...";
+
+    await hydratePostState();
+
+    postsContainer.textContent = "";
+    const composerCard = formEl.closest(".blog__composer-card");
+    if (composerCard) {
+      composerCard.style.display = roleCanPublish(user) ? "flex" : "none";
+    }
+
+    const filtered = filteredPosts();
+    const mainPost = filtered.length ? [filtered[0]] : [];
+
+    if (_searchQuery && filtered.length === 0) {
       const noResults = document.createElement("div");
       noResults.className = "blog__no-results";
-      noResults.innerHTML = `<p style="text-align:center;padding:40px 20px;font-family:var(--font-hand);font-size:1.3rem;color:#888;">No articles match "<strong>${_searchQuery}</strong>"</p>`;
+
+      const p = document.createElement("p");
+      p.style.textAlign = "center";
+      p.style.padding = "40px 20px";
+      p.style.fontFamily = "var(--font-hand)";
+      p.style.fontSize = "1.3rem";
+      p.style.color = "#888";
+      p.textContent = `No articles match \"${_searchQuery}\"`;
+
+      noResults.appendChild(p);
       postsContainer.appendChild(noResults);
     }
-    
-    /* Render main featured article */
+
     mainPost.forEach((post) => {
       const card = document.createElement("article");
       card.className = "post";
 
-      /* -- Flipbook newspaper layout -- */
       const sheet = document.createElement("div");
       sheet.className = "post__sheet";
 
@@ -286,12 +376,9 @@ export function createBlogUI({
       masthead.className = "post__masthead";
       masthead.textContent = "Ink & Crayons Journal";
 
-      if (post.title) {
-        const titleEl = document.createElement("h3");
-        titleEl.className = "post__title";
-        titleEl.textContent = post.title;
-        page.appendChild(titleEl);
-      }
+      const titleEl = document.createElement("h3");
+      titleEl.className = "post__title";
+      titleEl.textContent = post.title || "Untitled";
 
       const meta = document.createElement("div");
       meta.className = "post__meta";
@@ -300,59 +387,52 @@ export function createBlogUI({
       authorEl.textContent = post.author || "Anonymous";
       const timeEl = document.createElement("span");
       timeEl.className = "post__time";
-      timeEl.textContent = timeAgo(post.createdAt);
-      meta.appendChild(authorEl);
-      if (timeEl.textContent) {
-        meta.appendChild(timeEl);
-      }
+      timeEl.textContent = timeAgo(post.createdAt || post.date);
+      meta.append(authorEl);
+      if (timeEl.textContent) meta.append(timeEl);
 
       const textEl = document.createElement("div");
       textEl.className = "post__text";
-      textEl.innerHTML = renderMarkdown(post.body);
+      renderRichText(textEl, post.body);
 
-      page.prepend(masthead, meta);
-      page.appendChild(textEl);
+      page.append(masthead, titleEl, meta, textEl);
       sheet.appendChild(page);
 
-      /* -- Action bar: like, comment toggle, delete -- */
       const actionBar = document.createElement("div");
       actionBar.className = "post__action-bar";
 
-      const postLikes = likes[post.id] || { count: 0, users: [] };
-      const isLiked = user && postLikes.users.includes(user.username);
+      const postLikes = likesMap[post.id] || { count: 0, users: [] };
+      const isLiked = Boolean(
+        user && (postLikes.users.includes(user.id) || postLikes.users.includes(user.username))
+      );
 
       const likeBtn = document.createElement("button");
-      likeBtn.className = "post__action-btn" + (isLiked ? " liked" : "");
       likeBtn.type = "button";
-      likeBtn.innerHTML = `${isLiked ? "\u2764" : "\u2661"} <span class="action-count">${postLikes.count || ""}</span>`;
-      likeBtn.addEventListener("click", () => {
-        if (!user) return;
-        const allLikes = loadLikes();
-        const pl = allLikes[post.id] || { count: 0, users: [] };
-        const idx = pl.users.indexOf(user.username);
-        if (idx >= 0) {
-          pl.users.splice(idx, 1);
-          pl.count = Math.max(0, pl.count - 1);
-        } else {
-          pl.users.push(user.username);
-          pl.count = (pl.count || 0) + 1;
-        }
-        allLikes[post.id] = pl;
-        saveLikes(allLikes);
-        render();
+      likeBtn.className = "post__action-btn" + (isLiked ? " liked" : "");
+      likeBtn.appendChild(document.createTextNode(isLiked ? "❤ " : "♡ "));
+      const likeCount = document.createElement("span");
+      likeCount.className = "action-count";
+      likeCount.textContent = postLikes.count ? String(postLikes.count) : "";
+      likeBtn.appendChild(likeCount);
+      likeBtn.addEventListener("click", async () => {
+        if (!user || post.source === "seed" || post.source === "legacy-local") return;
+        await toggleLike(post.id, user.id);
+        await render();
       });
 
-      const postComments = comments[post.id] || [];
-
+      const postComments = commentsMap[post.id] || [];
       const commentToggle = document.createElement("button");
       commentToggle.className = "post__action-btn";
       commentToggle.type = "button";
-      commentToggle.innerHTML = `\uD83D\uDCAC <span class="action-count">${postComments.length || ""}</span>`;
+      commentToggle.appendChild(document.createTextNode("💬 "));
+      const commentCount = document.createElement("span");
+      commentCount.className = "action-count";
+      commentCount.textContent = postComments.length ? String(postComments.length) : "";
+      commentToggle.appendChild(commentCount);
 
       actionBar.append(likeBtn, commentToggle);
 
-      if (user?.role === "admin") {
-        /* ── Admin action buttons (edit + delete) ── */
+      if (roleCanManagePost(user, post) && post.source !== "seed" && post.source !== "legacy-local") {
         const adminGroup = document.createElement("div");
         adminGroup.className = "post__admin-actions";
 
@@ -360,7 +440,7 @@ export function createBlogUI({
         editBtn.type = "button";
         editBtn.className = "post__admin-btn post__admin-btn--edit";
         editBtn.title = "Edit article";
-        editBtn.innerHTML = "&#9998; Edit";
+        editBtn.textContent = "✎ Edit";
         editBtn.addEventListener("click", () => {
           if (typeof onEditPost === "function") onEditPost(post);
         });
@@ -369,40 +449,45 @@ export function createBlogUI({
         deleteBtn.type = "button";
         deleteBtn.className = "post__admin-btn post__admin-btn--delete";
         deleteBtn.title = "Delete article";
-        deleteBtn.innerHTML = "&#128465; Delete";
-        deleteBtn.addEventListener("click", () => {
-          if (!confirm(`Delete "${post.title}"? This cannot be undone.`)) return;
-          deletePost(post.id);
-          loadPosts().then((data) => {
-            posts = data;
-            render();
-          });
+        deleteBtn.textContent = "🗑 Delete";
+        deleteBtn.addEventListener("click", async () => {
+          if (!confirm(`Delete \"${post.title}\"? This cannot be undone.`)) return;
+          const result = await removePost(post.id);
+          if (result.error) {
+            statusEl.textContent = result.error;
+            return;
+          }
+          posts = await loadPosts();
+          await render();
         });
 
         adminGroup.append(editBtn, deleteBtn);
         actionBar.appendChild(adminGroup);
       }
 
-      /* -- Like count line -- */
       let likeLine = null;
       if (postLikes.count > 0) {
         likeLine = document.createElement("div");
-        likeLine.style.cssText =
-          "padding:0 16px 4px;font-size:0.82rem;font-weight:700;color:#333;";
+        likeLine.style.padding = "0 16px 4px";
+        likeLine.style.fontSize = "0.82rem";
+        likeLine.style.fontWeight = "700";
+        likeLine.style.color = "#333";
         likeLine.textContent = `${postLikes.count} like${postLikes.count !== 1 ? "s" : ""}`;
       }
 
-      /* -- "View all N comments" -- */
       let viewAllBtn = null;
       if (postComments.length > 0) {
         viewAllBtn = document.createElement("button");
         viewAllBtn.type = "button";
-        viewAllBtn.style.cssText =
-          "background:none;border:none;padding:0 16px 6px;font-size:0.82rem;color:#999;cursor:pointer;";
+        viewAllBtn.style.background = "none";
+        viewAllBtn.style.border = "none";
+        viewAllBtn.style.padding = "0 16px 6px";
+        viewAllBtn.style.fontSize = "0.82rem";
+        viewAllBtn.style.color = "#999";
+        viewAllBtn.style.cursor = "pointer";
         viewAllBtn.textContent = `View all ${postComments.length} comment${postComments.length !== 1 ? "s" : ""}`;
       }
 
-      /* -- Comments list (collapsed by default) -- */
       const commentsWrap = document.createElement("div");
       commentsWrap.className = "post__comments";
       commentsWrap.style.display = "none";
@@ -415,9 +500,12 @@ export function createBlogUI({
         const authorSpan = document.createElement("span");
         authorSpan.className = "post__comment-author";
         authorSpan.textContent = comment.author;
+
         const bodySpan = document.createElement("span");
         bodySpan.className = "post__comment-body";
-        bodySpan.innerHTML = " " + renderMarkdown(comment.body);
+        bodySpan.appendChild(document.createTextNode(" "));
+        appendInlineFormatted(bodySpan, comment.body);
+
         row.append(authorSpan, bodySpan);
 
         const timeSpan = document.createElement("div");
@@ -429,56 +517,56 @@ export function createBlogUI({
       });
 
       function toggleComments() {
-        commentsWrap.style.display =
-          commentsWrap.style.display === "none" ? "block" : "none";
+        commentsWrap.style.display = commentsWrap.style.display === "none" ? "block" : "none";
       }
       commentToggle.addEventListener("click", toggleComments);
       if (viewAllBtn) viewAllBtn.addEventListener("click", toggleComments);
 
-      /* -- Comment form -- */
       const commentForm = document.createElement("form");
       commentForm.className = "post__comment-form";
 
       const commentInput = document.createElement("input");
       commentInput.type = "text";
       commentInput.className = "post__comment-input";
-      commentInput.placeholder = user ? "Add a comment\u2026" : "Sign in to comment";
-      commentInput.disabled = !user;
+      commentInput.placeholder = user ? "Add a comment…" : "Sign in to comment";
+      commentInput.disabled = !user || post.source === "seed" || post.source === "legacy-local";
 
       const commentSubmit = document.createElement("button");
       commentSubmit.type = "submit";
       commentSubmit.className = "post__comment-submit";
       commentSubmit.textContent = "Post";
-      commentSubmit.disabled = !user;
+      commentSubmit.disabled = !user || post.source === "seed" || post.source === "legacy-local";
 
-      commentForm.addEventListener("submit", (event) => {
+      commentForm.addEventListener("submit", async (event) => {
         event.preventDefault();
-        if (!user) return;
-        const bodyText = commentInput.value.trim();
+        if (!user || post.source === "seed" || post.source === "legacy-local") return;
+
+        const bodyText = sanitizeSingleLine(commentInput.value, 600);
         if (!bodyText) return;
 
         if (!canPostNow(user.id || user.username)) {
-          commentInput.placeholder = "Please wait before posting again\u2026";
+          commentInput.placeholder = "Please wait before posting again…";
           return;
         }
 
-        const safeBody = sanitize(bodyText);
-        const nextComments = loadComments();
-        const entry = {
-          id: `comment_${Date.now()}`,
-          author: user.username,
+        const safeBody = sanitize(sanitizeMultiline(bodyText, 600));
+        const result = await createComment({
+          postId: post.id,
           body: safeBody,
-          createdAt: new Date().toISOString(),
-        };
-        nextComments[post.id] = [entry, ...(nextComments[post.id] || [])];
-        saveComments(nextComments);
+          user,
+        });
+
+        if (result.error) {
+          statusEl.textContent = result.error;
+          return;
+        }
+
         commentInput.value = "";
-        render();
+        await render();
       });
 
       commentForm.append(commentInput, commentSubmit);
 
-      /* -- Assemble card -- */
       card.appendChild(sheet);
       card.appendChild(actionBar);
       if (likeLine) card.appendChild(likeLine);
@@ -489,43 +577,26 @@ export function createBlogUI({
       postsContainer.appendChild(card);
     });
 
-    /* -------- Archive section (older articles below) -------- */
-    renderArchive(filteredPosts);
+    renderArchive(filtered);
+    statusEl.textContent = "";
+    pending = false;
   }
 
-  /** Format a date string nicely */
-  function formatDate(dateStr) {
-    if (!dateStr) return "";
-    const d = new Date(dateStr);
-    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  }
-
-  const ARCHIVE_PAGE_SIZE = 4;
-  let _archivePage = 0;
-  let _archiveList = [];
-  let _searchQuery = "";
-
-  /** Render archive grid with pagination */
   function renderArchive(allFiltered) {
     const archiveGrid = document.getElementById("archiveGrid");
     if (!archiveGrid) return;
 
-    /* Skip the first post (featured) — archive shows the rest */
-    let archivePosts = allFiltered.length > 1 ? allFiltered.slice(1) : [];
-
-    _archiveList = archivePosts;
-
-    /* Pagination */
+    const archivePosts = allFiltered.length > 1 ? allFiltered.slice(1) : [];
     const totalPages = Math.max(1, Math.ceil(archivePosts.length / ARCHIVE_PAGE_SIZE));
+
     if (_archivePage >= totalPages) _archivePage = totalPages - 1;
     if (_archivePage < 0) _archivePage = 0;
 
     const start = _archivePage * ARCHIVE_PAGE_SIZE;
     const visible = archivePosts.slice(start, start + ARCHIVE_PAGE_SIZE);
 
-    archiveGrid.innerHTML = "";
+    archiveGrid.textContent = "";
 
-    /* Update arrow states */
     const prevBtn = document.getElementById("archivePrev");
     const nextBtn = document.getElementById("archiveNext");
     if (prevBtn) prevBtn.disabled = _archivePage <= 0;
@@ -555,11 +626,10 @@ export function createBlogUI({
       btn.appendChild(btnTitle);
       if (btnDate.textContent) btn.appendChild(btnDate);
 
-      /* Click to view full article */
-      btn.addEventListener("click", () => {
-        const reordered = [post, ...posts.filter(p => p !== post)];
+      btn.addEventListener("click", async () => {
+        const reordered = [post, ...posts.filter((p) => p !== post)];
         posts.splice(0, posts.length, ...reordered);
-        render();
+        await render();
         const mainArticle = document.querySelector(".blog__main-article");
         if (mainArticle) mainArticle.scrollTop = 0;
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -569,108 +639,99 @@ export function createBlogUI({
     });
   }
 
-  /** Wire up archive arrow buttons and search */
   function initArchiveControls() {
     const prevBtn = document.getElementById("archivePrev");
     const nextBtn = document.getElementById("archiveNext");
     const searchInput = document.getElementById("blogSearch");
 
     prevBtn?.addEventListener("click", () => {
-      _archivePage--;
-      reRenderArchive();
+      _archivePage -= 1;
+      renderArchive(filteredPosts());
     });
 
     nextBtn?.addEventListener("click", () => {
-      _archivePage++;
-      reRenderArchive();
+      _archivePage += 1;
+      renderArchive(filteredPosts());
     });
 
-    searchInput?.addEventListener("input", () => {
-      _searchQuery = searchInput.value.trim();
+    searchInput?.addEventListener("input", async () => {
+      _searchQuery = sanitizeSingleLine(searchInput.value, 80);
       _archivePage = 0;
-      render();          // re-render main article + archive with search applied
+      await render();
     });
 
-    searchInput?.addEventListener("keydown", (e) => {
+    searchInput?.addEventListener("keydown", async (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
-        _searchQuery = searchInput.value.trim();
+        _searchQuery = sanitizeSingleLine(searchInput.value, 80);
         _archivePage = 0;
-        render();
+        await render();
       }
     });
   }
 
-  function reRenderArchive() {
-    let categoryPosts = posts;
-    if (currentCategory !== "all") {
-      categoryPosts = posts.filter(p => p.category === currentCategory);
-    }
-    let filtered = categoryPosts.filter(p => p.title !== "Welcome to Ink & Crayons Articles");
-    if (_searchQuery) {
-      const q = _searchQuery.toLowerCase();
-      filtered = filtered.filter(p => {
-        const plain = p.body.replace(/<[^>]+>/g, " ").toLowerCase();
-        return p.title.toLowerCase().includes(q) || plain.includes(q) || (p.author || "").toLowerCase().includes(q);
-      });
-    }
-    renderArchive(filtered);
-  }
-
-  /* ---------- Composer submit ---------- */
-  formEl.addEventListener("submit", (event) => {
+  formEl.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!canPost(user)) {
-      statusEl.textContent = "Only designated writers can publish articles.";
+    if (!roleCanPublish(user)) {
+      statusEl.textContent = "Only admins and writers can publish articles.";
       return;
     }
 
-    const title = titleInput.value.trim();
-    const body = bodyInput.value.trim();
+    const title = sanitizeSingleLine(titleInput.value, 200);
+    const body = sanitizeMultiline(bodyInput.value, 20000);
+
     if (!title || !body) {
       statusEl.textContent = "Please add a title and article body.";
       return;
     }
 
-    const post = {
-      id: `post_${Date.now()}`,
+    statusEl.textContent = "Publishing...";
+    const result = await createPost({
       title: sanitize(title),
       body: sanitize(body),
-      author: user.username,
-      createdAt: new Date().toISOString(),
-    };
+      category: "all",
+      user,
+    });
 
-    savePost(post);
+    if (result.error) {
+      statusEl.textContent = result.error;
+      return;
+    }
+
     titleInput.value = "";
     bodyInput.value = "";
     statusEl.textContent = "Article published!";
+
+    posts = await loadPosts();
+    await render();
+
     setTimeout(() => {
       statusEl.textContent = "";
     }, 2000);
-    loadPosts().then((data) => {
-      posts = data;
-      render();
-    });
   });
 
   return {
     async init() {
       posts = await loadPosts();
-      render();
+      await render();
       initArchiveControls();
       currentCategory = "all";
     },
     setUser,
     render,
-    /** Reload posts from storage and re-render */
     async reloadPosts() {
       posts = await loadPosts();
-      render();
+      await render();
     },
-    /** Return the most recent non-welcome post for the home preview */
     getLatestPost() {
-      const filtered = posts.filter(p => p.title !== "Welcome to Ink & Crayons Articles");
+      const filtered = posts.filter((p) => p.title !== "Welcome to Ink & Crayons Articles");
       return filtered.length > 0 ? filtered[0] : null;
+    },
+    getMigrationStatus() {
+      return {
+        migrationKeys: MIGRATION_KEYS,
+        usingLegacyFallback: posts.some((post) => post.source === "legacy-local"),
+      };
     },
   };
 }

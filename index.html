@@ -8,7 +8,9 @@
     <meta property="og:title" content="Ink & Crayons — teach · learn · love" />
     <meta property="og:description" content="Early childhood preschool resources, creative activities, and simple teaching ideas for parents and educators." />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://your-domain.example/" />
     <meta property="og:image" content="assets/ui/logo.gif" />
+    <link rel="canonical" href="https://your-domain.example/" />
     <link rel="icon" href="assets/ui/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -36,7 +38,7 @@
 
         <!-- Centered logo -->
         <div class="site-header__brand">
-          <a href="/" class="site-header__logo" aria-label="Ink &amp; Crayons home">
+          <a href="./index.html" class="site-header__logo" aria-label="Ink &amp; Crayons home">
             <img src="assets/ui/logo.gif" alt="Ink &amp; Crayons" class="site-header__logo-img" />
           </a>
           <p class="site-header__tagline">teach &bull; learn &bull; love</p>
@@ -414,6 +416,7 @@
             <button id="signUpBtn" type="submit" data-mode="signup" class="btn btn--primary">Create Account</button>
             <button id="signInBtn" type="button" data-mode="signin" class="btn btn--soft">Sign In</button>
           </div>
+          <button id="resetPasswordBtn" type="button" class="btn btn--soft">Reset Password</button>
         </form>
         <small class="gate__note">Auth provider configuration required for live accounts.</small>
       </div>
@@ -642,6 +645,7 @@
         document.addEventListener('keydown', function(e){ if (e.key === 'Escape') showMenu(false); });
       })();
     </script>
-    <script type="module" src="game.js?v=48"></script>
+    <script src="./config/runtime-config.js"></script>
+    <script type="module" src="game.js?v=49"></script>
   </body>
 </html>

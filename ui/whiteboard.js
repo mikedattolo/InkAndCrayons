@@ -21,7 +21,7 @@ export function addAnnouncementOverride(entry) {
 }
 
 export async function loadAnnouncements() {
-  const response = await fetch("data/announcements.json");
+  const response = await fetch("./data/announcements.json");
   const data = await response.json();
   const overrides = readOverrides();
   return [...overrides, ...(data.announcements || [])];

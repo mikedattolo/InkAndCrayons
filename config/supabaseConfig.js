@@ -1,0 +1,4 @@
+export const SUPABASE_URL = "https://xdskiwtfpmourcokaehr.supabase.co";
+
+export const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhkc2tpd3RmcG1vdXJjb2thZWhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjIwMDAsImV4cCI6MjA4NzYzODAwMH0.sTcEGLFPNSlal0Z7ePEVcerUYHEvT5sVUOIKb8lpsew";

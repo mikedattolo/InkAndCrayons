@@ -21,7 +21,7 @@ export function addBookOverride(entry) {
 }
 
 export async function loadBooks() {
-  const response = await fetch("data/books.json");
+  const response = await fetch("./data/books.json");
   const data = await response.json();
   const overrides = readOverrides();
   return [...overrides, ...(data.books || [])];

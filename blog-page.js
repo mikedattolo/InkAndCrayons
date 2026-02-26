@@ -2,8 +2,11 @@
  * blog-page.js — Standalone entry script for blog.html
  * Handles blog rendering + admin article management (create/edit/delete).
  */
-import { createBlogUI, updatePost, loadPosts } from "./ui/blog.js";
+import { createBlogUI, updatePost } from "./ui/blog.js";
 import { getUserProfile, initAuth, onAuthStateChanged } from "./auth/auth.js";
+import { createPost } from "./services/blogService.js";
+import { registerMigrationUtilities } from "./services/localStorageMigration.js";
+import { sanitizeMultiline, sanitizeSingleLine } from "./utils/validation.js";
 
 /* ── DOM References ──────────────────────────────────── */
 const blogPostsEl    = document.getElementById("blogPosts");
@@ -31,6 +34,8 @@ const adminNewPostBtn  = document.getElementById("adminNewPost");
 /* ── State ───────────────────────────────────────────── */
 let currentUser = getUserProfile();
 let editingPostId = null; // null = creating new, string = editing existing
+
+registerMigrationUtilities();
 
 function isAdmin() {
   return currentUser?.role === "admin";
@@ -89,7 +94,7 @@ function updateAdminUI() {
 updateAdminUI();
 
 /* ── Auth state listener (updates if user signs in/out) ─ */
-initAuth();
+await initAuth();
 onAuthStateChanged((user) => {
   currentUser = user;
   blogUI.setUser(user);
@@ -108,9 +113,9 @@ editorForm?.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!isAdmin()) return;
 
-  const title = editorTitle.value.trim();
-  const body  = editorBody.value.trim();
-  const author = editorAuthor.value.trim() || currentUser?.username || "Admin";
+  const title = sanitizeSingleLine(editorTitle.value, 200);
+  const body  = sanitizeMultiline(editorBody.value, 20000);
+  const author = sanitizeSingleLine(editorAuthor.value, 80) || currentUser?.username || "Admin";
   const date  = editorDate.value || new Date().toISOString().split("T")[0];
 
   if (!title || !body) {
@@ -119,46 +124,23 @@ editorForm?.addEventListener("submit", async (e) => {
   }
 
   if (editingPostId) {
-    /* ── Update existing post ── */
-    const updated = updatePost(editingPostId, { title, body, author, date });
+    const updated = await updatePost(editingPostId, { title, body, author, date });
     if (!updated) {
-      /* Seed post: save as new post with same ID to localStorage */
-      const POSTS_KEY = "lrl_posts";
-      const raw = localStorage.getItem(POSTS_KEY);
-      const stored = raw ? JSON.parse(raw) : [];
-      /* Load all posts to get the seed data */
-      const allPosts = await loadPosts();
-      const seedPost = allPosts.find(p => p.id === editingPostId);
-      if (seedPost) {
-        const updatedPost = { ...seedPost, title, body, author, date, updatedAt: new Date().toISOString() };
-        stored.unshift(updatedPost);
-        localStorage.setItem(POSTS_KEY, JSON.stringify(stored));
-        /* Mark the seed version as the same ID so it gets overridden */
-        const DELETED_KEY = "lrl_deleted_posts";
-        const deletedRaw = localStorage.getItem(DELETED_KEY);
-        const deleted = deletedRaw ? JSON.parse(deletedRaw) : [];
-        if (!deleted.includes(editingPostId)) {
-          deleted.push(editingPostId);
-          localStorage.setItem(DELETED_KEY, JSON.stringify(deleted));
-        }
-      }
+      editorStatus.textContent = "Only Supabase posts can be edited. Seed posts are read-only.";
+      return;
     }
     editorStatus.textContent = "Article updated!";
   } else {
-    /* ── Create new post ── */
-    const newPost = {
-      id: `post_${Date.now()}`,
+    const result = await createPost({
       title,
       body,
-      author,
-      date,
-      createdAt: new Date().toISOString(),
-    };
-    const POSTS_KEY = "lrl_posts";
-    const raw = localStorage.getItem(POSTS_KEY);
-    const stored = raw ? JSON.parse(raw) : [];
-    stored.unshift(newPost);
-    localStorage.setItem(POSTS_KEY, JSON.stringify(stored));
+      category: "all",
+      user: currentUser,
+    });
+    if (result.error) {
+      editorStatus.textContent = result.error;
+      return;
+    }
     editorStatus.textContent = "Article published!";
   }
 
@@ -185,22 +167,21 @@ document.querySelectorAll(".editor-modal__fmt-btn").forEach(btn => {
     let insert = "";
     switch (fmt) {
       case "bold":
-        insert = `<strong>${sel || "bold text"}</strong>`;
+        insert = `**${sel || "bold text"}**`;
         break;
       case "italic":
-        insert = `<em>${sel || "italic text"}</em>`;
+        insert = `*${sel || "italic text"}*`;
         break;
       case "h2":
-        insert = `<h2>${sel || "Heading"}</h2>`;
+        insert = `${sel || "Heading"}`;
         break;
       case "ul":
         insert = sel
-          ? sel.split("\n").map(l => `<li>${l}</li>`).join("\n")
-          : "<li>Item</li>";
-        insert = `<ul>\n${insert}\n</ul>`;
+          ? sel.split("\n").map(l => `- ${l}`).join("\n")
+          : "- Item";
         break;
       case "link":
-        insert = `<a href="URL">${sel || "link text"}</a>`;
+        insert = `${sel || "link text"} https://example.com`;
         break;
     }
 

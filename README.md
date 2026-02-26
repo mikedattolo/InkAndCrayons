@@ -267,6 +267,25 @@ The classroom should be designed so additional rooms (hallways, subjects, grade 
 
 ---
 
+## ☁️ Production Deployment (Cloudflare + Supabase)
+
+- Supabase schema: `supabase/schema.sql`
+- Supabase RLS policies: `supabase/rls-policies.sql`
+- Migration notes: `docs/migration-notes.md`
+- One-time localStorage migration: `docs/localstorage-migration-checklist.md`
+- Cloudflare checklist: `docs/cloudflare-pages-checklist.md`
+
+Runtime config is loaded from `config/runtime-config.js`:
+
+```js
+window.__LRL_CONFIG__ = {
+  SUPABASE_URL: "https://YOUR_PROJECT.supabase.co",
+  SUPABASE_ANON_KEY: "YOUR_ANON_KEY"
+};
+```
+
+---
+
 ## ✅ Definition of Success
 
 - Fully playable classroom experience

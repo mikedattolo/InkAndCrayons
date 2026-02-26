@@ -21,7 +21,7 @@ export function addShopOverride(entry) {
 }
 
 export async function loadShopItems() {
-  const response = await fetch("data/shop.json");
+  const response = await fetch("./data/shop.json");
   const data = await response.json();
   const overrides = readOverrides();
   return [...overrides, ...(data.items || [])];

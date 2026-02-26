@@ -1,24 +1,27 @@
 import {
+  changeUserPassword,
+  getUserProfile,
   initAuth,
   onAuthStateChanged,
   signOut,
-  getUserProfile,
   updateUserProfile,
-  changeUserPassword,
-  getPaymentMethods,
-  addPaymentMethod,
-  removePaymentMethod,
 } from "./auth/auth.js";
+import {
+  isValidHttpUrl,
+  isValidUsername,
+  sanitizeSingleLine,
+} from "./utils/validation.js";
+import { addWriter, createBlogUI, getWriters, loadPosts, removeWriter } from "./ui/blog.js";
 import { createAuthGate } from "./ui/auth.js";
 import { createModal } from "./ui/modal.js";
 import { loadBooks, renderBooks, addBookOverride } from "./ui/bookshelf.js";
-import { createBlogUI, addWriter, removeWriter, getWriters, loadPosts } from "./ui/blog.js";
 import { loadShopItems, renderShopItems, addShopOverride } from "./ui/shop.js";
 import {
   loadAnnouncements,
   renderAnnouncements,
   addAnnouncementOverride,
 } from "./ui/whiteboard.js";
+import { registerMigrationUtilities } from "./services/localStorageMigration.js";
 
 /* ── DOM References ─────────────────────────────────────── */
 const modalEl = document.getElementById("modal");
@@ -96,6 +99,7 @@ const avatarInitialEl = document.getElementById("avatarInitial");
 const signInButton = document.getElementById("signInBtn");
 const headerSignInBtn = document.getElementById("headerSignIn");
 const signUpButton = document.getElementById("signUpBtn");
+const forgotPasswordButton = document.getElementById("resetPasswordBtn");
 const userStatusEl = document.getElementById("userStatus");
 
 /* Navigation buttons */
@@ -156,6 +160,7 @@ const authGate = createAuthGate({
   statusEl: userStatusEl,
   signInButton,
   signUpButton,
+  forgotPasswordButton,
 });
 
 /* ── Helpers ────────────────────────────────────────────── */
@@ -387,21 +392,32 @@ function attachEvents() {
 
   function renderChatMessages() {
     if (!chatMessages) return;
-    chatMessages.innerHTML = "";
+    chatMessages.textContent = "";
     const msgs = loadChatMessages();
     if (msgs.length === 0) {
-      chatMessages.innerHTML = '<div class="chat-empty">No messages yet. Say hello!</div>';
+      const empty = document.createElement("div");
+      empty.className = "chat-empty";
+      empty.textContent = "No messages yet. Say hello!";
+      chatMessages.appendChild(empty);
       return;
     }
     msgs.forEach(msg => {
       const el = document.createElement("div");
-      const isAdmin = msg.role === "admin";
-      el.className = `chat-msg ${isAdmin ? "chat-msg--admin" : "chat-msg--user"}`;
-      el.innerHTML = `
-        <div class="chat-msg__author">${msg.author}</div>
-        <div>${msg.body}</div>
-        <div class="chat-msg__time">${chatTimeAgo(msg.createdAt)}</div>
-      `;
+      const msgIsAdmin = msg.role === "admin";
+      el.className = `chat-msg ${msgIsAdmin ? "chat-msg--admin" : "chat-msg--user"}`;
+
+      const author = document.createElement("div");
+      author.className = "chat-msg__author";
+      author.textContent = sanitizeSingleLine(msg.author, 40) || "User";
+
+      const body = document.createElement("div");
+      body.textContent = sanitizeSingleLine(msg.body, 400);
+
+      const time = document.createElement("div");
+      time.className = "chat-msg__time";
+      time.textContent = chatTimeAgo(msg.createdAt);
+
+      el.append(author, body, time);
       chatMessages.appendChild(el);
     });
     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -447,40 +463,54 @@ function attachEvents() {
   footResourcesBtn?.addEventListener("click", openResources);
   footCoachingBtn?.addEventListener("click", openGuides);
   footContactBtn?.addEventListener("click", () => {
-    modal.open({ title: "Contact Us", description: "We'd love to hear from you!", contentNodes: [] });
+    window.location.href = "./contact.html";
   });
 
   blogCloseBtn?.addEventListener("click", closeBlog);
   aboutCloseBtn?.addEventListener("click", closeAbout);
 
   /* Writer management */
-  function refreshWritersList() {
+  async function refreshWritersList() {
     if (!writersListEl) return;
-    const writers = getWriters();
+    const writers = await getWriters();
     writersListEl.textContent = writers.length
       ? "Current writers: " + writers.join(", ")
       : "No additional writers yet. Only admins can post.";
   }
 
-  adminWriterForm?.addEventListener("submit", (event) => {
+  adminWriterForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!isAdmin()) return;
-    const username = adminWriterUsername.value.trim();
-    if (!username) return;
-    addWriter(username);
+    const username = sanitizeSingleLine(adminWriterUsername.value, 20);
+    if (!isValidUsername(username)) {
+      adminStatusEl.textContent = "Enter a valid username (2-20 chars).";
+      return;
+    }
+    const result = await addWriter(username);
+    if (result?.error) {
+      adminStatusEl.textContent = result.error;
+      return;
+    }
     adminStatusEl.textContent = `"${username}" can now publish articles.`;
     adminWriterUsername.value = "";
-    refreshWritersList();
+    await refreshWritersList();
   });
 
-  adminRemoveWriterBtn?.addEventListener("click", () => {
+  adminRemoveWriterBtn?.addEventListener("click", async () => {
     if (!isAdmin()) return;
-    const username = adminWriterUsername.value.trim();
-    if (!username) return;
-    removeWriter(username);
+    const username = sanitizeSingleLine(adminWriterUsername.value, 20);
+    if (!isValidUsername(username)) {
+      adminStatusEl.textContent = "Enter a valid username (2-20 chars).";
+      return;
+    }
+    const result = await removeWriter(username);
+    if (result?.error) {
+      adminStatusEl.textContent = result.error;
+      return;
+    }
     adminStatusEl.textContent = `"${username}" removed from writers.`;
     adminWriterUsername.value = "";
-    refreshWritersList();
+    await refreshWritersList();
   });
 
   refreshWritersList();
@@ -506,8 +536,12 @@ function attachEvents() {
   function populateAccountModal() {
     const u = getUserProfile();
     if (!u) return;
-    if (u.avatarUrl) {
-      accountAvatar.innerHTML = `<img src="${u.avatarUrl}" alt="${u.username}" />`;
+    accountAvatar.textContent = "";
+    if (u.avatarUrl && isValidHttpUrl(u.avatarUrl)) {
+      const image = document.createElement("img");
+      image.src = u.avatarUrl;
+      image.alt = u.username;
+      accountAvatar.appendChild(image);
     } else {
       accountAvatar.textContent = getInitials(u.username);
     }
@@ -522,28 +556,21 @@ function attachEvents() {
   }
 
   function renderPaymentCards() {
-    const cards = getPaymentMethods();
-    paymentMethodsEl.innerHTML = "";
-    if (cards.length === 0) {
-      paymentMethodsEl.innerHTML = '<p style="font-size:0.85rem;color:#999;">No payment methods saved.</p>';
-      return;
-    }
-    cards.forEach(card => {
-      const el = document.createElement("div");
-      el.className = "account-payment-card";
-      el.innerHTML = `
-        <div class="account-payment-card__info">
-          <span>&#128179;</span>
-          <span>${card.name} &middot; **** ${card.lastFour} &middot; ${card.expiry}</span>
-        </div>
-        <button class="account-payment-card__remove" data-card-id="${card.id}" type="button">Remove</button>
-      `;
-      el.querySelector(".account-payment-card__remove").addEventListener("click", () => {
-        removePaymentMethod(card.id);
-        renderPaymentCards();
+    paymentMethodsEl.textContent = "";
+    const note = document.createElement("p");
+    note.style.fontSize = "0.85rem";
+    note.style.color = "#999";
+    note.textContent = "Card storage is disabled. Use external checkout links in the shop.";
+    paymentMethodsEl.appendChild(note);
+
+    if (paymentForm) {
+      Array.from(paymentForm.querySelectorAll("input")).forEach((input) => {
+        input.required = false;
+        input.disabled = true;
       });
-      paymentMethodsEl.appendChild(el);
-    });
+      const submitBtn = paymentForm.querySelector("button[type='submit']");
+      if (submitBtn) submitBtn.disabled = true;
+    }
   }
 
   accountBtn?.addEventListener("click", () => {
@@ -559,17 +586,21 @@ function attachEvents() {
   accountModal?.querySelector(".account-modal__backdrop")?.addEventListener("click", closeAccountModal);
 
   /* Sign out from account modal */
-  signOutButton?.addEventListener("click", () => {
+  signOutButton?.addEventListener("click", async () => {
     closeAccountModal();
-    signOut();
+    await signOut();
   });
 
-  profileForm?.addEventListener("submit", (e) => {
+  profileForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const username = profileUsernameInput.value.trim();
+    const username = sanitizeSingleLine(profileUsernameInput.value, 20);
     const avatarUrl = profilePicUrlInput.value.trim();
-    if (!username) { profileStatus.textContent = "Username is required."; return; }
-    const result = updateUserProfile({ username, avatarUrl: avatarUrl || undefined });
+    if (!isValidUsername(username)) { profileStatus.textContent = "Username must be 2-20 chars."; return; }
+    if (avatarUrl && !isValidHttpUrl(avatarUrl)) {
+      profileStatus.textContent = "Profile URL must be a valid http(s) URL.";
+      return;
+    }
+    const result = await updateUserProfile({ username, avatarUrl: avatarUrl || undefined });
     if (result.error) {
       profileStatus.textContent = result.error;
     } else {
@@ -578,14 +609,14 @@ function attachEvents() {
     }
   });
 
-  passwordForm?.addEventListener("submit", (e) => {
+  passwordForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const current = currentPasswordInput.value;
     const next = newPasswordInput.value;
     const confirm = confirmPasswordInput.value;
     if (next !== confirm) { passwordStatus.textContent = "Passwords don't match."; return; }
     if (next.length < 6) { passwordStatus.textContent = "Password must be at least 6 characters."; return; }
-    const result = changeUserPassword({ currentPassword: current, newPassword: next });
+    const result = await changeUserPassword({ currentPassword: current, newPassword: next });
     if (result.error) {
       passwordStatus.textContent = result.error;
     } else {
@@ -599,33 +630,19 @@ function attachEvents() {
 
   paymentForm?.addEventListener("submit", (e) => {
     e.preventDefault();
-    const name = cardNameInput.value.trim();
-    const number = cardNumberInput.value.replace(/\s/g, "");
-    const expiry = cardExpiryInput.value.trim();
-    if (!name || number.length < 4 || !expiry) {
-      paymentStatusEl.textContent = "Please fill all card fields.";
-      return;
-    }
-    const lastFour = number.slice(-4);
-    const result = addPaymentMethod({ name, lastFour, expiry });
-    if (result.error) {
-      paymentStatusEl.textContent = result.error;
-    } else {
-      paymentStatusEl.textContent = "Card saved!";
-      cardNameInput.value = "";
-      cardNumberInput.value = "";
-      cardExpiryInput.value = "";
-      cardCvcInput.value = "";
-      renderPaymentCards();
-      setTimeout(() => { paymentStatusEl.textContent = ""; }, 2000);
-    }
+    paymentStatusEl.textContent = "Card storage is disabled for security. Use external checkout links.";
+    cardNameInput.value = "";
+    cardNumberInput.value = "";
+    cardExpiryInput.value = "";
+    cardCvcInput.value = "";
+    renderPaymentCards();
   });
 
   adminAnnouncementForm?.addEventListener("submit", (event) => {
     event.preventDefault();
     if (!isAdmin()) return;
-    const title = adminAnnouncementTitle.value.trim();
-    const message = adminAnnouncementMessage.value.trim();
+    const title = sanitizeSingleLine(adminAnnouncementTitle.value, 120);
+    const message = sanitizeSingleLine(adminAnnouncementMessage.value, 500);
     if (!title || !message) return;
     addAnnouncementOverride({ title, message });
     adminStatusEl.textContent = "Announcement saved.";
@@ -637,10 +654,14 @@ function attachEvents() {
   adminResourceForm?.addEventListener("submit", (event) => {
     event.preventDefault();
     if (!isAdmin()) return;
-    const title = adminResourceTitle.value.trim();
-    const description = adminResourceDesc.value.trim();
+    const title = sanitizeSingleLine(adminResourceTitle.value, 120);
+    const description = sanitizeSingleLine(adminResourceDesc.value, 400);
     const url = adminResourceUrl.value.trim();
     if (!title || !description || !url) return;
+    if (!isValidHttpUrl(url)) {
+      adminStatusEl.textContent = "Resource URL must be a valid http(s) URL.";
+      return;
+    }
     addBookOverride({ title, description, url });
     adminStatusEl.textContent = "Resource link saved.";
     adminResourceTitle.value = "";
@@ -652,11 +673,15 @@ function attachEvents() {
   adminShopForm?.addEventListener("submit", (event) => {
     event.preventDefault();
     if (!isAdmin()) return;
-    const title = adminShopTitle.value.trim();
-    const description = adminShopDesc.value.trim();
-    const price = adminShopPrice.value.trim();
+    const title = sanitizeSingleLine(adminShopTitle.value, 120);
+    const description = sanitizeSingleLine(adminShopDesc.value, 400);
+    const price = sanitizeSingleLine(adminShopPrice.value, 40);
     const url = adminShopUrl.value.trim();
     if (!title || !description || !price || !url) return;
+    if (!isValidHttpUrl(url)) {
+      adminStatusEl.textContent = "Shop URL must be a valid http(s) URL.";
+      return;
+    }
     addShopOverride({ title, description, price, url });
     adminStatusEl.textContent = "Shop item saved.";
     adminShopTitle.value = "";
@@ -669,7 +694,8 @@ function attachEvents() {
 
 /* ── Init ───────────────────────────────────────────────── */
 async function init() {
-  initAuth();
+  registerMigrationUtilities();
+  await initAuth();
 
   onAuthStateChanged((user) => {
     currentUser = user;
@@ -687,11 +713,19 @@ async function init() {
     if (avatarInitialEl && user) {
       const name = user.username || user.email || "?";
       avatarInitialEl.textContent = name.charAt(0).toUpperCase();
-      /* If user has an avatar URL, show image instead */
-      if (user.avatarUrl) {
-        accountBtn.innerHTML = `<img src="${user.avatarUrl}" alt="Profile" class="site-header__avatar-img" />`;
+      accountBtn.textContent = "";
+      if (user.avatarUrl && isValidHttpUrl(user.avatarUrl)) {
+        const image = document.createElement("img");
+        image.src = user.avatarUrl;
+        image.alt = "Profile";
+        image.className = "site-header__avatar-img";
+        accountBtn.appendChild(image);
       } else {
-        accountBtn.innerHTML = `<span id="avatarInitial" class="site-header__avatar-initial">${name.charAt(0).toUpperCase()}</span>`;
+        const initial = document.createElement("span");
+        initial.id = "avatarInitial";
+        initial.className = "site-header__avatar-initial";
+        initial.textContent = name.charAt(0).toUpperCase();
+        accountBtn.appendChild(initial);
       }
     }
     blogUI?.render();
@@ -715,7 +749,12 @@ async function populateHomeBlogPreview() {
   const filtered = posts.filter(p => p.title !== "Welcome to Ink & Crayons Articles");
   const latest = filtered.length > 0 ? filtered[0] : null;
   if (!latest) {
-    cardEl.innerHTML = '<p style="color:#999;text-align:center;">No articles yet — check back soon!</p>';
+    cardEl.textContent = "";
+    const empty = document.createElement("p");
+    empty.style.color = "#999";
+    empty.style.textAlign = "center";
+    empty.textContent = "No articles yet — check back soon!";
+    cardEl.appendChild(empty);
     return;
   }
 
@@ -733,7 +772,7 @@ async function populateHomeBlogPreview() {
   const plain = latest.body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
   snippet.textContent = plain.length > 260 ? plain.slice(0, 260) + "…" : plain;
 
-  cardEl.innerHTML = "";
+  cardEl.textContent = "";
   cardEl.appendChild(title);
   cardEl.appendChild(meta);
   cardEl.appendChild(snippet);
