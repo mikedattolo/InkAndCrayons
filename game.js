@@ -123,6 +123,7 @@ const footContactBtn = document.getElementById("footContact");
 
 /* ── State ──────────────────────────────────────────────── */
 let currentUser = getUserProfile();
+let _eventsAttached = false;
 
 const contentStore = {
   books: [],
@@ -339,6 +340,14 @@ function scrollToSection(id) {
 
 /* ── Event Binding ──────────────────────────────────────── */
 function attachEvents() {
+  if (_eventsAttached) return;
+  _eventsAttached = true;
+
+  // TEMP DEBUG: verify sign-in button lookup before binding click listener
+  console.debug("[TEMP DEBUG] sign-in button lookup result", {
+    found: Boolean(headerSignInBtn),
+  });
+
   /* Header nav pills */
   navLessonsBtn?.addEventListener("click", openLessons);
 
@@ -581,6 +590,10 @@ function attachEvents() {
   headerSignInBtn?.addEventListener("click", () => {
     authGate.setGateOpen(true);
   });
+  // TEMP DEBUG: confirm click listener attachment for header sign-in
+  console.debug("[TEMP DEBUG] sign-in click listener attached", {
+    attached: Boolean(headerSignInBtn),
+  });
 
   accountModal?.querySelector(".account-modal__close")?.addEventListener("click", closeAccountModal);
   accountModal?.querySelector(".account-modal__backdrop")?.addEventListener("click", closeAccountModal);
@@ -694,58 +707,103 @@ function attachEvents() {
 
 /* ── Init ───────────────────────────────────────────────── */
 async function init() {
+  // TEMP DEBUG: homepage init start
+  console.debug("[TEMP DEBUG] homepage init start");
+
   registerMigrationUtilities();
-  await initAuth();
-
-  onAuthStateChanged((user) => {
-    currentUser = user;
-    blogUI?.setUser(user);
-    if (blogStatusEl) {
-      blogStatusEl.textContent = user
-        ? ""
-        : "Sign in to read articles and comment.";
-    }
-    setAdminVisibility(isAdmin());
-    if (!isAdmin() && adminStatusEl) adminStatusEl.textContent = "";
-    if (accountBtn) accountBtn.hidden = !user;
-    if (headerSignInBtn) headerSignInBtn.hidden = !!user;
-    /* Update avatar initial */
-    if (avatarInitialEl && user) {
-      const name = user.username || user.email || "?";
-      avatarInitialEl.textContent = name.charAt(0).toUpperCase();
-      accountBtn.textContent = "";
-      if (user.avatarUrl && isValidHttpUrl(user.avatarUrl)) {
-        const image = document.createElement("img");
-        image.src = user.avatarUrl;
-        image.alt = "Profile";
-        image.className = "site-header__avatar-img";
-        accountBtn.appendChild(image);
-      } else {
-        const initial = document.createElement("span");
-        initial.id = "avatarInitial";
-        initial.className = "site-header__avatar-initial";
-        initial.textContent = name.charAt(0).toUpperCase();
-        accountBtn.appendChild(initial);
-      }
-    }
-    blogUI?.render();
-  });
-
-  await loadContent();
   attachEvents();
+
+  // TEMP DEBUG: auth init start
+  console.debug("[TEMP DEBUG] auth init start");
+  try {
+    await initAuth();
+  } catch (error) {
+    // TEMP DEBUG: auth/profile sync failures should not block homepage wiring
+    console.error("[TEMP DEBUG] auth init failed, continuing homepage init", error);
+  }
+  // TEMP DEBUG: auth init end
+  console.debug("[TEMP DEBUG] auth init end");
+
+  try {
+    onAuthStateChanged((user) => {
+      currentUser = user;
+      blogUI?.setUser(user);
+      if (blogStatusEl) {
+        blogStatusEl.textContent = user
+          ? ""
+          : "Sign in to read articles and comment.";
+      }
+      setAdminVisibility(isAdmin());
+      if (!isAdmin() && adminStatusEl) adminStatusEl.textContent = "";
+      if (accountBtn) accountBtn.hidden = !user;
+      if (headerSignInBtn) headerSignInBtn.hidden = !!user;
+      /* Update avatar initial */
+      if (avatarInitialEl && user) {
+        const name = user.username || user.email || "?";
+        avatarInitialEl.textContent = name.charAt(0).toUpperCase();
+        accountBtn.textContent = "";
+        if (user.avatarUrl && isValidHttpUrl(user.avatarUrl)) {
+          const image = document.createElement("img");
+          image.src = user.avatarUrl;
+          image.alt = "Profile";
+          image.className = "site-header__avatar-img";
+          accountBtn.appendChild(image);
+        } else {
+          const initial = document.createElement("span");
+          initial.id = "avatarInitial";
+          initial.className = "site-header__avatar-initial";
+          initial.textContent = name.charAt(0).toUpperCase();
+          accountBtn.appendChild(initial);
+        }
+      }
+      blogUI?.render();
+    });
+  } catch (error) {
+    // TEMP DEBUG: auth state listener failures should not break homepage init
+    console.error("[TEMP DEBUG] auth listener setup failed, continuing homepage init", error);
+  }
+
+  try {
+    await loadContent();
+  } catch (error) {
+    // TEMP DEBUG: content load failures should not block event wiring
+    console.error("[TEMP DEBUG] content load failed, continuing homepage init", error);
+  }
   modal.setOpen(false);
 
   /* ── Home-page blog preview ──────────────────────────── */
-  await populateHomeBlogPreview();
+  try {
+    await populateHomeBlogPreview();
+  } catch (error) {
+    // TEMP DEBUG: latest blogs preview should fail open with fallback UI
+    console.error("[TEMP DEBUG] latest blogs render failed", error);
+    const cardEl = document.getElementById("homeBlogCard");
+    if (cardEl) {
+      cardEl.textContent = "";
+      const empty = document.createElement("p");
+      empty.style.color = "#999";
+      empty.style.textAlign = "center";
+      empty.textContent = "Unable to load latest posts right now.";
+      cardEl.appendChild(empty);
+    }
+  }
+
+  // TEMP DEBUG: homepage init end
+  console.debug("[TEMP DEBUG] homepage init end");
 }
 
 async function populateHomeBlogPreview() {
+  // TEMP DEBUG: latest blogs render start
+  console.debug("[TEMP DEBUG] latest blogs render start");
+
   const cardEl = document.getElementById("homeBlogCard");
   const readMoreBtn = document.getElementById("homeBlogReadMore");
   if (!cardEl) return;
 
   /* Load posts directly — blogUI may not be available on the home page */
   const posts = await loadPosts();
+  // TEMP DEBUG: posts fetch result count
+  console.debug("[TEMP DEBUG] posts fetch result count", posts.length);
   const filtered = posts.filter(p => p.title !== "Welcome to Ink & Crayons Articles");
   const latest = filtered.length > 0 ? filtered[0] : null;
   if (!latest) {
@@ -755,6 +813,8 @@ async function populateHomeBlogPreview() {
     empty.style.textAlign = "center";
     empty.textContent = "No articles yet — check back soon!";
     cardEl.appendChild(empty);
+    // TEMP DEBUG: latest blogs render end
+    console.debug("[TEMP DEBUG] latest blogs render end", { hasLatest: false });
     return;
   }
 
@@ -781,6 +841,13 @@ async function populateHomeBlogPreview() {
   readMoreBtn?.addEventListener("click", () => {
     window.location.href = "blog.html";
   });
+
+  // TEMP DEBUG: latest blogs render end
+  console.debug("[TEMP DEBUG] latest blogs render end", { hasLatest: true });
 }
 
-init();
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init, { once: true });
+} else {
+  init();
+}
