@@ -39,29 +39,41 @@ export async function ensureProfile(authUser, preferredUsername) {
   const supabase = getSupabaseClient();
   if (!supabase || !authUser) return null;
 
+  // TEMP DEBUG: profile sync start
+  console.debug("[TEMP DEBUG] profile sync start", { userId: authUser.id });
+
   const existing = await getProfile(authUser.id);
-  if (existing) return existing;
-
   const usernameBase = sanitizeSingleLine(preferredUsername || authUser.email?.split("@")[0] || "member", 20);
-  const username = usernameBase || `member_${authUser.id.slice(0, 6)}`;
+  const fallbackUsername = usernameBase || `member_${authUser.id.slice(0, 6)}`;
 
-  const insertPayload = {
+  const upsertPayload = {
     id: authUser.id,
-    username,
-    role: "user",
+    username: existing?.username || fallbackUsername,
+    role: existing?.role || "user",
   };
+
+  if (existing?.avatar_url) {
+    upsertPayload.avatar_url = existing.avatar_url;
+  }
 
   const { data, error } = await supabase
     .from("profiles")
-    .insert(insertPayload)
+    .upsert(upsertPayload, { onConflict: "id" })
     .select("id, username, avatar_url, role, created_at")
     .single();
 
   if (error) {
-    return null;
+    // TEMP DEBUG: sync failure should not block app init
+    console.error("[TEMP DEBUG] profile sync failed", {
+      userId: authUser.id,
+      message: error.message,
+    });
+    return existing;
   }
 
-  return data;
+  // TEMP DEBUG: profile sync success
+  console.debug("[TEMP DEBUG] profile sync success", { userId: authUser.id });
+  return data || existing;
 }
 
 export async function getCurrentAppUser() {
@@ -72,7 +84,18 @@ export async function getCurrentAppUser() {
   if (error || !data?.session?.user) return null;
 
   const authUser = data.session.user;
-  const profile = (await getProfile(authUser.id)) || (await ensureProfile(authUser));
+  let profile = await getProfile(authUser.id);
+  if (!profile) {
+    profile = await ensureProfile(authUser);
+  }
+
+  if (!profile) {
+    // TEMP DEBUG: continue with auth user fallback so UI init is not blocked
+    console.warn("[TEMP DEBUG] profile unavailable after sync, continuing with auth fallback", {
+      userId: authUser.id,
+    });
+  }
+
   return mapUser(authUser, profile);
 }
 
@@ -223,7 +246,18 @@ export function onSupabaseAuthStateChange(callback) {
       return;
     }
 
-    const profile = (await getProfile(session.user.id)) || (await ensureProfile(session.user));
+    let profile = await getProfile(session.user.id);
+    if (!profile) {
+      profile = await ensureProfile(session.user);
+    }
+
+    if (!profile) {
+      // TEMP DEBUG: keep auth flow alive even when profile sync fails
+      console.warn("[TEMP DEBUG] auth state profile sync unavailable, using auth fallback", {
+        userId: session.user.id,
+      });
+    }
+
     callback(mapUser(session.user, profile));
   });
 

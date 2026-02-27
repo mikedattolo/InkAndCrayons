@@ -120,6 +120,12 @@ function roleCanPublish(userObj) {
   return userObj?.role === "admin" || userObj?.role === "writer";
 }
 
+function isValidDbPostId(value) {
+  if (typeof value === "number") return Number.isInteger(value) && value >= 0;
+  if (typeof value === "string") return /^\d+$/.test(value.trim());
+  return false;
+}
+
 function roleCanManagePost(userObj, post) {
   if (!userObj || !post) return false;
   if (userObj.role === "admin") return true;
@@ -285,17 +291,46 @@ export function createBlogUI({
   }
 
   async function hydratePostState() {
+    // TEMP DEBUG: inspect loaded posts before comments/likes hydration
+    console.debug(
+      "[TEMP DEBUG] blog loaded posts",
+      posts.map((post) => ({ id: post.id, source: post.source }))
+    );
+
     const hasLegacyPostsLoaded = posts.some((post) => post.source === "legacy-local");
     if (hasLegacyPostsLoaded) {
+      // TEMP DEBUG: comments/likes are loaded from legacy localStorage map in this mode
+      console.debug(
+        "[TEMP DEBUG] comments/likes query skipped reason",
+        "legacy-local posts loaded"
+      );
       commentsMap = loadLegacyCommentMap();
       likesMap = loadLegacyLikesMap();
       return;
     }
 
-    const postIds = posts.map((post) => post.id);
+    const extractedPostIds = posts.map((post) => post.id);
+    // TEMP DEBUG: raw IDs coming from loaded posts
+    console.debug("[TEMP DEBUG] extracted post IDs", extractedPostIds);
+
+    const validDbPostIds = extractedPostIds.filter((id) => isValidDbPostId(id));
+    // TEMP DEBUG: IDs safe for bigint post_id queries
+    console.debug("[TEMP DEBUG] filtered valid DB IDs", validDbPostIds);
+
+    if (!validDbPostIds.length) {
+      // TEMP DEBUG: avoid invalid post_id=in.(seed_...) query against bigint column
+      console.debug(
+        "[TEMP DEBUG] comments/likes query skipped reason",
+        "no valid numeric database post IDs"
+      );
+      commentsMap = {};
+      likesMap = {};
+      return;
+    }
+
     const [commentsResult, likesResult] = await Promise.all([
-      fetchComments(postIds),
-      fetchLikes(postIds, user?.id || null),
+      fetchComments(validDbPostIds),
+      fetchLikes(validDbPostIds, user?.id || null),
     ]);
 
     commentsMap = {};
