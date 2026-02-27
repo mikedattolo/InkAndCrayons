@@ -208,17 +208,24 @@ function setAdminVisibility(visible) {
 
 /* ── Content Loading ────────────────────────────────────── */
 async function loadContent() {
-  try {
-    const [books, shopItems, announcements] = await Promise.all([
-      loadBooks(),
-      loadShopItems(),
-      loadAnnouncements(),
-    ]);
-    contentStore.books = books;
-    contentStore.shop = shopItems;
-    contentStore.announcements = announcements;
-  } catch (error) {
-    console.warn("Unable to load content JSON.", error);
+  const [booksResult, shopResult, announcementsResult] = await Promise.allSettled([
+    loadBooks(),
+    loadShopItems(),
+    loadAnnouncements(),
+  ]);
+
+  contentStore.books = booksResult.status === "fulfilled" ? booksResult.value : [];
+  contentStore.shop = shopResult.status === "fulfilled" ? shopResult.value : [];
+  contentStore.announcements = announcementsResult.status === "fulfilled" ? announcementsResult.value : [];
+
+  if (booksResult.status === "rejected") {
+    console.warn("Unable to load books JSON.", booksResult.reason);
+  }
+  if (shopResult.status === "rejected") {
+    console.warn("Unable to load shop JSON.", shopResult.reason);
+  }
+  if (announcementsResult.status === "rejected") {
+    console.warn("Unable to load announcements JSON.", announcementsResult.reason);
   }
 }
 
@@ -250,24 +257,30 @@ function closeAbout() {
 function openResources() {
   // Resources are publicly browsable; downloads require auth
   setMarketVisible(false);
+  const nodes = contentStore.books.length
+    ? renderBooks(contentStore.books)
+    : [Object.assign(document.createElement("p"), { textContent: "No resource links available right now." })];
   modal.open({
     title: "Bookshelf Resources",
     description: currentUser
       ? "Browse online books and classroom resources."
       : "Browse resources — sign in to download.",
-    contentNodes: renderBooks(contentStore.books),
+    contentNodes: nodes,
   });
 }
 
 function openLessons() {
   // Lessons are publicly browsable; purchases require auth
   setMarketVisible(false);
+  const nodes = contentStore.shop.length
+    ? renderShopItems(contentStore.shop)
+    : [Object.assign(document.createElement("p"), { textContent: "No shop links available right now." })];
   modal.open({
     title: "Education Worksheets & More",
     description: currentUser
       ? "Browse all our printable worksheets and learning resources."
       : "Browse worksheets — sign in to purchase.",
-    contentNodes: renderShopItems(contentStore.shop),
+    contentNodes: nodes,
   });
 }
 
@@ -327,10 +340,13 @@ function openGuides() {
 
 function openMusic() {
   setMarketVisible(false);
+  const nodes = contentStore.books.length
+    ? renderBooks(contentStore.books)
+    : [Object.assign(document.createElement("p"), { textContent: "No music links available right now." })];
   modal.open({
     title: "Music & Activities",
     description: "Songs, rhymes, and creative activities for little learners.",
-    contentNodes: renderBooks(contentStore.books),
+    contentNodes: nodes,
   });
 }
 
