@@ -1037,6 +1037,30 @@ body::before {
   backdrop-filter: blur(8px);
 }
 
+.gate__close {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  color: var(--text-muted);
+  line-height: 1;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: color 0.2s, transform 0.2s;
+}
+.gate__close:hover {
+  color: var(--pink-dark);
+  background: rgba(247,168,196,0.15);
+  transform: rotate(90deg);
+}
+
 .gate__content {
   position: relative;
   background: var(--white);

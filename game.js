@@ -90,6 +90,8 @@ const chatForm = document.getElementById("chatForm");
 const chatInput = document.getElementById("chatInput");
 
 const gateEl = document.getElementById("gate");
+const gateCloseBtn = document.getElementById("gateClose");
+const gateBackdrop = gateEl?.querySelector(".gate__backdrop");
 const gateForm = document.getElementById("gateForm");
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
@@ -358,6 +360,10 @@ function scrollToSection(id) {
 function attachEvents() {
   if (_eventsAttached) return;
   _eventsAttached = true;
+
+  /* Auth gate — close button + backdrop click */
+  gateCloseBtn?.addEventListener("click", () => authGate.setGateOpen(false));
+  gateBackdrop?.addEventListener("click", () => authGate.setGateOpen(false));
 
   /* Header nav pills */
   navLessonsBtn?.addEventListener("click", openLessons);
