@@ -132,12 +132,16 @@ export function createAuthGate({
 
     setLoading(true);
     setStatus("Signing in\u2026", "info");
-    const result = await signIn({ email, password });
-    setLoading(false);
-
-    if (result.error) { setStatus(friendlyAuthError(result.error), "error"); return; }
-    setStatus("Signed in!", "success");
-    setTimeout(() => setGateOpen(false), 500);
+    try {
+      const result = await signIn({ email, password });
+      if (result.error) { setStatus(friendlyAuthError(result.error), "error"); return; }
+      setStatus("Signed in!", "success");
+      setTimeout(() => setGateOpen(false), 500);
+    } catch (e) {
+      setStatus(friendlyAuthError(e?.message || "unexpected error"), "error");
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleSignUp() {
@@ -161,16 +165,19 @@ export function createAuthGate({
 
     setLoading(true);
     setStatus("Creating your account\u2026", "info");
-    const result = await signUp({ email, password, username });
-    setLoading(false);
-
-    if (result.error) { setStatus(friendlyAuthError(result.error), "error"); return; }
-
-    if (result.needsEmailConfirmation) {
-      setStatus("Account created! Check your inbox to confirm your email before signing in.", "success");
-    } else {
-      setStatus("Welcome! Your account is ready.", "success");
-      setTimeout(() => setGateOpen(false), 800);
+    try {
+      const result = await signUp({ email, password, username });
+      if (result.error) { setStatus(friendlyAuthError(result.error), "error"); return; }
+      if (result.needsEmailConfirmation) {
+        setStatus("Account created! Check your inbox to confirm your email before signing in.", "success");
+      } else {
+        setStatus("Welcome! Your account is ready.", "success");
+        setTimeout(() => setGateOpen(false), 800);
+      }
+    } catch (e) {
+      setStatus(friendlyAuthError(e?.message || "unexpected error"), "error");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -184,16 +191,20 @@ export function createAuthGate({
 
     setLoading(true);
     setStatus("Sending reset link\u2026", "info");
-    const result = await sendPasswordResetEmail(email);
-    setLoading(false);
-
-    setStatus(
-      result.error
-        ? friendlyAuthError(result.error)
-        : "If that address is in our system, you\u2019ll receive a reset link shortly.",
-      result.error ? "error" : "success"
-    );
-    if (!result.error) setTimeout(() => applyMode("signin"), 3000);
+    try {
+      const result = await sendPasswordResetEmail(email);
+      setStatus(
+        result.error
+          ? friendlyAuthError(result.error)
+          : "If that address is in our system, you\u2019ll receive a reset link shortly.",
+        result.error ? "error" : "success"
+      );
+      if (!result.error) setTimeout(() => applyMode("signin"), 3000);
+    } catch (e) {
+      setStatus(friendlyAuthError(e?.message || "unexpected error"), "error");
+    } finally {
+      setLoading(false);
+    }
   }
 
   /* ── Event listeners ─────────────────────────────────────────────────── */
@@ -248,7 +259,7 @@ function friendlyAuthError(raw) {
     return "Network error. Check your connection and try again.";
   }
   if (msg.includes("not available") || msg.includes("not configured")) {
-    return "Sign-in is not available right now. Please try again later.";
+    return "Sign-in is not configured yet. Please contact the site admin.";
   }
   return raw.replace(/\[.*?\]/g, "").trim() || "Something went wrong. Please try again.";
 }

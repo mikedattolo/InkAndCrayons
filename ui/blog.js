@@ -126,14 +126,22 @@ function roleCanPublish(userObj) {
 
 /** UUID v4 pattern — matches all Supabase-generated post IDs. */
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+// Real DB rows use bigint IDs (positive integer strings or numbers)
+const BIGINT_ID_REGEX = /^\d+$/;
 
 /**
- * Returns true for real Supabase post IDs (UUIDs).
- * Rejects synthetic IDs such as `seed_*` and `legacy_*`.
+ * Returns true for real Supabase post IDs.
+ * Accepts bigint (numeric) IDs from DB.  Rejects synthetic IDs such
+ * as `seed_*`, `legacy_*`, and `local_*`.
  */
 function isSupabasePostId(value) {
-  if (typeof value !== "string") return false;
-  return UUID_REGEX.test(value.trim());
+  if (value === null || value === undefined) return false;
+  const str = String(value).trim();
+  // UUID format (legacy — kept for rollback safety)
+  if (UUID_REGEX.test(str)) return true;
+  // Bigint numeric ID from Postgres identity column
+  if (BIGINT_ID_REGEX.test(str)) return true;
+  return false;
 }
 
 function roleCanManagePost(userObj, post) {
@@ -246,9 +254,9 @@ async function loadSeedPostsFallback() {
  *
  * Each source stamps `post.source` so the UI can restrict edit/delete.
  */
-export async function loadPosts() {
+export async function loadPosts({ adminMode = false } = {}) {
   // 1. Try Supabase
-  const result = await fetchPosts();
+  const result = await fetchPosts({ adminMode });
   if (!result.error && result.data?.length) {
     // Deduplicate against any legacy-local posts that share the same ID
     const supabaseIds = new Set(result.data.map((p) => p.id));
@@ -331,7 +339,7 @@ export function createBlogUI({
     }
 
     const [commentsResult, likesResult] = await Promise.all([
-      fetchComments(supabasePostIds),
+      fetchComments(supabasePostIds, { adminMode: user?.role === "admin" }),
       fetchLikes(supabasePostIds, user?.id || null),
     ]);
 
@@ -503,7 +511,7 @@ export function createBlogUI({
             statusEl.textContent = result.error;
             return;
           }
-          posts = await loadPosts();
+          posts = await loadPosts({ adminMode: user?.role === "admin" });
           await render();
         });
 
@@ -818,7 +826,7 @@ export function createBlogUI({
     bodyInput.value = "";
     statusEl.textContent = "Article published!";
 
-    posts = await loadPosts();
+    posts = await loadPosts({ adminMode: user?.role === "admin" });
     await render();
 
     setTimeout(() => {
@@ -828,7 +836,7 @@ export function createBlogUI({
 
   return {
     async init() {
-      posts = await loadPosts();
+      posts = await loadPosts({ adminMode: user?.role === "admin" });
       await render();
       initArchiveControls();
       currentCategory = "all";
@@ -836,7 +844,7 @@ export function createBlogUI({
     setUser,
     render,
     async reloadPosts() {
-      posts = await loadPosts();
+      posts = await loadPosts({ adminMode: user?.role === "admin" });
       await render();
     },
     getLatestPost() {

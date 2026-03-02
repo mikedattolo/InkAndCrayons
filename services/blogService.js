@@ -3,7 +3,7 @@ import { sanitizeMultiline, sanitizeSingleLine } from "../utils/validation.js";
 
 const POSTS_TABLE = "posts";
 const COMMENTS_TABLE = "comments";
-const LIKES_TABLE = "likes";
+const LIKES_TABLE = "post_likes";
 const PROFILES_TABLE = "profiles";
 const REACTIONS_TABLE = "comment_reactions";
 
@@ -18,6 +18,7 @@ function normalizePost(row) {
     author: row.author_name || "Anonymous",
     authorId: row.author_id,
     category: row.category || "all",
+    isPublished: row.is_published !== false, // default true if field absent
     date: row.created_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at || null,
@@ -37,16 +38,22 @@ function normalizeComment(row) {
   };
 }
 
-export async function fetchPosts() {
+export async function fetchPosts({ adminMode = false } = {}) {
   const supabase = getSupabaseClient();
   if (!supabase) {
     return { error: "Supabase is not configured.", data: [] };
   }
 
-  const { data, error } = await supabase
+  let query = supabase
     .from(POSTS_TABLE)
-    .select("id, title, body, category, author_id, author_name, created_at, updated_at")
+    .select("id, title, body, category, author_id, author_name, is_published, created_at, updated_at")
     .order("created_at", { ascending: false });
+
+  if (!adminMode) {
+    query = query.eq("is_published", true);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     return { error: error.message, data: [] };
@@ -66,12 +73,13 @@ export async function createPost({ title, body, category, user }) {
     category: sanitizeSingleLine(category || "all", 60) || "all",
     author_id: user.id,
     author_name: sanitizeSingleLine(user.username || "Member", 80),
+    is_published: true,
   };
 
   const { data, error } = await supabase
     .from(POSTS_TABLE)
     .insert(payload)
-    .select("id, title, body, category, author_id, author_name, created_at, updated_at")
+    .select("id, title, body, category, author_id, author_name, is_published, created_at, updated_at")
     .single();
 
   if (error) return { error: error.message };
@@ -109,16 +117,22 @@ export async function removePost(postId) {
   return { success: true };
 }
 
-export async function fetchComments(postIds = []) {
+export async function fetchComments(postIds = [], { adminMode = false } = {}) {
   const supabase = getSupabaseClient();
   if (!supabase) return { error: "Supabase is not configured.", data: [] };
   if (!postIds.length) return { data: [] };
 
-  const { data, error } = await supabase
+  let query = supabase
     .from(COMMENTS_TABLE)
     .select("id, post_id, author_id, author_name, body, status, created_at")
     .in("post_id", postIds)
     .order("created_at", { ascending: true });
+
+  if (!adminMode) {
+    query = query.eq("status", "visible");
+  }
+
+  const { data, error } = await query;
 
   if (error) return { error: error.message, data: [] };
   return { data: (data || []).map(normalizeComment) };
