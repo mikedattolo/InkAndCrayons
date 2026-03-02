@@ -1,16 +1,20 @@
 import {
   createComment,
   createPost,
+  fetchCommentReactions,
   fetchComments,
   fetchLikes,
   fetchPosts,
   listWriters,
   patchPost,
+  REACTION_EMOJIS,
   removePost,
   setWriterRole,
+  toggleCommentReaction,
   toggleLike,
 } from "../services/blogService.js";
 import { LEGACY_STORAGE_KEYS } from "../services/localStorageMigration.js";
+import { moderateComment } from "../utils/commentModeration.js";
 import { sanitizeMultiline, sanitizeSingleLine } from "../utils/validation.js";
 
 const BLOCKED_PATTERNS = [
@@ -296,6 +300,7 @@ export function createBlogUI({
   let currentCategory = "all";
   let commentsMap = {};
   let likesMap = {};
+  let reactionsMap = {};
   let pending = false;
   const MIGRATION_KEYS = LEGACY_STORAGE_KEYS;
 
@@ -309,6 +314,7 @@ export function createBlogUI({
     if (hasLegacyPostsLoaded) {
       commentsMap = loadLegacyCommentMap();
       likesMap = loadLegacyLikesMap();
+      reactionsMap = {};
       return;
     }
 
@@ -320,6 +326,7 @@ export function createBlogUI({
     if (!supabasePostIds.length) {
       commentsMap = {};
       likesMap = {};
+      reactionsMap = {};
       return;
     }
 
@@ -329,12 +336,21 @@ export function createBlogUI({
     ]);
 
     commentsMap = {};
+    const allCommentIds = [];
     (commentsResult.data || []).forEach((comment) => {
+      // Only display visible comments to regular users; admins see flagged too
+      if (comment.status === "hidden") return;
+      if (comment.status === "flagged" && user?.role !== "admin") return;
       if (!commentsMap[comment.postId]) commentsMap[comment.postId] = [];
       commentsMap[comment.postId].push(comment);
+      allCommentIds.push(comment.id);
     });
 
     likesMap = likesResult.data || {};
+
+    // Fetch emoji reactions for all visible comments
+    const reactionsResult = await fetchCommentReactions(allCommentIds, user?.id || null);
+    reactionsMap = reactionsResult.data || {};
   }
 
   function filteredPosts() {
@@ -525,24 +541,74 @@ export function createBlogUI({
       postComments.forEach((comment) => {
         const commentEl = document.createElement("div");
         commentEl.className = "post__comment";
+        if (comment.status === "flagged") {
+          commentEl.classList.add("post__comment--flagged");
+        }
 
-        const row = document.createElement("div");
+        /* Header: username + timestamp */
+        const commentHeader = document.createElement("div");
+        commentHeader.className = "post__comment-header";
+
         const authorSpan = document.createElement("span");
         authorSpan.className = "post__comment-author";
-        authorSpan.textContent = comment.author;
+        authorSpan.textContent = comment.author || "User";
 
-        const bodySpan = document.createElement("span");
-        bodySpan.className = "post__comment-body";
-        bodySpan.appendChild(document.createTextNode(" "));
-        appendInlineFormatted(bodySpan, comment.body);
-
-        row.append(authorSpan, bodySpan);
-
-        const timeSpan = document.createElement("div");
+        const timeSpan = document.createElement("span");
         timeSpan.className = "post__comment-time";
         timeSpan.textContent = timeAgo(comment.createdAt);
 
-        commentEl.append(row, timeSpan);
+        commentHeader.append(authorSpan, timeSpan);
+
+        /* Body text */
+        const bodySpan = document.createElement("div");
+        bodySpan.className = "post__comment-body";
+        appendInlineFormatted(bodySpan, comment.body);
+
+        /* Flagged badge for admins */
+        if (comment.status === "flagged" && user?.role === "admin") {
+          const badge = document.createElement("span");
+          badge.className = "post__comment-flag-badge";
+          badge.textContent = "⚑ flagged";
+          commentHeader.appendChild(badge);
+        }
+
+        /* Emoji reaction row */
+        const reactionRow = document.createElement("div");
+        reactionRow.className = "post__comment-reactions";
+
+        const commentReactions = reactionsMap[comment.id] || {};
+
+        REACTION_EMOJIS.forEach((emoji) => {
+          const reactionData = commentReactions[emoji] || { count: 0, users: [] };
+          const myReacted = user && reactionData.users.includes(user.id);
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "post__reaction-btn" + (myReacted ? " reacted" : "");
+          btn.title = user ? `React with ${emoji}` : "Sign in to react";
+          btn.disabled = post.source !== "supabase";
+
+          const emojiSpan = document.createElement("span");
+          emojiSpan.textContent = emoji;
+
+          btn.appendChild(emojiSpan);
+          if (reactionData.count > 0) {
+            const countSpan = document.createElement("span");
+            countSpan.className = "post__reaction-count";
+            countSpan.textContent = reactionData.count;
+            btn.appendChild(countSpan);
+          }
+
+          btn.addEventListener("click", async () => {
+            if (!user || post.source !== "supabase") return;
+            await toggleCommentReaction(comment.id, user.id, emoji);
+            await render();
+          });
+
+          reactionRow.appendChild(btn);
+        });
+
+        commentEl.append(commentHeader, bodySpan, reactionRow);
         commentsWrap.appendChild(commentEl);
       });
 
@@ -579,12 +645,32 @@ export function createBlogUI({
           return;
         }
 
+        /* Frontend moderation check */
+        const modResult = moderateComment(bodyText);
+        if (!modResult.allowed) {
+          commentSubmit.disabled = false;
+          const errEl = commentForm.querySelector(".comment-mod-error") || document.createElement("small");
+          errEl.className = "comment-mod-error";
+          errEl.style.color = "#d04";  errEl.style.display = "block";
+          errEl.style.fontSize = "0.8rem"; errEl.style.marginTop = "4px";
+          errEl.textContent = modResult.reason;
+          if (!commentForm.contains(errEl)) commentForm.appendChild(errEl);
+          return;
+        }
+
+        /* Clear any previous mod error */
+        const prevErr = commentForm.querySelector(".comment-mod-error");
+        if (prevErr) prevErr.remove();
+
         const safeBody = sanitize(sanitizeMultiline(bodyText, 600));
+        commentSubmit.disabled = true;
         const result = await createComment({
           postId: post.id,
           body: safeBody,
           user,
+          flagged: false,
         });
+        commentSubmit.disabled = false;
 
         if (result.error) {
           statusEl.textContent = result.error;

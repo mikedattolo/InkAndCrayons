@@ -405,19 +405,43 @@
       <div class="gate__content" role="document">
         <button id="gateClose" class="gate__close" type="button" aria-label="Close">&times;</button>
         <h2 id="gateTitle">Welcome to Ink &amp; Crayons</h2>
-        <p>Create or sign in to access all resources.</p>
-        <form id="gateForm" class="gate__form">
-          <label for="email">Email</label>
-          <input id="email" name="email" type="email" required />
-          <label for="password">Password</label>
-          <input id="password" name="password" type="password" minlength="6" required />
-          <label for="username">Username</label>
-          <input id="username" name="username" type="text" maxlength="20" required />
-          <div class="gate__actions">
-            <button id="signUpBtn" type="submit" data-mode="signup" class="btn btn--primary">Create Account</button>
-            <button id="signInBtn" type="button" data-mode="signin" class="btn btn--soft">Sign In</button>
+
+        <!-- Mode tabs -->
+        <div class="gate__tabs" role="tablist">
+          <button class="gate__tab gate__tab--active" id="gateTabSignIn" type="button" role="tab" aria-selected="true">Sign In</button>
+          <button class="gate__tab" id="gateTabSignUp" type="button" role="tab" aria-selected="false">Create Account</button>
+        </div>
+
+        <form id="gateForm" class="gate__form" novalidate>
+          <div class="gate__field">
+            <label for="email" class="gate__label">Email</label>
+            <input id="email" name="email" type="email" autocomplete="email" class="gate__input" placeholder="you@example.com" />
           </div>
-          <button id="resetPasswordBtn" type="button" class="btn btn--soft">Reset Password</button>
+          <div class="gate__field">
+            <label for="password" class="gate__label">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" class="gate__input" placeholder="Min 8 characters" />
+          </div>
+
+          <!-- Sign-up only fields — hidden in sign-in mode -->
+          <div id="gateSignUpFields" hidden>
+            <div class="gate__field">
+              <label for="gateConfirmPw" class="gate__label">Confirm Password</label>
+              <input id="gateConfirmPw" name="confirmPassword" type="password" autocomplete="new-password" class="gate__input" placeholder="Repeat your password" />
+            </div>
+            <div class="gate__field">
+              <label for="username" class="gate__label">Username</label>
+              <input id="username" name="username" type="text" maxlength="20" autocomplete="username" class="gate__input" placeholder="e.g. teachermike" />
+            </div>
+          </div>
+
+          <!-- Status / error message -->
+          <p id="userStatus" class="gate__status" aria-live="polite" role="status"></p>
+
+          <!-- Primary submit -->
+          <button id="signUpBtn" type="submit" class="btn btn--primary gate__submit">Sign In</button>
+
+          <!-- Forgot password -->
+          <button id="resetPasswordBtn" type="button" class="gate__forgot-link">Forgot password?</button>
         </form>
       </div>
     </div>

@@ -90,8 +90,8 @@ export async function updateUserProfile(data) {
 
 export async function changeUserPassword(data) {
   const next = data?.newPassword;
-  if (!next || next.length < 6) {
-    return { error: "Password must be at least 6 characters." };
+  if (!next || next.length < 8) {
+    return { error: "Password must be at least 8 characters." };
   }
   return updatePassword({ newPassword: next });
 }

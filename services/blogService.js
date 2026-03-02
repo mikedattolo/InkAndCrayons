@@ -5,6 +5,10 @@ const POSTS_TABLE = "posts";
 const COMMENTS_TABLE = "comments";
 const LIKES_TABLE = "likes";
 const PROFILES_TABLE = "profiles";
+const REACTIONS_TABLE = "comment_reactions";
+
+/** Allowed emoji for comment reactions */
+export const REACTION_EMOJIS = ["👍", "❤️", "😂", "🎉", "😮", "😢"];
 
 function normalizePost(row) {
   return {
@@ -28,6 +32,7 @@ function normalizeComment(row) {
     author: row.author_name || "Anonymous",
     authorId: row.author_id,
     body: row.body,
+    status: row.status || "visible",
     createdAt: row.created_at,
   };
 }
@@ -111,15 +116,15 @@ export async function fetchComments(postIds = []) {
 
   const { data, error } = await supabase
     .from(COMMENTS_TABLE)
-    .select("id, post_id, author_id, author_name, body, created_at")
+    .select("id, post_id, author_id, author_name, body, status, created_at")
     .in("post_id", postIds)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: true });
 
   if (error) return { error: error.message, data: [] };
   return { data: (data || []).map(normalizeComment) };
 }
 
-export async function createComment({ postId, body, user }) {
+export async function createComment({ postId, body, user, flagged = false }) {
   const supabase = getSupabaseClient();
   if (!supabase) return { error: "Supabase is not configured." };
   if (!user) return { error: "Sign in required." };
@@ -129,12 +134,13 @@ export async function createComment({ postId, body, user }) {
     author_id: user.id,
     author_name: sanitizeSingleLine(user.username || "Member", 80),
     body: sanitizeMultiline(body, 2000),
+    status: flagged ? "flagged" : "visible",
   };
 
   const { data, error } = await supabase
     .from(COMMENTS_TABLE)
     .insert(payload)
-    .select("id, post_id, author_id, author_name, body, created_at")
+    .select("id, post_id, author_id, author_name, body, status, created_at")
     .single();
 
   if (error) return { error: error.message };
@@ -238,4 +244,68 @@ export async function setWriterRole(username, enabled) {
 
   if (error) return { error: error.message };
   return { success: true };
+}
+
+/* ── Comment Reactions ─────────────────────────────────── */
+
+/**
+ * Fetch emoji reactions for a list of comment IDs.
+ * Returns a map: { [commentId]: { [emoji]: { count, users: string[] } } }
+ */
+export async function fetchCommentReactions(commentIds = [], currentUserId = null) {
+  const supabase = getSupabaseClient();
+  if (!supabase || !commentIds.length) return { data: {} };
+
+  const { data, error } = await supabase
+    .from(REACTIONS_TABLE)
+    .select("id, comment_id, user_id, emoji")
+    .in("comment_id", commentIds);
+
+  if (error) return { error: error.message, data: {} };
+
+  const map = {};
+  (data || []).forEach((row) => {
+    if (!map[row.comment_id]) map[row.comment_id] = {};
+    if (!map[row.comment_id][row.emoji]) {
+      map[row.comment_id][row.emoji] = { count: 0, users: [] };
+    }
+    map[row.comment_id][row.emoji].count++;
+    map[row.comment_id][row.emoji].users.push(row.user_id);
+  });
+
+  return { data: map };
+}
+
+/**
+ * Toggle a single emoji reaction on a comment.
+ * Returns { reacted: boolean } — true if the reaction was added, false if removed.
+ */
+export async function toggleCommentReaction(commentId, userId, emoji) {
+  const supabase = getSupabaseClient();
+  if (!supabase) return { error: "Supabase is not configured." };
+
+  const { data: existing, error: lookupError } = await supabase
+    .from(REACTIONS_TABLE)
+    .select("id")
+    .eq("comment_id", commentId)
+    .eq("user_id", userId)
+    .eq("emoji", emoji)
+    .maybeSingle();
+
+  if (lookupError) return { error: lookupError.message };
+
+  if (existing) {
+    const { error } = await supabase.from(REACTIONS_TABLE).delete().eq("id", existing.id);
+    if (error) return { error: error.message };
+    return { reacted: false };
+  }
+
+  const { error } = await supabase.from(REACTIONS_TABLE).insert({
+    comment_id: commentId,
+    user_id: userId,
+    emoji,
+  });
+
+  if (error) return { error: error.message };
+  return { reacted: true };
 }

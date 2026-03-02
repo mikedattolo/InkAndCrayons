@@ -98,7 +98,6 @@ const passwordInput = document.getElementById("password");
 const usernameInput = document.getElementById("username");
 const signOutButton = document.getElementById("signOutBtn");
 const avatarInitialEl = document.getElementById("avatarInitial");
-const signInButton = document.getElementById("signInBtn");
 const headerSignInBtn = document.getElementById("headerSignIn");
 const signUpButton = document.getElementById("signUpBtn");
 const forgotPasswordButton = document.getElementById("resetPasswordBtn");
@@ -161,7 +160,6 @@ const authGate = createAuthGate({
   passwordInput,
   usernameInput,
   statusEl: userStatusEl,
-  signInButton,
   signUpButton,
   forgotPasswordButton,
 });

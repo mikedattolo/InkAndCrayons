@@ -1146,6 +1146,205 @@ body::before {
   font-size: 0.75rem;
 }
 
+/* ── Gate tabs (Sign In / Create Account) ── */
+.gate__tabs {
+  display: flex;
+  gap: 0;
+  border-radius: 14px;
+  background: rgba(201,168,247,0.1);
+  padding: 4px;
+  margin: 12px 0 20px;
+}
+
+.gate__tab {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  background: none;
+  border-radius: 10px;
+  font-family: var(--font-hand);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+}
+.gate__tab--active,
+.gate__tab[aria-selected="true"] {
+  background: var(--white);
+  color: var(--purple-dark);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+/* ── Gate fields ── */
+.gate__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 4px;
+}
+
+.gate__label {
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--purple-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-family: var(--font-hand);
+}
+
+.gate__input {
+  padding: 12px 16px;
+  border-radius: 14px 16px 12px 18px;
+  border: 1.5px solid rgba(201,168,247,0.25);
+  font-size: 0.95rem;
+  font-family: var(--font-hand);
+  background: #fefcff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+.gate__input:focus {
+  outline: none;
+  border-color: var(--purple);
+  box-shadow: 0 0 0 4px rgba(201,168,247,0.18);
+}
+.gate__input--error {
+  border-color: #e04;
+  box-shadow: 0 0 0 3px rgba(220,0,60,0.1);
+}
+
+/* ── Gate status message ── */
+.gate__status {
+  font-family: var(--font-hand);
+  font-size: 0.88rem;
+  min-height: 1.2em;
+  text-align: center;
+  padding: 2px 0;
+  transition: color 0.2s;
+}
+.gate__status:empty { display: none; }
+.gate__status--error { color: #d03; }
+.gate__status--success { color: #1a7a3a; }
+.gate__status--info { color: var(--purple); }
+
+/* ── Gate submit button ── */
+.gate__submit {
+  width: 100%;
+  margin-top: 4px;
+}
+.gate__submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Forgot password link ── */
+.gate__forgot-link {
+  background: none;
+  border: none;
+  font-family: var(--font-hand);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: center;
+  display: block;
+  width: 100%;
+  margin-top: 2px;
+  padding: 4px;
+  transition: color 0.18s;
+}
+.gate__forgot-link:hover { color: var(--purple); }
+
+/* ============================================================
+   COMMENT REACTIONS
+   ============================================================ */
+.post__comment-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.post__comment-author {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--purple-dark);
+  font-family: var(--font-hand);
+}
+
+.post__comment-time {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--font-hand);
+}
+
+.post__comment-body {
+  font-size: 0.9rem;
+  color: var(--text);
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.post__comment--flagged {
+  border-left: 3px solid #f5a623;
+  padding-left: 8px;
+  opacity: 0.85;
+}
+
+.post__comment-flag-badge {
+  font-size: 0.7rem;
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffc10730;
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: auto;
+  font-family: var(--font-hand);
+}
+
+/* Emoji reaction row */
+.post__comment-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.post__reaction-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(201,168,247,0.2);
+  background: rgba(201,168,247,0.06);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  line-height: 1.4;
+  color: inherit;
+}
+.post__reaction-btn:hover:not(:disabled) {
+  background: rgba(201,168,247,0.18);
+  border-color: var(--purple);
+  transform: scale(1.08);
+}
+.post__reaction-btn.reacted {
+  background: rgba(201,168,247,0.25);
+  border-color: var(--purple);
+  font-weight: 700;
+}
+.post__reaction-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.post__reaction-count {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--purple-dark);
+}
+
 /* ============================================================
    GENERIC MODAL
    ============================================================ */
