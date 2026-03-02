@@ -359,11 +359,6 @@ function attachEvents() {
   if (_eventsAttached) return;
   _eventsAttached = true;
 
-  // TEMP DEBUG: verify sign-in button lookup before binding click listener
-  console.debug("[TEMP DEBUG] sign-in button lookup result", {
-    found: Boolean(headerSignInBtn),
-  });
-
   /* Header nav pills */
   navLessonsBtn?.addEventListener("click", openLessons);
 
@@ -606,10 +601,6 @@ function attachEvents() {
   headerSignInBtn?.addEventListener("click", () => {
     authGate.setGateOpen(true);
   });
-  // TEMP DEBUG: confirm click listener attachment for header sign-in
-  console.debug("[TEMP DEBUG] sign-in click listener attached", {
-    attached: Boolean(headerSignInBtn),
-  });
 
   accountModal?.querySelector(".account-modal__close")?.addEventListener("click", closeAccountModal);
   accountModal?.querySelector(".account-modal__backdrop")?.addEventListener("click", closeAccountModal);
@@ -723,22 +714,14 @@ function attachEvents() {
 
 /* ── Init ───────────────────────────────────────────────── */
 async function init() {
-  // TEMP DEBUG: homepage init start
-  console.debug("[TEMP DEBUG] homepage init start");
-
   registerMigrationUtilities();
   attachEvents();
 
-  // TEMP DEBUG: auth init start
-  console.debug("[TEMP DEBUG] auth init start");
   try {
     await initAuth();
   } catch (error) {
-    // TEMP DEBUG: auth/profile sync failures should not block homepage wiring
-    console.error("[TEMP DEBUG] auth init failed, continuing homepage init", error);
+    console.error("Auth init failed:", error);
   }
-  // TEMP DEBUG: auth init end
-  console.debug("[TEMP DEBUG] auth init end");
 
   try {
     onAuthStateChanged((user) => {
@@ -775,15 +758,13 @@ async function init() {
       blogUI?.render();
     });
   } catch (error) {
-    // TEMP DEBUG: auth state listener failures should not break homepage init
-    console.error("[TEMP DEBUG] auth listener setup failed, continuing homepage init", error);
+    console.error("Auth listener setup failed:", error);
   }
 
   try {
     await loadContent();
   } catch (error) {
-    // TEMP DEBUG: content load failures should not block event wiring
-    console.error("[TEMP DEBUG] content load failed, continuing homepage init", error);
+    console.error("Content load failed:", error);
   }
   modal.setOpen(false);
 
@@ -791,8 +772,7 @@ async function init() {
   try {
     await populateHomeBlogPreview();
   } catch (error) {
-    // TEMP DEBUG: latest blogs preview should fail open with fallback UI
-    console.error("[TEMP DEBUG] latest blogs render failed", error);
+    console.error("Blog preview failed:", error);
     const cardEl = document.getElementById("homeBlogCard");
     if (cardEl) {
       cardEl.textContent = "";
@@ -803,38 +783,28 @@ async function init() {
       cardEl.appendChild(empty);
     }
   }
-
-  // TEMP DEBUG: homepage init end
-  console.debug("[TEMP DEBUG] homepage init end");
 }
 
 async function populateHomeBlogPreview() {
-  // TEMP DEBUG: latest blogs render start
-  console.debug("[TEMP DEBUG] latest blogs render start");
-
   const cardEl = document.getElementById("homeBlogCard");
-  const readMoreBtn = document.getElementById("homeBlogReadMore");
   if (!cardEl) return;
 
-  /* Load posts directly — blogUI may not be available on the home page */
+  /* Load posts — falls back to seed JSON if Supabase is unavailable */
   const posts = await loadPosts();
-  // TEMP DEBUG: posts fetch result count
-  console.debug("[TEMP DEBUG] posts fetch result count", posts.length);
-  const filtered = posts.filter(p => p.title !== "Welcome to Ink & Crayons Articles");
+  const filtered = posts.filter((p) => p.title !== "Welcome to Ink & Crayons Articles");
   const latest = filtered.length > 0 ? filtered[0] : null;
+
+  cardEl.textContent = "";
+
   if (!latest) {
-    cardEl.textContent = "";
     const empty = document.createElement("p");
     empty.style.color = "#999";
     empty.style.textAlign = "center";
     empty.textContent = "No articles yet — check back soon!";
     cardEl.appendChild(empty);
-    // TEMP DEBUG: latest blogs render end
-    console.debug("[TEMP DEBUG] latest blogs render end", { hasLatest: false });
     return;
   }
 
-  /* Build the preview card */
   const title = document.createElement("h3");
   title.className = "home-blog-preview__title";
   title.textContent = latest.title;
@@ -848,18 +818,10 @@ async function populateHomeBlogPreview() {
   const plain = latest.body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
   snippet.textContent = plain.length > 260 ? plain.slice(0, 260) + "…" : plain;
 
-  cardEl.textContent = "";
   cardEl.appendChild(title);
   cardEl.appendChild(meta);
   cardEl.appendChild(snippet);
-
-  /* Wire the Read More button */
-  readMoreBtn?.addEventListener("click", () => {
-    window.location.href = "blog.html";
-  });
-
-  // TEMP DEBUG: latest blogs render end
-  console.debug("[TEMP DEBUG] latest blogs render end", { hasLatest: true });
+  /* The "Read More" button is an <a href="blog.html"> in the HTML — no JS handler needed. */
 }
 
 if (document.readyState === "loading") {

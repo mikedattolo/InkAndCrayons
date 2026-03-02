@@ -39,9 +39,6 @@ export async function ensureProfile(authUser, preferredUsername) {
   const supabase = getSupabaseClient();
   if (!supabase || !authUser) return null;
 
-  // TEMP DEBUG: profile sync start
-  console.debug("[TEMP DEBUG] profile sync start", { userId: authUser.id });
-
   const existing = await getProfile(authUser.id);
   const usernameBase = sanitizeSingleLine(preferredUsername || authUser.email?.split("@")[0] || "member", 20);
   const fallbackUsername = usernameBase || `member_${authUser.id.slice(0, 6)}`;
@@ -63,16 +60,10 @@ export async function ensureProfile(authUser, preferredUsername) {
     .single();
 
   if (error) {
-    // TEMP DEBUG: sync failure should not block app init
-    console.error("[TEMP DEBUG] profile sync failed", {
-      userId: authUser.id,
-      message: error.message,
-    });
+    console.error("Profile sync failed:", error.message);
     return existing;
   }
 
-  // TEMP DEBUG: profile sync success
-  console.debug("[TEMP DEBUG] profile sync success", { userId: authUser.id });
   return data || existing;
 }
 
@@ -89,20 +80,13 @@ export async function getCurrentAppUser() {
     profile = await ensureProfile(authUser);
   }
 
-  if (!profile) {
-    // TEMP DEBUG: continue with auth user fallback so UI init is not blocked
-    console.warn("[TEMP DEBUG] profile unavailable after sync, continuing with auth fallback", {
-      userId: authUser.id,
-    });
-  }
-
   return mapUser(authUser, profile);
 }
 
 export async function signUpWithEmail({ email, password, username }) {
   const supabase = getSupabaseClient();
   if (!supabase) {
-    return { error: "Supabase is not configured. Add runtime config first." };
+    return { error: "Sign-up is not available right now. Please try again later." };
   }
 
   const cleanEmail = sanitizeSingleLine(email, 120).toLowerCase();
@@ -143,7 +127,7 @@ export async function signUpWithEmail({ email, password, username }) {
 export async function signInWithEmail({ email, password }) {
   const supabase = getSupabaseClient();
   if (!supabase) {
-    return { error: "Supabase is not configured. Add runtime config first." };
+    return { error: "Sign-in is not available right now. Please try again later." };
   }
 
   const cleanEmail = sanitizeSingleLine(email, 120).toLowerCase();
@@ -210,7 +194,7 @@ export async function updateCurrentProfile({ username, avatarUrl }) {
 
 export async function updatePassword({ newPassword }) {
   const supabase = getSupabaseClient();
-  if (!supabase) return { error: "Supabase is not configured." };
+  if (!supabase) return { error: "Unable to update your password right now. Please try again later." };
 
   const { error } = await supabase.auth.updateUser({ password: newPassword });
   if (error) return { error: error.message };
@@ -219,7 +203,7 @@ export async function updatePassword({ newPassword }) {
 
 export async function requestPasswordReset(email, redirectTo) {
   const supabase = getSupabaseClient();
-  if (!supabase) return { error: "Supabase is not configured." };
+  if (!supabase) return { error: "Password reset is not available right now. Please try again later." };
 
   const cleanEmail = sanitizeSingleLine(email, 120).toLowerCase();
   if (!isValidEmail(cleanEmail)) {
@@ -251,12 +235,7 @@ export function onSupabaseAuthStateChange(callback) {
       profile = await ensureProfile(session.user);
     }
 
-    if (!profile) {
-      // TEMP DEBUG: keep auth flow alive even when profile sync fails
-      console.warn("[TEMP DEBUG] auth state profile sync unavailable, using auth fallback", {
-        userId: session.user.id,
-      });
-    }
+
 
     callback(mapUser(session.user, profile));
   });

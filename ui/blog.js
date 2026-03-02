@@ -120,10 +120,16 @@ function roleCanPublish(userObj) {
   return userObj?.role === "admin" || userObj?.role === "writer";
 }
 
-function isValidDbPostId(value) {
-  if (typeof value === "number") return Number.isInteger(value) && value >= 0;
-  if (typeof value === "string") return /^\d+$/.test(value.trim());
-  return false;
+/** UUID v4 pattern — matches all Supabase-generated post IDs. */
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Returns true for real Supabase post IDs (UUIDs).
+ * Rejects synthetic IDs such as `seed_*` and `legacy_*`.
+ */
+function isSupabasePostId(value) {
+  if (typeof value !== "string") return false;
+  return UUID_REGEX.test(value.trim());
 }
 
 function roleCanManagePost(userObj, post) {
@@ -228,26 +234,33 @@ async function loadSeedPostsFallback() {
   }
 }
 
+/**
+ * Load posts with an explicit, deterministic fallback chain:
+ *   1. Supabase (live DB)
+ *   2. Legacy localStorage (migration mode — read-only)
+ *   3. Seed JSON (data/posts.json — read-only)
+ *
+ * Each source stamps `post.source` so the UI can restrict edit/delete.
+ */
 export async function loadPosts() {
+  // 1. Try Supabase
   const result = await fetchPosts();
+  if (!result.error && result.data?.length) {
+    // Deduplicate against any legacy-local posts that share the same ID
+    const supabaseIds = new Set(result.data.map((p) => p.id));
+    const legacyExtra = loadLegacyLocalPostsFallback().filter(
+      (p) => !supabaseIds.has(p.id)
+    );
+    // Merge: live posts first, then any legacy posts not yet in Supabase
+    return [...result.data, ...legacyExtra];
+  }
 
-  // TEMPORARY MIGRATION FALLBACK:
-  // Keep reading legacy localStorage posts until migration is verified complete.
-  // localStorage is origin-bound; changing domain/origin will not transfer this data automatically.
+  // 2. Supabase unavailable or empty — try legacy localStorage
   const legacyLocal = loadLegacyLocalPostsFallback();
+  if (legacyLocal.length) return legacyLocal;
 
-  if (result.error) {
-    if (legacyLocal.length) return legacyLocal;
-    const seed = await loadSeedPostsFallback();
-    return seed;
-  }
-
-  if (!result.data.length) {
-    if (legacyLocal.length) return legacyLocal;
-    return loadSeedPostsFallback();
-  }
-
-  return result.data;
+  // 3. Fall back to seed posts bundled with the app
+  return loadSeedPostsFallback();
 }
 
 export async function updatePost(postId, updates) {
@@ -291,46 +304,28 @@ export function createBlogUI({
   }
 
   async function hydratePostState() {
-    // TEMP DEBUG: inspect loaded posts before comments/likes hydration
-    console.debug(
-      "[TEMP DEBUG] blog loaded posts",
-      posts.map((post) => ({ id: post.id, source: post.source }))
-    );
-
+    // Legacy-local posts carry their own comments/likes in localStorage
     const hasLegacyPostsLoaded = posts.some((post) => post.source === "legacy-local");
     if (hasLegacyPostsLoaded) {
-      // TEMP DEBUG: comments/likes are loaded from legacy localStorage map in this mode
-      console.debug(
-        "[TEMP DEBUG] comments/likes query skipped reason",
-        "legacy-local posts loaded"
-      );
       commentsMap = loadLegacyCommentMap();
       likesMap = loadLegacyLikesMap();
       return;
     }
 
-    const extractedPostIds = posts.map((post) => post.id);
-    // TEMP DEBUG: raw IDs coming from loaded posts
-    console.debug("[TEMP DEBUG] extracted post IDs", extractedPostIds);
+    // Only query Supabase for genuine UUID post IDs; skip seed/legacy synthetic IDs
+    const supabasePostIds = posts
+      .map((post) => post.id)
+      .filter((id) => isSupabasePostId(id));
 
-    const validDbPostIds = extractedPostIds.filter((id) => isValidDbPostId(id));
-    // TEMP DEBUG: IDs safe for bigint post_id queries
-    console.debug("[TEMP DEBUG] filtered valid DB IDs", validDbPostIds);
-
-    if (!validDbPostIds.length) {
-      // TEMP DEBUG: avoid invalid post_id=in.(seed_...) query against bigint column
-      console.debug(
-        "[TEMP DEBUG] comments/likes query skipped reason",
-        "no valid numeric database post IDs"
-      );
+    if (!supabasePostIds.length) {
       commentsMap = {};
       likesMap = {};
       return;
     }
 
     const [commentsResult, likesResult] = await Promise.all([
-      fetchComments(validDbPostIds),
-      fetchLikes(validDbPostIds, user?.id || null),
+      fetchComments(supabasePostIds),
+      fetchLikes(supabasePostIds, user?.id || null),
     ]);
 
     commentsMap = {};

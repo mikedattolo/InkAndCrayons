@@ -1,4 +1,19 @@
-export const SUPABASE_URL = "https://xdskiwtfpmourcokaehr.supabase.co";
-
-export const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhkc2tpd3RmcG1vdXJjb2thZWhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwNjIwMDAsImV4cCI6MjA4NzYzODAwMH0.sTcEGLFPNSlal0Z7ePEVcerUYHEvT5sVUOIKb8lpsew";
+/**
+ * config/supabaseConfig.js — DEV REFERENCE ONLY
+ *
+ * This file is no longer used by the application at runtime.
+ * Supabase credentials are injected via config/runtime-config.js which
+ * sets `window.__LRL_CONFIG__` before any other module loads.
+ *
+ * In production (Cloudflare Pages), provide the real values as environment
+ * variables and have your build/edge worker write them into runtime-config.js.
+ *
+ * Example runtime-config.js for local development:
+ *
+ *   window.__LRL_CONFIG__ = {
+ *     SUPABASE_URL: "https://your-project.supabase.co",
+ *     SUPABASE_ANON_KEY: "your-anon-key",
+ *   };
+ *
+ * Do NOT commit real keys here.
+ */
