@@ -8,10 +8,13 @@ import {
   updateCurrentProfile,
   updatePassword,
 } from "./supabaseAuth.js";
+import { ensureSupabaseInitialized } from "../services/supabaseClient.js";
 
 const listeners = new Set();
 let currentUser = null;
 let unsubscribeAuthListener = null;
+let authInitPromise = null;
+let hasCalleddInitAuth = false;
 
 function notify(user) {
   currentUser = user;
@@ -19,30 +22,42 @@ function notify(user) {
 }
 
 export async function initAuth() {
-  if (unsubscribeAuthListener) {
+  // If we've already called initAuth and set up the listener, just wait for/return the current state
+  if (hasCalledInitAuth) {
+    // If there's still an initialization promise, wait for it
+    if (authInitPromise) {
+      await authInitPromise;
+    }
     return currentUser;
   }
 
-  // Set up a promise that resolves when auth state is first determined
-  const authInitPromise = new Promise((resolve) => {
-    let hasInitialized = false;
+  hasCalledInitAuth = true;
 
-    unsubscribeAuthListener = onSupabaseAuthStateChange((user) => {
-      notify(user);
-      if (!hasInitialized) {
-        hasInitialized = true;
-        resolve(user);
-      }
+  // Ensure Supabase has loaded the session from localStorage
+  await ensureSupabaseInitialized();
+
+  // Create the initialization promise if we haven't already
+  if (!authInitPromise) {
+    authInitPromise = new Promise((resolve) => {
+      let hasInitialized = false;
+
+      unsubscribeAuthListener = onSupabaseAuthStateChange((user) => {
+        notify(user);
+        if (!hasInitialized) {
+          hasInitialized = true;
+          resolve(user);
+        }
+      });
     });
-  });
+  }
 
-  // Also try to restore from getSession in parallel
+  // Try to restore from getSession immediately while listener sets up
   const restoredUser = await getCurrentAppUser();
   if (restoredUser) {
     notify(restoredUser);
   }
 
-  // Wait for the listener to fire with the initial auth state
+  // Wait for the listener to fire with the confirmed auth state
   const listenerUser = await authInitPromise;
   
   return listenerUser || restoredUser;

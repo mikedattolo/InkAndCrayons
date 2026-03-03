@@ -6,6 +6,7 @@ import { APP_CONFIG, hasSupabaseConfig } from "../config/appConfig.js";
  * Returns null when runtime config is absent so callers can degrade gracefully.
  */
 let _client = null;
+let _initialized = false;
 
 function buildClient() {
   if (!hasSupabaseConfig()) return null;
@@ -20,9 +21,34 @@ function buildClient() {
   });
 }
 
+/**
+ * Get or create the Supabase client.
+ * The client automatically loads the session from localStorage on first creation.
+ */
 export function getSupabaseClient() {
   if (!_client) {
     _client = buildClient();
   }
   return _client;
+}
+
+/**
+ * Wait for Supabase to initialize.
+ * This gives the client time to load the session from localStorage before we try to use it.
+ * Safe to call multiple times - resolves immediately after first initialization.
+ */
+export async function ensureSupabaseInitialized() {
+  if (_initialized) return;
+  
+  const client = getSupabaseClient();
+  if (!client) return;
+
+  _initialized = true;
+
+  // Trigger a session restore from localStorage
+  try {
+    await client.auth.getSession();
+  } catch (err) {
+    console.error("Error initializing Supabase session:", err);
+  }
 }
