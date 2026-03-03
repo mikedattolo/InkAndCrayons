@@ -14,6 +14,8 @@ function buildClient() {
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
+      storage: typeof localStorage !== 'undefined' ? localStorage : undefined,
+      storageKey: 'sb-token',
     },
   });
 }

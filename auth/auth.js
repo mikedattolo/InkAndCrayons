@@ -19,15 +19,33 @@ function notify(user) {
 }
 
 export async function initAuth() {
-  if (!unsubscribeAuthListener) {
-    unsubscribeAuthListener = onSupabaseAuthStateChange((user) => {
-      notify(user);
-    });
+  if (unsubscribeAuthListener) {
+    return currentUser;
   }
 
+  // Set up a promise that resolves when auth state is first determined
+  const authInitPromise = new Promise((resolve) => {
+    let hasInitialized = false;
+
+    unsubscribeAuthListener = onSupabaseAuthStateChange((user) => {
+      notify(user);
+      if (!hasInitialized) {
+        hasInitialized = true;
+        resolve(user);
+      }
+    });
+  });
+
+  // Also try to restore from getSession in parallel
   const restoredUser = await getCurrentAppUser();
-  notify(restoredUser);
-  return restoredUser;
+  if (restoredUser) {
+    notify(restoredUser);
+  }
+
+  // Wait for the listener to fire with the initial auth state
+  const listenerUser = await authInitPromise;
+  
+  return listenerUser || restoredUser;
 }
 
 export function onAuthStateChanged(callback) {

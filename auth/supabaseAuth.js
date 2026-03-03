@@ -71,16 +71,21 @@ export async function getCurrentAppUser() {
   const supabase = getSupabaseClient();
   if (!supabase) return null;
 
-  const { data, error } = await supabase.auth.getSession();
-  if (error || !data?.session?.user) return null;
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    if (error || !data?.session?.user) return null;
 
-  const authUser = data.session.user;
-  let profile = await getProfile(authUser.id);
-  if (!profile) {
-    profile = await ensureProfile(authUser);
+    const authUser = data.session.user;
+    let profile = await getProfile(authUser.id);
+    if (!profile) {
+      profile = await ensureProfile(authUser);
+    }
+
+    return mapUser(authUser, profile);
+  } catch (err) {
+    console.error("Error getting current user:", err);
+    return null;
   }
-
-  return mapUser(authUser, profile);
 }
 
 export async function signUpWithEmail({ email, password, username }) {
@@ -116,7 +121,17 @@ export async function signUpWithEmail({ email, password, username }) {
   }
 
   await ensureProfile(data.user, cleanUsername);
-  const user = await getCurrentAppUser();
+  
+  // If there's a session, wait for it to be fully established
+  let user = null;
+  if (data.session) {
+    try {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      user = await getCurrentAppUser();
+    } catch (err) {
+      console.error("Error getting user after sign-up:", err);
+    }
+  }
 
   return {
     user,
@@ -135,7 +150,7 @@ export async function signInWithEmail({ email, password }) {
     return { error: "Please enter a valid email." };
   }
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email: cleanEmail,
     password,
   });
@@ -144,8 +159,21 @@ export async function signInWithEmail({ email, password }) {
     return { error: error.message };
   }
 
-  const user = await getCurrentAppUser();
-  return { user };
+  // Wait a bit for the session to be fully established
+  if (data.session) {
+    // Session is already available, get the full user data
+    let user = null;
+    try {
+      // Give Supabase a moment to fully establish the session
+      await new Promise(resolve => setTimeout(resolve, 100));
+      user = await getCurrentAppUser();
+    } catch (err) {
+      console.error("Error getting user after sign-in:", err);
+    }
+    return { user };
+  }
+
+  return { error: "Sign-in failed: no session established" };
 }
 
 export async function signOutAuth() {
