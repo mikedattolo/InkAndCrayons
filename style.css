@@ -701,14 +701,14 @@ body::before {
   max-width: var(--max-w);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2fr 1fr;
   gap: 48px;
   align-items: center;
   position: relative;
 }
 
 .hero__text {
-  max-width: 680px;
+  max-width: 900px;
   margin-left: 40px;
   background: rgba(255,255,255,0.85);
   padding: var(--space-6) var(--space-7);
@@ -739,10 +739,10 @@ body::before {
 .hero__body {
   color: var(--text-muted);
   font-size: 1.08rem;
-  margin-bottom: var(--space-7);
-  line-height: 1.75;
+  margin-bottom: var(--space-3);
+  line-height: 1.65;
   font-style: italic;
-  max-width: 90ch;
+  max-width: 100%;
 }
 
 .hero__actions { display: flex; gap: 14px; flex-wrap: wrap; }
