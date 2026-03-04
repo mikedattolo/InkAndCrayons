@@ -708,7 +708,7 @@ body::before {
 }
 
 .hero__text {
-  max-width: 520px;
+  max-width: 680px;
   margin-left: 40px;
   background: rgba(255,255,255,0.85);
   padding: var(--space-6) var(--space-7);
@@ -742,7 +742,7 @@ body::before {
   margin-bottom: var(--space-7);
   line-height: 1.75;
   font-style: italic;
-  max-width: 65ch;
+  max-width: 90ch;
 }
 
 .hero__actions { display: flex; gap: 14px; flex-wrap: wrap; }
