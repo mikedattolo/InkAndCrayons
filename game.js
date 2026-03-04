@@ -1,3 +1,4 @@
+/* game.js v50 */
 import {
   changeUserPassword,
   getUserProfile,
