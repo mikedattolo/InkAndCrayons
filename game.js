@@ -322,10 +322,18 @@ function openWorksheetCategory(category) {
 
 function openMilestones() {
   setMarketVisible(false);
+  const link = document.createElement("a");
+  link.href = "https://www.cdc.gov/act-early/milestones/index.html";
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.textContent = "CDC Milestones";
+  link.className = "btn btn--primary";
+  link.style.display = "inline-block";
+  link.style.marginTop = "12px";
   modal.open({
     title: "Educational Milestones",
     description: "Track key milestones in your child's learning journey.",
-    contentNodes: renderAnnouncements(contentStore.announcements),
+    contentNodes: [link],
   });
 }
 

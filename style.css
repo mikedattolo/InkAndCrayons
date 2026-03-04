@@ -319,6 +319,10 @@ body::before {
   font-style: italic;
   letter-spacing: 0.03em;
 }
+.section-title--dark {
+  color: #1a1a1a;
+}
+
 .section-title::after {
   content: '';
   display: block;
