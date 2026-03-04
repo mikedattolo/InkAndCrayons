@@ -342,7 +342,7 @@ function openGuides() {
   setMarketVisible(false);
 
   const books = [
-    { title: "Coming Soon", color: "pink" },
+    { title: "The Giving Tree — Shel Silverstein", color: "pink", url: "https://www.amazon.com/Giving-Tree-Shel-Silverstein/dp/B000NY2R40" },
     { title: "Coming Soon", color: "purple" },
     { title: "Coming Soon", color: "mint" },
     { title: "Coming Soon", color: "blue" },
