@@ -3154,7 +3154,8 @@ body::before {
    HOME PAGE — LATEST BLOG PREVIEW
    ============================================================ */
 .home-blog-preview {
-  padding: var(--space-8) var(--gutter);
+  padding: var(--space-6) var(--gutter) var(--space-8);
+  margin-top: -2rem;
 }
 
 .home-blog-preview__inner {
