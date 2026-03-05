@@ -66,6 +66,7 @@ export async function createPost({ title, body, category, user }) {
     category: sanitizeSingleLine(category || "all", 60) || "all",
     author_id: user.id,
     author_name: sanitizeSingleLine(user.username || "Member", 80),
+    is_published: true,
   };
 
   const { data, error } = await supabase
