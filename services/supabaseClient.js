@@ -37,18 +37,20 @@ export function getSupabaseClient() {
  * This gives the client time to load the session from localStorage before we try to use it.
  * Safe to call multiple times - resolves immediately after first initialization.
  */
+let _initPromise = null;
 export async function ensureSupabaseInitialized() {
   if (_initialized) return;
-  
+
+  // If already initializing, wait for the same promise (avoids double getSession)
+  if (_initPromise) return _initPromise;
+
   const client = getSupabaseClient();
   if (!client) return;
 
-  _initialized = true;
+  _initPromise = client.auth.getSession()
+    .then(() => { _initialized = true; })
+    .catch((err) => { console.error("Error initializing Supabase session:", err); })
+    .finally(() => { _initPromise = null; });
 
-  // Trigger a session restore from localStorage
-  try {
-    await client.auth.getSession();
-  } catch (err) {
-    console.error("Error initializing Supabase session:", err);
-  }
+  return _initPromise;
 }

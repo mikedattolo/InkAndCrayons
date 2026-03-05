@@ -14,7 +14,7 @@ const listeners = new Set();
 let currentUser = null;
 let unsubscribeAuthListener = null;
 let authInitPromise = null;
-let hasCalleddInitAuth = false;
+let hasCalledInitAuth = false;
 
 function notify(user) {
   currentUser = user;
@@ -37,9 +37,12 @@ export async function initAuth() {
   await ensureSupabaseInitialized();
 
   // Create the initialization promise if we haven't already
+  let resolveAuth;
+  let hasInitialized = false;
+
   if (!authInitPromise) {
     authInitPromise = new Promise((resolve) => {
-      let hasInitialized = false;
+      resolveAuth = resolve;
 
       unsubscribeAuthListener = onSupabaseAuthStateChange((user) => {
         notify(user);
@@ -55,11 +58,19 @@ export async function initAuth() {
   const restoredUser = await getCurrentAppUser();
   if (restoredUser) {
     notify(restoredUser);
+    // Resolve the promise immediately if Supabase listener hasn't fired yet.
+    // This prevents initAuth() from hanging when onAuthStateChange is slow/delayed.
+    if (!hasInitialized && resolveAuth) {
+      hasInitialized = true;
+      resolveAuth(restoredUser);
+    }
   }
 
-  // Wait for the listener to fire with the confirmed auth state
-  const listenerUser = await authInitPromise;
-  
+  // Wait for auth to resolve (either from listener above or restoredUser fallback)
+  // Add a safety timeout so we never hang indefinitely
+  const timeoutFallback = new Promise(resolve => setTimeout(() => resolve(null), 5000));
+  const listenerUser = await Promise.race([authInitPromise, timeoutFallback]);
+
   return listenerUser || restoredUser;
 }
 

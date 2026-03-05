@@ -3,7 +3,7 @@
  * Handles blog rendering + admin article management (create/edit/delete).
  */
 import { createBlogUI, updatePost } from "./ui/blog.js";
-import { getUserProfile, initAuth, onAuthStateChanged } from "./auth/auth.js";
+import { initAuth, onAuthStateChanged } from "./auth/auth.js";
 import { createPost } from "./services/blogService.js";
 import { registerMigrationUtilities } from "./services/localStorageMigration.js";
 import { sanitizeMultiline, sanitizeSingleLine } from "./utils/validation.js";
@@ -32,10 +32,17 @@ const editorModalTitle = document.getElementById("editorModalTitle");
 const adminNewPostBtn  = document.getElementById("adminNewPost");
 
 /* ── State ───────────────────────────────────────────── */
-let currentUser = getUserProfile();
 let editingPostId = null; // null = creating new, string = editing existing
 
 registerMigrationUtilities();
+
+/* Initialize auth FIRST so the Supabase session is available for RLS queries */
+let currentUser = null;
+try {
+  currentUser = await initAuth();
+} catch (err) {
+  console.error("Auth init error on blog page:", err);
+}
 
 function isAdmin() {
   return currentUser?.role === "admin";
@@ -92,15 +99,6 @@ function updateAdminUI() {
   if (adminNewPostBtn) adminNewPostBtn.hidden = !admin;
 }
 updateAdminUI();
-
-/* ── Auth state listener (updates if user signs in/out) ─ */
-await initAuth();
-onAuthStateChanged((user) => {
-  currentUser = user;
-  blogUI.setUser(user);
-  updateAdminUI();
-  blogUI.render();
-});
 
 /* ── FAB: New article ────────────────────────────────── */
 adminNewPostBtn?.addEventListener("click", () => {
@@ -188,6 +186,20 @@ document.querySelectorAll(".editor-modal__fmt-btn").forEach(btn => {
     ta.setRangeText(insert, start, end, "end");
     ta.focus();
   });
+});
+
+/* ── Auth state listener (updates if user signs in/out later) ─ */
+onAuthStateChanged((user) => {
+  const roleChanged = currentUser?.role !== user?.role;
+  currentUser = user;
+  blogUI.setUser(user);
+  updateAdminUI();
+  // Reload posts when role changes (e.g. admin sees unpublished posts via RLS)
+  if (roleChanged) {
+    blogUI.reloadPosts();
+  } else {
+    blogUI.render();
+  }
 });
 
 
