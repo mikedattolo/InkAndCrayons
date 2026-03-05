@@ -247,32 +247,36 @@ async function loadSeedPostsFallback() {
 }
 
 /**
- * Load posts with an explicit, deterministic fallback chain:
- *   1. Supabase (live DB)
+ * Load posts from all available sources and merge them:
+ *   1. Supabase (live DB) — editable
  *   2. Legacy localStorage (migration mode — read-only)
- *   3. Seed JSON (data/posts.json — read-only)
+ *   3. Seed JSON (data/posts.json — read-only, always included as baseline content)
  *
  * Each source stamps `post.source` so the UI can restrict edit/delete.
  */
 export async function loadPosts({ adminMode = false } = {}) {
+  const allPosts = [];
+  const seenIds = new Set();
+
   // 1. Try Supabase
   const result = await fetchPosts({ adminMode });
   if (!result.error && result.data?.length) {
-    // Deduplicate against any legacy-local posts that share the same ID
-    const supabaseIds = new Set(result.data.map((p) => p.id));
-    const legacyExtra = loadLegacyLocalPostsFallback().filter(
-      (p) => !supabaseIds.has(p.id)
-    );
-    // Merge: live posts first, then any legacy posts not yet in Supabase
-    return [...result.data, ...legacyExtra];
+    result.data.forEach((p) => { seenIds.add(p.id); allPosts.push(p); });
   }
 
-  // 2. Supabase unavailable or empty — try legacy localStorage
+  // 2. Merge any legacy-local posts not already in Supabase
   const legacyLocal = loadLegacyLocalPostsFallback();
-  if (legacyLocal.length) return legacyLocal;
+  legacyLocal.forEach((p) => {
+    if (!seenIds.has(p.id)) { seenIds.add(p.id); allPosts.push(p); }
+  });
 
-  // 3. Fall back to seed posts bundled with the app
-  return loadSeedPostsFallback();
+  // 3. Always include seed posts so baseline content is never empty
+  const seedPosts = await loadSeedPostsFallback();
+  seedPosts.forEach((p) => {
+    if (!seenIds.has(p.id)) { seenIds.add(p.id); allPosts.push(p); }
+  });
+
+  return allPosts;
 }
 
 export async function updatePost(postId, updates) {
