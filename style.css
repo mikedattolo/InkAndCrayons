@@ -2870,19 +2870,19 @@ body::before {
 /* --- Comments section --- */
 .post__comments {
   display: block;
-  padding: 0 16px 8px;
-  max-height: 200px;
+  padding: 0 18px 12px;
+  max-height: 320px;
   overflow-y: auto;
 }
 
 .post__comment-section {
-  padding-bottom: 8px;
+  padding-bottom: 12px;
 }
 
 .post__comment {
-  padding: 6px 0;
-  font-size: 0.88rem;
-  line-height: 1.4;
+  padding: 10px 0;
+  font-size: 1rem;
+  line-height: 1.55;
   border-bottom: 1px solid rgba(0,0,0,0.03);
 }
 .post__comment:last-child { border-bottom: none; }
@@ -2891,15 +2891,16 @@ body::before {
   font-weight: 700;
   color: var(--text);
   margin-right: 6px;
-  font-size: 0.84rem;
+  font-size: 0.98rem;
 }
 
 .post__comment-body {
   color: var(--text-muted);
+  font-size: 0.98rem;
 }
 
 .post__comment-time {
-  font-size: 0.7rem;
+  font-size: 0.82rem;
   color: #bbb;
   margin-top: 2px;
 }
@@ -2909,7 +2910,7 @@ body::before {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
+  padding: 12px 18px;
   border-top: 1px solid rgba(0,0,0,0.05);
 }
 
@@ -2918,8 +2919,8 @@ body::before {
   border: none;
   outline: none;
   font-family: var(--font-hand);
-  font-size: 0.92rem;
-  padding: 6px 0;
+  font-size: 1.02rem;
+  padding: 8px 0;
   background: transparent;
 }
 .post__comment-input::placeholder {
@@ -2931,7 +2932,7 @@ body::before {
   border: none;
   color: var(--purple-dark);
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   cursor: pointer;
   opacity: 0.5;
   transition: opacity 0.2s;

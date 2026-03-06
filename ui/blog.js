@@ -13,6 +13,7 @@ import {
   toggleCommentReaction,
   toggleLike,
 } from "../services/blogService.js";
+import { notifyAdminOfNewComment } from "../services/adminNotifications.js";
 import { LEGACY_STORAGE_KEYS } from "../services/localStorageMigration.js";
 import { censorCommentText, moderateComment } from "../utils/commentModeration.js";
 import { sanitizeMultiline, sanitizeSingleLine } from "../utils/validation.js";
@@ -23,7 +24,7 @@ const BLOCKED_PATTERNS = [
 ];
 
 const POST_MOODS_KEY = "lrl_post_moods";
-const COMMENT_TTL_MS = 24 * 60 * 60 * 1000;
+const COMMENT_TTL_MS = 5 * 60 * 60 * 1000;
 const POST_ACTION_EMOJIS = ["😀", "😢", "😂", "😠"];
 
 const _postTimestamps = new Map();
@@ -811,6 +812,15 @@ export function createBlogUI({
           statusEl.textContent = result.error;
           return;
         }
+
+        // Fire-and-forget admin alert hook (webhook/email bridge)
+        notifyAdminOfNewComment({
+          postId: post.id,
+          postTitle: post.title,
+          commentAuthor: result.data?.author || user.username || "Member",
+          commentBody: safeBody,
+          commentCreatedAt: result.data?.createdAt || new Date().toISOString(),
+        }).catch(() => {});
 
         commentInput.value = "";
         await render();
