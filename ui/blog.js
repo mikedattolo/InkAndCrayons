@@ -559,7 +559,11 @@ export function createBlogUI({
         moodBtn.className = "post__mood-btn" + (reacted ? " reacted" : "");
         moodBtn.title = user ? `React with ${emoji}` : "Sign in to react";
         moodBtn.disabled = !user;
-        moodBtn.textContent = emoji;
+
+        const emojiIcon = document.createElement("span");
+        emojiIcon.className = "post__mood-emoji";
+        emojiIcon.textContent = emoji;
+        moodBtn.appendChild(emojiIcon);
 
         if (moodUsers.length) {
           const count = document.createElement("span");
