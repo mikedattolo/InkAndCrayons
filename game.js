@@ -1,4 +1,4 @@
-/* game.js v50 */
+/* game.js v51 */
 import {
   changeUserPassword,
   getUserProfile,
@@ -120,8 +120,7 @@ const stickyMusicBtn = document.getElementById("stickyMusic");
 /* Footer buttons */
 const footBlogBtn = document.getElementById("footBlog");
 const footResourcesBtn = document.getElementById("footResources");
-const footCoachingBtn = document.getElementById("footCoaching");
-const footContactBtn = document.getElementById("footContact");
+const footAboutBtn = document.getElementById("footAbout");
 
 /* ── State ──────────────────────────────────────────────── */
 let currentUser = getUserProfile();
@@ -540,11 +539,8 @@ function attachEvents() {
 
   /* Footer buttons */
   footBlogBtn?.addEventListener("click", openBlog);
-  footResourcesBtn?.addEventListener("click", openResources);
-  footCoachingBtn?.addEventListener("click", openGuides);
-  footContactBtn?.addEventListener("click", () => {
-    window.location.href = "./contact.html";
-  });
+  footResourcesBtn?.addEventListener("click", () => scrollToSection("howItWorks"));
+  footAboutBtn?.addEventListener("click", openAbout);
 
   blogCloseBtn?.addEventListener("click", closeBlog);
   aboutCloseBtn?.addEventListener("click", closeAbout);
