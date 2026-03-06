@@ -14,13 +14,17 @@ import {
   toggleLike,
 } from "../services/blogService.js";
 import { LEGACY_STORAGE_KEYS } from "../services/localStorageMigration.js";
-import { moderateComment } from "../utils/commentModeration.js";
+import { censorCommentText, moderateComment } from "../utils/commentModeration.js";
 import { sanitizeMultiline, sanitizeSingleLine } from "../utils/validation.js";
 
 const BLOCKED_PATTERNS = [
   /https?:\/\/\S+/gi,
   /\b(spam|buy\s*now|click\s*here)\b/gi,
 ];
+
+const POST_MOODS_KEY = "lrl_post_moods";
+const COMMENT_TTL_MS = 24 * 60 * 60 * 1000;
+const POST_ACTION_EMOJIS = ["😀", "😢", "😂", "😠"];
 
 const _postTimestamps = new Map();
 const POST_COOLDOWN_MS = 15_000;
@@ -37,6 +41,48 @@ function readLegacyJson(key, fallback) {
   } catch {
     return fallback;
   }
+}
+
+function isWithinCommentTtl(dateValue) {
+  if (!dateValue) return false;
+  const ts = new Date(dateValue).getTime();
+  if (!Number.isFinite(ts)) return false;
+  return Date.now() - ts <= COMMENT_TTL_MS;
+}
+
+function loadPostMoodsMap() {
+  const raw = readLegacyJson(POST_MOODS_KEY, {});
+  const cleaned = {};
+
+  Object.entries(raw || {}).forEach(([postId, postMood]) => {
+    if (!postMood || typeof postMood !== "object") return;
+    const nextMood = {};
+
+    Object.entries(postMood).forEach(([emoji, entries]) => {
+      if (!POST_ACTION_EMOJIS.includes(emoji) || !entries || typeof entries !== "object") return;
+
+      const activeEntries = {};
+      Object.entries(entries).forEach(([userId, timestamp]) => {
+        if (isWithinCommentTtl(timestamp)) {
+          activeEntries[userId] = timestamp;
+        }
+      });
+
+      if (Object.keys(activeEntries).length) {
+        nextMood[emoji] = activeEntries;
+      }
+    });
+
+    if (Object.keys(nextMood).length) {
+      cleaned[postId] = nextMood;
+    }
+  });
+
+  return cleaned;
+}
+
+function persistPostMoodsMap(moodsMap) {
+  localStorage.setItem(POST_MOODS_KEY, JSON.stringify(moodsMap));
 }
 
 function loadLegacyLocalPostsFallback() {
@@ -66,7 +112,7 @@ function loadLegacyCommentMap() {
       author: sanitizeSingleLine(comment.author || "Legacy User", 80),
       body: sanitizeMultiline(String(comment.body || ""), 2000),
       createdAt: comment.createdAt || new Date().toISOString(),
-    }));
+    })).filter((comment) => isWithinCommentTtl(comment.createdAt));
   });
   return normalized;
 }
@@ -313,6 +359,7 @@ export function createBlogUI({
   let commentsMap = {};
   let likesMap = {};
   let reactionsMap = {};
+  let postMoodsMap = loadPostMoodsMap();
   let pending = false;
   const MIGRATION_KEYS = LEGACY_STORAGE_KEYS;
 
@@ -321,6 +368,9 @@ export function createBlogUI({
   }
 
   async function hydratePostState() {
+    postMoodsMap = loadPostMoodsMap();
+    persistPostMoodsMap(postMoodsMap);
+
     // Legacy-local posts carry their own comments/likes in localStorage
     const hasLegacyPostsLoaded = posts.some((post) => post.source === "legacy-local");
     if (hasLegacyPostsLoaded) {
@@ -354,6 +404,7 @@ export function createBlogUI({
       if (comment.status === "hidden") return;
       if (comment.status === "flagged" && user?.role !== "admin") return;
       if (!commentsMap[comment.postId]) commentsMap[comment.postId] = [];
+      if (!isWithinCommentTtl(comment.createdAt)) return;
       commentsMap[comment.postId].push(comment);
       allCommentIds.push(comment.id);
     });
@@ -456,6 +507,9 @@ export function createBlogUI({
       page.append(masthead, titleEl, meta, textEl);
       sheet.appendChild(page);
 
+      const actionPanel = document.createElement("div");
+      actionPanel.className = "post__action-panel";
+
       const actionBar = document.createElement("div");
       actionBar.className = "post__action-bar";
 
@@ -482,6 +536,7 @@ export function createBlogUI({
       const commentToggle = document.createElement("button");
       commentToggle.className = "post__action-btn";
       commentToggle.type = "button";
+      commentToggle.setAttribute("aria-expanded", "false");
       commentToggle.appendChild(document.createTextNode("💬 "));
       const commentCount = document.createElement("span");
       commentCount.className = "action-count";
@@ -489,6 +544,62 @@ export function createBlogUI({
       commentToggle.appendChild(commentCount);
 
       actionBar.append(likeBtn, commentToggle);
+
+      const postMoodState = postMoodsMap[post.id] || {};
+      const postMoodWrap = document.createElement("div");
+      postMoodWrap.className = "post__mood-row";
+
+      POST_ACTION_EMOJIS.forEach((emoji) => {
+        const moodEntries = postMoodState[emoji] || {};
+        const moodUsers = Object.keys(moodEntries);
+        const reacted = Boolean(user?.id && moodEntries[user.id]);
+
+        const moodBtn = document.createElement("button");
+        moodBtn.type = "button";
+        moodBtn.className = "post__mood-btn" + (reacted ? " reacted" : "");
+        moodBtn.title = user ? `React with ${emoji}` : "Sign in to react";
+        moodBtn.disabled = !user;
+        moodBtn.textContent = emoji;
+
+        if (moodUsers.length) {
+          const count = document.createElement("span");
+          count.className = "post__mood-count";
+          count.textContent = String(moodUsers.length);
+          moodBtn.appendChild(count);
+        }
+
+        moodBtn.addEventListener("click", () => {
+          if (!user?.id) return;
+          postMoodsMap = loadPostMoodsMap();
+          const currentPostMoods = postMoodsMap[post.id] || {};
+          const currentEmojiUsers = { ...(currentPostMoods[emoji] || {}) };
+
+          if (currentEmojiUsers[user.id]) {
+            delete currentEmojiUsers[user.id];
+          } else {
+            currentEmojiUsers[user.id] = new Date().toISOString();
+          }
+
+          if (Object.keys(currentEmojiUsers).length) {
+            currentPostMoods[emoji] = currentEmojiUsers;
+          } else {
+            delete currentPostMoods[emoji];
+          }
+
+          if (Object.keys(currentPostMoods).length) {
+            postMoodsMap[post.id] = currentPostMoods;
+          } else {
+            delete postMoodsMap[post.id];
+          }
+
+          persistPostMoodsMap(postMoodsMap);
+          render();
+        });
+
+        postMoodWrap.appendChild(moodBtn);
+      });
+
+      actionBar.appendChild(postMoodWrap);
 
       if (roleCanManagePost(user, post) && post.source !== "seed" && post.source !== "legacy-local") {
         const adminGroup = document.createElement("div");
@@ -546,9 +657,12 @@ export function createBlogUI({
         viewAllBtn.textContent = `View all ${postComments.length} comment${postComments.length !== 1 ? "s" : ""}`;
       }
 
+      const commentSection = document.createElement("div");
+      commentSection.className = "post__comment-section";
+      commentSection.style.display = "none";
+
       const commentsWrap = document.createElement("div");
       commentsWrap.className = "post__comments";
-      commentsWrap.style.display = "none";
 
       postComments.forEach((comment) => {
         const commentEl = document.createElement("div");
@@ -574,7 +688,7 @@ export function createBlogUI({
         /* Body text */
         const bodySpan = document.createElement("div");
         bodySpan.className = "post__comment-body";
-        appendInlineFormatted(bodySpan, comment.body);
+        appendInlineFormatted(bodySpan, censorCommentText(comment.body));
 
         /* Flagged badge for admins */
         if (comment.status === "flagged" && user?.role === "admin") {
@@ -625,7 +739,12 @@ export function createBlogUI({
       });
 
       function toggleComments() {
-        commentsWrap.style.display = commentsWrap.style.display === "none" ? "block" : "none";
+        const nextOpen = commentSection.style.display === "none";
+        commentSection.style.display = nextOpen ? "block" : "none";
+        commentToggle.setAttribute("aria-expanded", String(nextOpen));
+        if (nextOpen) {
+          setTimeout(() => commentInput.focus(), 0);
+        }
       }
       commentToggle.addEventListener("click", toggleComments);
       if (viewAllBtn) viewAllBtn.addEventListener("click", toggleComments);
@@ -674,7 +793,7 @@ export function createBlogUI({
         const prevErr = commentForm.querySelector(".comment-mod-error");
         if (prevErr) prevErr.remove();
 
-        const safeBody = sanitize(sanitizeMultiline(bodyText, 600));
+        const safeBody = censorCommentText(sanitize(sanitizeMultiline(bodyText, 600)));
         commentSubmit.disabled = true;
         const result = await createComment({
           postId: post.id,
@@ -695,12 +814,14 @@ export function createBlogUI({
 
       commentForm.append(commentInput, commentSubmit);
 
+      commentSection.append(commentsWrap, commentForm);
+      actionPanel.appendChild(actionBar);
+
       card.appendChild(sheet);
-      card.appendChild(actionBar);
+      card.appendChild(actionPanel);
       if (likeLine) card.appendChild(likeLine);
       if (viewAllBtn) card.appendChild(viewAllBtn);
-      card.appendChild(commentsWrap);
-      card.appendChild(commentForm);
+      card.appendChild(commentSection);
 
       postsContainer.appendChild(card);
     });

@@ -66,6 +66,22 @@ const BANNED = [
   { pattern: /https?:\/\/[^\s]{20,}/i, severity: "spam" },
 ];
 
+/**
+ * Profanity terms that are censored (masked), not auto-blocked.
+ * Keep this list focused on common profanity and maintainable over time.
+ */
+const CENSORED_WORDS = [
+  /\bfuck(?:er|ing|ed|s)?\b/gi,
+  /\bshit(?:ty|ting|s)?\b/gi,
+  /\bbitch(?:es|y)?\b/gi,
+  /\basshole(?:s)?\b/gi,
+  /\bdamn\b/gi,
+  /\bcrap\b/gi,
+  /\bdick(?:head|s)?\b/gi,
+  /\bbastard(?:s)?\b/gi,
+  /\bpiss(?:ed|ing)?\b/gi,
+];
+
 /* ── Public API ────────────────────────────────────────── */
 
 /**
@@ -91,6 +107,20 @@ export function moderateComment(rawText) {
   }
 
   return { allowed: true, reason: null, severity: null };
+}
+
+/**
+ * Censor profanity by masking matched words with asterisks.
+ * Example: "darn this shit" -> "darn this ****"
+ */
+export function censorCommentText(rawText) {
+  let output = String(rawText || "");
+
+  CENSORED_WORDS.forEach((pattern) => {
+    output = output.replace(pattern, (word) => "*".repeat(word.length));
+  });
+
+  return output;
 }
 
 function friendlyReason(severity) {

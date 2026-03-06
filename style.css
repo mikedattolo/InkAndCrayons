@@ -2773,13 +2773,19 @@ body::before {
   color: var(--purple-dark);
 }
 
+.post__action-panel {
+  margin: 0 14px 10px;
+  border: 1.5px solid rgba(113, 88, 145, 0.2);
+  border-radius: 14px;
+  background: #fcfaff;
+}
+
 /* --- Actions bar (like, comment, share icons) --- */
 .post__action-bar {
   display: none;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
   padding: 8px 16px;
-  border-top: 1px solid rgba(0,0,0,0.05);
 }
 
 .post__action-btn {
@@ -2806,6 +2812,42 @@ body::before {
   color: var(--text-muted);
 }
 
+.post__mood-row {
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.post__mood-btn {
+  border: 1px solid rgba(113, 88, 145, 0.18);
+  background: #fff;
+  border-radius: 999px;
+  min-height: 30px;
+  padding: 3px 9px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.post__mood-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.post__mood-btn.reacted {
+  border-color: var(--purple);
+  background: rgba(201,168,247,0.2);
+}
+
+.post__mood-count {
+  font-size: 0.74rem;
+  color: var(--purple-dark);
+  font-weight: 700;
+}
+
 .post__delete-btn {
   margin-left: auto;
   background: none;
@@ -2821,10 +2863,14 @@ body::before {
 
 /* --- Comments section --- */
 .post__comments {
-  display: none;
+  display: block;
   padding: 0 16px 8px;
   max-height: 200px;
   overflow-y: auto;
+}
+
+.post__comment-section {
+  padding-bottom: 8px;
 }
 
 .post__comment {
@@ -2854,7 +2900,7 @@ body::before {
 
 /* --- Comment input --- */
 .post__comment-form {
-  display: none;
+  display: flex;
   align-items: center;
   gap: 8px;
   padding: 10px 16px;

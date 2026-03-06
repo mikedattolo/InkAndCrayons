@@ -115,10 +115,13 @@ export async function fetchComments(postIds = [], { adminMode = false } = {}) {
   if (!supabase) return { error: "Supabase is not configured.", data: [] };
   if (!postIds.length) return { data: [] };
 
+  const sinceIso = new Date(Date.now() - (24 * 60 * 60 * 1000)).toISOString();
+
   let query = supabase
     .from(COMMENTS_TABLE)
     .select("id, post_id, author_id, author_name, body, status, created_at")
     .in("post_id", postIds)
+    .gte("created_at", sinceIso)
     .order("created_at", { ascending: true });
 
   if (!adminMode) {
