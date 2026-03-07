@@ -18,7 +18,7 @@
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Dancing+Script:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700&family=Caveat:wght@400;600;700&family=Patrick+Hand&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css?v=85" />
+    <link rel="stylesheet" href="style.css?v=86" />
   </head>
   <body class="blog-standalone">
     <!-- ===== BLOG PAGE ===== -->
@@ -54,6 +54,9 @@
             <div id="blogPosts" class="blog__feed"></div>
           </div>
         </div>
+
+        <!-- Interaction (likes, emoji, comments) — below the article, above archive -->
+        <div id="blogInteraction" class="blog__interaction-slot"></div>
 
         <!-- Archive — stacked grid of all articles -->
         <div class="blog__archive">
@@ -123,6 +126,6 @@
       document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
     </script>
     <script src="./config/runtime-config.js"></script>
-    <script type="module" src="blog-page.js?v=10"></script>
+    <script type="module" src="blog-page.js?v=11"></script>
   </body>
 </html>

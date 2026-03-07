@@ -834,15 +834,18 @@ export function createBlogUI({
       card.appendChild(sheet);
       postsContainer.appendChild(card);
 
-      /* Interaction section — separate from the article card */
-      const interactionWrap = document.createElement("div");
-      interactionWrap.className = "post__interaction-section";
-      interactionWrap.appendChild(actionPanel);
-      if (likeLine) interactionWrap.appendChild(likeLine);
-      if (viewAllBtn) interactionWrap.appendChild(viewAllBtn);
-      interactionWrap.appendChild(commentSection);
-
-      postsContainer.appendChild(interactionWrap);
+      /* Interaction section — placed outside the article scroll area */
+      const interactionSlot = document.getElementById("blogInteraction");
+      if (interactionSlot) {
+        interactionSlot.textContent = "";
+        const interactionWrap = document.createElement("div");
+        interactionWrap.className = "post__interaction-section";
+        interactionWrap.appendChild(actionPanel);
+        if (likeLine) interactionWrap.appendChild(likeLine);
+        if (viewAllBtn) interactionWrap.appendChild(viewAllBtn);
+        interactionWrap.appendChild(commentSection);
+        interactionSlot.appendChild(interactionWrap);
+      }
     });
 
     renderArchive(filtered);
