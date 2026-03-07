@@ -849,21 +849,11 @@ export function createBlogUI({
     const archiveGrid = document.getElementById("archiveGrid");
     if (!archiveGrid) return;
 
+    // Show all posts (except the currently viewed one at index 0) in a stacked grid
     const archivePosts = allFiltered.length > 1 ? allFiltered.slice(1) : [];
-    const totalPages = Math.max(1, Math.ceil(archivePosts.length / ARCHIVE_PAGE_SIZE));
-
-    if (_archivePage >= totalPages) _archivePage = totalPages - 1;
-    if (_archivePage < 0) _archivePage = 0;
-
-    const start = _archivePage * ARCHIVE_PAGE_SIZE;
-    const visible = archivePosts.slice(start, start + ARCHIVE_PAGE_SIZE);
+    const currentPost = allFiltered.length > 0 ? allFiltered[0] : null;
 
     archiveGrid.textContent = "";
-
-    const prevBtn = document.getElementById("archivePrev");
-    const nextBtn = document.getElementById("archiveNext");
-    if (prevBtn) prevBtn.disabled = _archivePage <= 0;
-    if (nextBtn) nextBtn.disabled = _archivePage >= totalPages - 1;
 
     if (archivePosts.length === 0) {
       const empty = document.createElement("p");
@@ -873,10 +863,22 @@ export function createBlogUI({
       return;
     }
 
-    visible.forEach((post) => {
+    // Sort by date, newest first
+    const sorted = [...archivePosts].sort((a, b) => {
+      const da = new Date(a.date || a.createdAt || 0);
+      const db = new Date(b.date || b.createdAt || 0);
+      return db - da;
+    });
+
+    sorted.forEach((post) => {
       const btn = document.createElement("button");
       btn.className = "blog__archive-btn";
       btn.type = "button";
+
+      // Highlight if this is the currently viewed post
+      if (currentPost && (post.id === currentPost.id || post.title === currentPost.title)) {
+        btn.classList.add("blog__archive-btn--active");
+      }
 
       const btnTitle = document.createElement("span");
       btnTitle.className = "blog__archive-btn-title";
@@ -903,19 +905,7 @@ export function createBlogUI({
   }
 
   function initArchiveControls() {
-    const prevBtn = document.getElementById("archivePrev");
-    const nextBtn = document.getElementById("archiveNext");
     const searchInput = document.getElementById("blogSearch");
-
-    prevBtn?.addEventListener("click", () => {
-      _archivePage -= 1;
-      renderArchive(filteredPosts());
-    });
-
-    nextBtn?.addEventListener("click", () => {
-      _archivePage += 1;
-      renderArchive(filteredPosts());
-    });
 
     searchInput?.addEventListener("input", async () => {
       _searchQuery = sanitizeSingleLine(searchInput.value, 80);

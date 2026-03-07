@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Bookshelf — Ink &amp; Crayons</title>
+    <meta name="description" content="Curated book recommendations for early childhood educators and parents — from Ink & Crayons." />
+    <meta property="og:title" content="My Bookshelf — Ink & Crayons" />
+    <meta property="og:description" content="Curated book recommendations for early childhood educators and parents." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://inkandcrayons.com/bookshelf.html" />
+    <meta property="og:image" content="https://inkandcrayons.com/assets/ui/logo.gif" />
+    <link rel="canonical" href="https://inkandcrayons.com/bookshelf.html" />
+    <link rel="icon" href="assets/ui/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Dancing+Script:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700&family=Caveat:wght@400;600;700&family=Patrick+Hand&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css?v=82" />
+  </head>
+  <body class="bookshelf-standalone">
+
+    <!-- ===== TOP BAR ===== -->
+    <div class="bs-page">
+      <div class="bs-page__topbar">
+        <a href="./index.html" class="bs-page__back-btn" aria-label="Back to home">&larr;</a>
+        <h1 class="bs-page__title">📚 My Bookshelf</h1>
+      </div>
+
+      <p class="bs-page__subtitle">
+        Books I love and recommend for early childhood educators and parents.
+        Click any book to learn how it can be used in your lessons!
+      </p>
+
+      <!-- Bookshelf container — JS will populate -->
+      <div id="bookshelfContainer" class="bs-shelf-container">
+        <!-- Loading state -->
+        <p class="bs-loading">Loading books&hellip;</p>
+      </div>
+    </div>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <nav class="site-footer__nav" aria-label="Footer navigation">
+          <a href="./index.html" class="btn btn--text">Home</a>
+          <a href="./blog.html" class="btn btn--text">Blog</a>
+          <a href="./privacy.html" class="btn btn--text">Privacy</a>
+        </nav>
+        <p class="site-footer__slogan">Teach with care. Learn with joy.</p>
+        <p class="site-footer__copy">&copy; 2026 Ink &amp; Crayons. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <script>
+      document.addEventListener('copy', function(e){ e.preventDefault(); });
+      document.addEventListener('cut', function(e){ e.preventDefault(); });
+      document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+    </script>
+    <script type="module" src="bookshelf-page.js"></script>
+  </body>
+</html>

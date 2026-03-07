@@ -18,7 +18,7 @@
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Dancing+Script:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700&family=Caveat:wght@400;600;700&family=Patrick+Hand&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css?v=81" />
+    <link rel="stylesheet" href="style.css?v=82" />
   </head>
   <body class="blog-standalone">
     <!-- ===== BLOG PAGE ===== -->
@@ -55,18 +55,14 @@
           </div>
         </div>
 
-        <!-- Archive — scrollable article list with arrows -->
+        <!-- Archive — stacked grid of all articles -->
         <div class="blog__archive">
           <div class="blog__archive-header">
             <h3 class="blog__archive-heading">More from the Tribune</h3>
           </div>
 
-          <div class="blog__archive-carousel">
-            <button id="archivePrev" class="blog__archive-arrow blog__archive-arrow--left" type="button" aria-label="Previous articles">&lsaquo;</button>
-            <div id="archiveGrid" class="blog__archive-grid">
-              <!-- JS populates article buttons here -->
-            </div>
-            <button id="archiveNext" class="blog__archive-arrow blog__archive-arrow--right" type="button" aria-label="Next articles">&rsaquo;</button>
+          <div id="archiveGrid" class="blog__archive-grid">
+            <!-- JS populates article buttons here -->
           </div>
         </div>
       </div>
@@ -121,7 +117,12 @@
       </div>
     </div>
 
+    <script>
+      document.addEventListener('copy', function(e){ e.preventDefault(); });
+      document.addEventListener('cut', function(e){ e.preventDefault(); });
+      document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+    </script>
     <script src="./config/runtime-config.js"></script>
-    <script type="module" src="blog-page.js?v=8"></script>
+    <script type="module" src="blog-page.js?v=9"></script>
   </body>
 </html>

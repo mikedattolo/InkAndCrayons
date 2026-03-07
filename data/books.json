@@ -1,9 +1,59 @@
 {
-  "books": [
+  "music": [
     {
       "title": "Music for Little Chickadees",
       "description": "Music is powerful for little chickadees. Through singing, clapping, and dancing, children build language, memory, coordination, and confidence. Rhythm supports early math skills, while lyrics strengthen vocabulary and listening. Most importantly, music brings joy — and joyful learning helps our chickadees grow beautifully. 🎶",
       "url": "https://open.spotify.com/playlist/228RF677UXL78KeMxnqXr3?si=xJL3iz5URLm-ril5smPqdg"
+    }
+  ],
+  "books": [
+    {
+      "title": "The Giving Tree",
+      "author": "Shel Silverstein",
+      "color": "mint",
+      "cover": "https://m.media-amazon.com/images/I/71wiGMKadmL._SY466_.jpg",
+      "url": "https://www.amazon.com/Giving-Tree-Shel-Silverstein/dp/B000NY2R40",
+      "lessonBlurb": "Perfect for lessons on generosity, empathy, and the environment. Use it to spark conversations about giving, growing up, and caring for nature. Great for social-emotional learning circles."
+    },
+    {
+      "title": "Brown Bear, Brown Bear, What Do You See?",
+      "author": "Bill Martin Jr. & Eric Carle",
+      "color": "peach",
+      "cover": "https://m.media-amazon.com/images/I/81otmSEaEaL._SY466_.jpg",
+      "url": "https://www.amazon.com/Brown-Bear-What-You-See/dp/0805047905",
+      "lessonBlurb": "A staple for teaching colors, animals, and predictive reading patterns. The repetitive text builds vocabulary and supports early literacy. Ideal for circle time read-alouds with toddlers and preschoolers."
+    },
+    {
+      "title": "The Very Hungry Caterpillar",
+      "author": "Eric Carle",
+      "color": "mint",
+      "cover": "https://m.media-amazon.com/images/I/81bikE2RUQL._SY466_.jpg",
+      "url": "https://www.amazon.com/Very-Hungry-Caterpillar-Eric-Carle/dp/0399226907",
+      "lessonBlurb": "Wonderful for teaching days of the week, counting, healthy eating, and life cycles. Pair with a butterfly craft or sequencing activity. A must-have for any early childhood classroom."
+    },
+    {
+      "title": "Chicka Chicka Boom Boom",
+      "author": "Bill Martin Jr. & John Archambault",
+      "color": "yellow",
+      "cover": "https://m.media-amazon.com/images/I/71VdEFTGHaL._SY466_.jpg",
+      "url": "https://www.amazon.com/Chicka-Boom-Board-Book/dp/1442450703",
+      "lessonBlurb": "The go-to book for alphabet introduction. Its rhythmic, rhyming text makes letter recognition fun and memorable. Pair with a coconut tree craft and letter matching games."
+    },
+    {
+      "title": "Goodnight Moon",
+      "author": "Margaret Wise Brown",
+      "color": "blue",
+      "cover": "https://m.media-amazon.com/images/I/81E1rFMBIYL._SY466_.jpg",
+      "url": "https://www.amazon.com/Goodnight-Moon-Margaret-Wise-Brown/dp/0694003611",
+      "lessonBlurb": "A calming classic for teaching bedtime routines, rhyming words, and observation skills. Great for quiet-time transitions. Ask children to find hidden objects on each page for engagement."
+    },
+    {
+      "title": "Where the Wild Things Are",
+      "author": "Maurice Sendak",
+      "color": "purple",
+      "cover": "https://m.media-amazon.com/images/I/81mxxHFEJNL._SY466_.jpg",
+      "url": "https://www.amazon.com/Where-Wild-Things-Maurice-Sendak/dp/0064431789",
+      "lessonBlurb": "Excellent for exploring emotions, imagination, and self-regulation. Use it for dramatic play activities or discussions about feelings and consequences. Perfect for social-emotional development units."
     }
   ]
 }

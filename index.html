@@ -18,7 +18,7 @@
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Dancing+Script:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700&family=Caveat:wght@400;600;700&family=Patrick+Hand&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css?v=74" />
+    <link rel="stylesheet" href="style.css?v=82" />
   </head>
   <body>
     <!-- Skip to content -->
@@ -160,7 +160,7 @@
     <!-- ===== LATEST FROM THE BLOG ===== -->
     <section class="home-blog-preview" id="homeBlogPreview" aria-label="Latest blog post">
       <div class="home-blog-preview__inner">
-        <h2 class="section-title section-title--dark">Latest from the Blog</h2>
+        <h2 class="section-title">Latest from the Blog</h2>
         <div id="homeBlogCard" class="home-blog-preview__card">
           <!-- JS fills this -->
         </div>
@@ -175,9 +175,9 @@
     </section>
 
     <!-- ===== HOW IT WORKS — STICKY NOTES ===== -->
-    <section class="how-it-works" id="howItWorks" aria-label="How it works">
+    <section class="how-it-works" id="howItWorks" aria-label="Free resources">
       <div class="how-it-works__inner">
-        <h2 class="section-title">How It Works</h2>
+        <h2 class="section-title">Free Resources</h2>
 
         <div class="sticky-grid">
           <button class="sticky-card sticky-card--pink" id="stickyBlog" type="button">
@@ -192,7 +192,7 @@
 
           <button class="sticky-card sticky-card--mint" id="stickyGuides" type="button">
             <img src="assets/ui/sticky-mint.svg" alt="" class="sticky-card__bg" aria-hidden="true" />
-            <span class="sticky-card__label">My Bookshelf</span>
+            <span class="sticky-card__label">My Library</span>
           </button>
 
           <button class="sticky-card sticky-card--blue" id="stickyMusic" type="button">
@@ -548,11 +548,6 @@
 
         <!-- Sidebar nav buttons -->
         <nav class="pastel-sidebar__nav">
-          <button class="pastel-sidebar__btn pastel-sidebar__btn--pink" id="sidebarWorksheets" type="button">
-            <span class="pastel-sidebar__btn-icon">📝</span>
-            <span class="pastel-sidebar__btn-text">Educational Worksheets &amp; More</span>
-          </button>
-
           <button class="pastel-sidebar__btn pastel-sidebar__btn--purple" id="sidebarAbout" type="button">
             <span class="pastel-sidebar__btn-icon">👋</span>
             <span class="pastel-sidebar__btn-text">About Me</span>
@@ -568,9 +563,9 @@
             <span class="pastel-sidebar__btn-text">Amazon Shop</span>
           </button>
 
-          <button class="pastel-sidebar__btn pastel-sidebar__btn--mint" id="sidebarFreebies" type="button">
-            <span class="pastel-sidebar__btn-icon">🎁</span>
-            <span class="pastel-sidebar__btn-text">Freebies</span>
+          <button class="pastel-sidebar__btn pastel-sidebar__btn--mint" id="sidebarLibrary" type="button">
+            <span class="pastel-sidebar__btn-icon">📚</span>
+            <span class="pastel-sidebar__btn-text">My Book Library</span>
           </button>
 
           <button class="pastel-sidebar__btn pastel-sidebar__btn--peach" id="sidebarTPT" type="button">
@@ -619,11 +614,9 @@
         }
         // Wire sidebar buttons to existing nav actions
         const map = {
-          sidebarWorksheets: 'navLessons',
           sidebarAbout:      'navAbout',
           sidebarMilestones: 'navMilestones',
           sidebarAmazon:     'navLessons',
-          sidebarFreebies:   'footResources',
           sidebarTPT:        'navLessons'
         };
         Object.entries(map).forEach(function([sbId, targetId]){
@@ -636,6 +629,13 @@
             });
           }
         });
+        // Library button navigates to bookshelf page
+        var libBtn = document.getElementById('sidebarLibrary');
+        if(libBtn){
+          libBtn.addEventListener('click', function(){
+            window.location.href = './bookshelf.html';
+          });
+        }
       })();
     </script>
 
@@ -679,7 +679,13 @@
         document.addEventListener('keydown', function(e){ if (e.key === 'Escape') showMenu(false); });
       })();
     </script>
+    <script>
+      // Text copy protection
+      document.addEventListener('copy', function(e){ e.preventDefault(); });
+      document.addEventListener('cut', function(e){ e.preventDefault(); });
+      document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+    </script>
     <script src="./config/runtime-config.js"></script>
-    <script type="module" src="game.js?v=57"></script>
+    <script type="module" src="game.js?v=58"></script>
   </body>
 </html>

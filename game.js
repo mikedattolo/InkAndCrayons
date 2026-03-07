@@ -1,4 +1,4 @@
-/* game.js v51 */
+/* game.js v52 */
 import {
   changeUserPassword,
   getUserProfile,
@@ -338,59 +338,7 @@ function openMilestones() {
 }
 
 function openGuides() {
-  setMarketVisible(false);
-
-  const books = [
-    { title: "The Giving Tree — Shel Silverstein", color: "mint", url: "https://www.amazon.com/Giving-Tree-Shel-Silverstein/dp/B000NY2R40" },
-    { title: "Coming Soon", color: "purple" },
-    { title: "Coming Soon", color: "mint" },
-    { title: "Coming Soon", color: "blue" },
-    { title: "Coming Soon", color: "yellow" },
-    { title: "Coming Soon", color: "peach" },
-  ];
-
-  const wrap = document.createElement("div");
-  wrap.className = "bookshelf-wrap";
-
-  const shelf = document.createElement("div");
-  shelf.className = "bookshelf";
-
-  books.forEach((b) => {
-    const book = b.url
-      ? document.createElement("a")
-      : document.createElement("div");
-
-    book.className = `book book--${b.color}${!b.url ? " book--coming" : ""}`;
-    if (b.url) {
-      book.href = b.url;
-      book.target = "_blank";
-      book.rel = "noopener noreferrer";
-      book.title = b.title;
-    }
-
-    const spine = document.createElement("span");
-    spine.className = "book__spine";
-    spine.textContent = b.title;
-    book.appendChild(spine);
-    shelf.appendChild(book);
-  });
-
-  const ledge = document.createElement("div");
-  ledge.className = "bookshelf__ledge";
-
-  const note = document.createElement("p");
-  note.className = "bookshelf-note";
-  note.textContent = "Book recommendations coming soon!";
-
-  wrap.appendChild(shelf);
-  wrap.appendChild(ledge);
-  wrap.appendChild(note);
-
-  modal.open({
-    title: "Helpful Tips",
-    description: "Books I recommend for early childhood educators and parents.",
-    contentNodes: [wrap],
-  });
+  window.location.href = "./bookshelf.html";
 }
 
 function openMusic() {
@@ -536,6 +484,7 @@ function attachEvents() {
   
   stickyGuidesBtn?.addEventListener("click", openGuides);
   stickyMusicBtn?.addEventListener("click", openMusic);
+
 
   /* Footer buttons */
   footBlogBtn?.addEventListener("click", openBlog);

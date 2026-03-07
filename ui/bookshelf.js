@@ -24,7 +24,9 @@ export async function loadBooks() {
   const response = await fetch("./data/books.json");
   const data = await response.json();
   const overrides = readOverrides();
-  return [...overrides, ...(data.books || [])];
+  // Support both old format (data.books with music) and new format (data.music separate)
+  const music = data.music || [];
+  return [...overrides, ...music, ...(data.books || [])];
 }
 
 export function renderBooks(books) {
