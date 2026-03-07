@@ -69,20 +69,12 @@ const accountCreated = document.getElementById("accountCreated");
 const accountIdEl = document.getElementById("accountId");
 const profileForm = document.getElementById("profileForm");
 const profileUsernameInput = document.getElementById("profileUsername");
-const profilePicUrlInput = document.getElementById("profilePicUrl");
 const profileStatus = document.getElementById("profileStatus");
 const passwordForm = document.getElementById("passwordForm");
 const currentPasswordInput = document.getElementById("currentPassword");
 const newPasswordInput = document.getElementById("newPassword");
 const confirmPasswordInput = document.getElementById("confirmPassword");
 const passwordStatus = document.getElementById("passwordStatus");
-const paymentMethodsEl = document.getElementById("paymentMethods");
-const paymentForm = document.getElementById("paymentForm");
-const cardNameInput = document.getElementById("cardName");
-const cardNumberInput = document.getElementById("cardNumber");
-const cardExpiryInput = document.getElementById("cardExpiry");
-const cardCvcInput = document.getElementById("cardCvc");
-const paymentStatusEl = document.getElementById("paymentStatus");
 
 /* Chat modal refs */
 const chatModal = document.getElementById("chatModal");
@@ -574,28 +566,8 @@ function attachEvents() {
     accountEmail.textContent = u.email;
     accountRole.textContent = u.role === "admin" ? "Admin" : "Member";
     profileUsernameInput.value = u.username;
-    profilePicUrlInput.value = u.avatarUrl || "";
     accountCreated.textContent = `Member since: ${new Date(u.createdAt).toLocaleDateString()}`;
     accountIdEl.textContent = `Account ID: ${u.id}`;
-    renderPaymentCards();
-  }
-
-  function renderPaymentCards() {
-    paymentMethodsEl.textContent = "";
-    const note = document.createElement("p");
-    note.style.fontSize = "0.85rem";
-    note.style.color = "#999";
-    note.textContent = "Card storage is disabled. Use external checkout links in the shop.";
-    paymentMethodsEl.appendChild(note);
-
-    if (paymentForm) {
-      Array.from(paymentForm.querySelectorAll("input")).forEach((input) => {
-        input.required = false;
-        input.disabled = true;
-      });
-      const submitBtn = paymentForm.querySelector("button[type='submit']");
-      if (submitBtn) submitBtn.disabled = true;
-    }
   }
 
   accountBtn?.addEventListener("click", () => {
@@ -619,13 +591,8 @@ function attachEvents() {
   profileForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const username = sanitizeSingleLine(profileUsernameInput.value, 20);
-    const avatarUrl = profilePicUrlInput.value.trim();
     if (!isValidUsername(username)) { profileStatus.textContent = "Username must be 2-20 chars."; return; }
-    if (avatarUrl && !isValidHttpUrl(avatarUrl)) {
-      profileStatus.textContent = "Profile URL must be a valid http(s) URL.";
-      return;
-    }
-    const result = await updateUserProfile({ username, avatarUrl: avatarUrl || undefined });
+    const result = await updateUserProfile({ username });
     if (result.error) {
       profileStatus.textContent = result.error;
     } else {
