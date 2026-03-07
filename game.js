@@ -1,4 +1,4 @@
-/* game.js v52 */
+/* game.js v53 */
 import {
   changeUserPassword,
   getUserProfile,
@@ -94,7 +94,7 @@ const avatarInitialEl = document.getElementById("avatarInitial");
 const headerSignInBtn = document.getElementById("headerSignIn");
 const signUpButton = document.getElementById("signUpBtn");
 const forgotPasswordButton = document.getElementById("resetPasswordBtn");
-const userStatusEl = document.getElementById("userStatus");
+const userStatusEl = document.getElementById("gateStatus");
 
 /* Navigation buttons */
 const navLessonsBtn = document.getElementById("navLessons");

@@ -47,9 +47,10 @@ export async function ensureSupabaseInitialized() {
   const client = getSupabaseClient();
   if (!client) return;
 
-  _initPromise = client.auth.getSession()
+  const timeout = new Promise((resolve) => setTimeout(resolve, 5000));
+  _initPromise = Promise.race([client.auth.getSession(), timeout])
     .then(() => { _initialized = true; })
-    .catch((err) => { console.error("Error initializing Supabase session:", err); })
+    .catch((err) => { console.warn("Supabase session init failed:", err?.message); _initialized = true; })
     .finally(() => { _initPromise = null; });
 
   return _initPromise;
