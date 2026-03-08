@@ -43,16 +43,10 @@ export async function fetchPosts({ adminMode = false } = {}) {
     return { error: "Supabase is not configured.", data: [] };
   }
 
-  const queryPromise = supabase
+  const { data, error } = await supabase
     .from(POSTS_TABLE)
     .select("id, title, body, category, author_id, author_name, created_at, updated_at")
     .order("created_at", { ascending: false });
-
-  const timeout = new Promise((resolve) =>
-    setTimeout(() => resolve({ data: null, error: { message: "Request timed out" } }), 8000)
-  );
-
-  const { data, error } = await Promise.race([queryPromise, timeout]);
 
   if (error) {
     return { error: error.message, data: [] };

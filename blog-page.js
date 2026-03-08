@@ -6,7 +6,8 @@ import { createBlogUI, updatePost } from "./ui/blog.js";
 import { initAuth, onAuthStateChanged } from "./auth/auth.js";
 import { createPost } from "./services/blogService.js";
 import { registerMigrationUtilities } from "./services/localStorageMigration.js";
-import { sanitizeMultiline, sanitizeSingleLine } from "./utils/validation.js";
+import { isValidHttpUrl, sanitizeMultiline, sanitizeSingleLine } from "./utils/validation.js";
+import { createAuthGate } from "./ui/auth.js";
 
 /* ── DOM References ──────────────────────────────────── */
 const blogPostsEl    = document.getElementById("blogPosts");
@@ -14,6 +15,23 @@ const blogFormEl     = document.getElementById("blogForm");
 const blogTitleInput = document.getElementById("postTitle");
 const blogBodyInput  = document.getElementById("postBody");
 const blogStatusEl   = document.getElementById("blogStatus");
+
+/* Auth header refs */
+const headerSignInBtn = document.getElementById("headerSignIn");
+const accountBtn      = document.getElementById("accountBtn");
+const avatarInitialEl = document.getElementById("avatarInitial");
+
+/* Auth gate refs */
+const gateEl            = document.getElementById("gate");
+const gateCloseBtn      = document.getElementById("gateClose");
+const gateBackdrop      = gateEl?.querySelector(".gate__backdrop");
+const gateForm          = document.getElementById("gateForm");
+const emailInput        = document.getElementById("email");
+const passwordInput     = document.getElementById("password");
+const usernameInput     = document.getElementById("username");
+const signUpButton      = document.getElementById("signUpBtn");
+const forgotPasswordBtn = document.getElementById("resetPasswordBtn");
+const userStatusEl      = document.getElementById("gateStatus");
 
 
 
@@ -35,6 +53,22 @@ const adminNewPostBtn  = document.getElementById("adminNewPost");
 let editingPostId = null; // null = creating new, string = editing existing
 
 registerMigrationUtilities();
+
+/* ── Auth Gate ───────────────────────────────────────── */
+const authGate = gateEl ? createAuthGate({
+  gateEl,
+  formEl: gateForm,
+  emailInput,
+  passwordInput,
+  usernameInput,
+  statusEl: userStatusEl,
+  signUpButton,
+  forgotPasswordButton: forgotPasswordBtn,
+}) : null;
+
+gateCloseBtn?.addEventListener("click", () => authGate?.setGateOpen(false));
+gateBackdrop?.addEventListener("click", () => authGate?.setGateOpen(false));
+headerSignInBtn?.addEventListener("click", () => authGate?.setGateOpen(true));
 
 /* Initialize auth FIRST so the Supabase session is available for RLS queries */
 let currentUser = null;
@@ -194,6 +228,28 @@ onAuthStateChanged((user) => {
   currentUser = user;
   blogUI.setUser(user);
   updateAdminUI();
+
+  /* Update header auth buttons */
+  if (accountBtn) accountBtn.hidden = !user;
+  if (headerSignInBtn) headerSignInBtn.hidden = !!user;
+  if (user) {
+    const name = user.username || user.email || "?";
+    accountBtn.textContent = "";
+    if (user.avatarUrl && isValidHttpUrl(user.avatarUrl)) {
+      const image = document.createElement("img");
+      image.src = user.avatarUrl;
+      image.alt = "Profile";
+      image.className = "site-header__avatar-img";
+      accountBtn.appendChild(image);
+    } else {
+      const initial = document.createElement("span");
+      initial.id = "avatarInitial";
+      initial.className = "site-header__avatar-initial";
+      initial.textContent = name.charAt(0).toUpperCase();
+      accountBtn.appendChild(initial);
+    }
+  }
+
   // Reload posts when role changes (e.g. admin sees unpublished posts via RLS)
   if (roleChanged) {
     blogUI.reloadPosts();

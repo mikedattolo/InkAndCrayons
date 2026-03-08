@@ -323,6 +323,13 @@ export async function loadPosts({ adminMode = false } = {}) {
     if (!seenIds.has(p.id)) { seenIds.add(p.id); allPosts.push(p); }
   });
 
+  // Sort all posts newest-first so the latest post is always shown first
+  allPosts.sort((a, b) => {
+    const dateA = new Date(a.createdAt || a.date || 0).getTime();
+    const dateB = new Date(b.createdAt || b.date || 0).getTime();
+    return dateB - dateA;
+  });
+
   return allPosts;
 }
 
@@ -443,6 +450,7 @@ export function createBlogUI({
   async function render() {
     if (pending) return;
     pending = true;
+    try {
     statusEl.textContent = "Loading...";
 
     await hydratePostState();
@@ -832,36 +840,40 @@ export function createBlogUI({
       actionPanel.appendChild(actionBar);
 
       card.appendChild(sheet);
-      postsContainer.appendChild(card);
+      card.appendChild(actionPanel);
+      if (likeLine) card.appendChild(likeLine);
+      if (viewAllBtn) card.appendChild(viewAllBtn);
+      card.appendChild(commentSection);
 
-      /* Interaction section — placed outside the article scroll area */
-      const interactionSlot = document.getElementById("blogInteraction");
-      if (interactionSlot) {
-        interactionSlot.textContent = "";
-        const interactionWrap = document.createElement("div");
-        interactionWrap.className = "post__interaction-section";
-        interactionWrap.appendChild(actionPanel);
-        if (likeLine) interactionWrap.appendChild(likeLine);
-        if (viewAllBtn) interactionWrap.appendChild(viewAllBtn);
-        interactionWrap.appendChild(commentSection);
-        interactionSlot.appendChild(interactionWrap);
-      }
+      postsContainer.appendChild(card);
     });
 
     renderArchive(filtered);
     statusEl.textContent = "";
-    pending = false;
+    } finally {
+      pending = false;
+    }
   }
 
   function renderArchive(allFiltered) {
     const archiveGrid = document.getElementById("archiveGrid");
     if (!archiveGrid) return;
 
-    // Show all posts (except the currently viewed one at index 0) in a stacked grid
     const archivePosts = allFiltered.length > 1 ? allFiltered.slice(1) : [];
-    const currentPost = allFiltered.length > 0 ? allFiltered[0] : null;
+    const totalPages = Math.max(1, Math.ceil(archivePosts.length / ARCHIVE_PAGE_SIZE));
+
+    if (_archivePage >= totalPages) _archivePage = totalPages - 1;
+    if (_archivePage < 0) _archivePage = 0;
+
+    const start = _archivePage * ARCHIVE_PAGE_SIZE;
+    const visible = archivePosts.slice(start, start + ARCHIVE_PAGE_SIZE);
 
     archiveGrid.textContent = "";
+
+    const prevBtn = document.getElementById("archivePrev");
+    const nextBtn = document.getElementById("archiveNext");
+    if (prevBtn) prevBtn.disabled = _archivePage <= 0;
+    if (nextBtn) nextBtn.disabled = _archivePage >= totalPages - 1;
 
     if (archivePosts.length === 0) {
       const empty = document.createElement("p");
@@ -871,22 +883,10 @@ export function createBlogUI({
       return;
     }
 
-    // Sort by date, newest first
-    const sorted = [...archivePosts].sort((a, b) => {
-      const da = new Date(a.date || a.createdAt || 0);
-      const db = new Date(b.date || b.createdAt || 0);
-      return db - da;
-    });
-
-    sorted.forEach((post) => {
+    visible.forEach((post) => {
       const btn = document.createElement("button");
       btn.className = "blog__archive-btn";
       btn.type = "button";
-
-      // Highlight if this is the currently viewed post
-      if (currentPost && (post.id === currentPost.id || post.title === currentPost.title)) {
-        btn.classList.add("blog__archive-btn--active");
-      }
 
       const btnTitle = document.createElement("span");
       btnTitle.className = "blog__archive-btn-title";
@@ -913,7 +913,19 @@ export function createBlogUI({
   }
 
   function initArchiveControls() {
+    const prevBtn = document.getElementById("archivePrev");
+    const nextBtn = document.getElementById("archiveNext");
     const searchInput = document.getElementById("blogSearch");
+
+    prevBtn?.addEventListener("click", () => {
+      _archivePage -= 1;
+      renderArchive(filteredPosts());
+    });
+
+    nextBtn?.addEventListener("click", () => {
+      _archivePage += 1;
+      renderArchive(filteredPosts());
+    });
 
     searchInput?.addEventListener("input", async () => {
       _searchQuery = sanitizeSingleLine(searchInput.value, 80);

@@ -131,6 +131,10 @@ export async function signUpWithEmail({ email, password, username }) {
     } catch (err) {
       console.error("Error getting user after sign-up:", err);
     }
+    // Fallback: build minimal user from session so listeners are always notified
+    if (!user && data.session.user) {
+      user = mapUser(data.session.user, null);
+    }
   }
 
   return {
@@ -169,6 +173,10 @@ export async function signInWithEmail({ email, password }) {
       user = await getCurrentAppUser();
     } catch (err) {
       console.error("Error getting user after sign-in:", err);
+    }
+    // Fallback: build minimal user from session so listeners are always notified
+    if (!user && data.session.user) {
+      user = mapUser(data.session.user, null);
     }
     return { user };
   }

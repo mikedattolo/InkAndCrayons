@@ -18,7 +18,7 @@
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Dancing+Script:wght@400;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700&family=Caveat:wght@400;600;700&family=Patrick+Hand&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css?v=88" />
+    <link rel="stylesheet" href="style.css?v=89" />
   </head>
   <body class="blog-standalone">
     <!-- ===== BLOG PAGE ===== -->
@@ -33,6 +33,12 @@
           <span class="blog__search-icon" aria-hidden="true">&#128269;</span>
         </div>
       </div>
+
+      <!-- Auth buttons (fixed, top-right) -->
+      <button id="headerSignIn" class="site-header__sign-in-btn" type="button" title="Sign In" aria-label="Sign In">Sign In</button>
+      <button id="accountBtn" class="site-header__avatar-btn" type="button" title="Account" hidden aria-label="Account">
+        <span id="avatarInitial" class="site-header__avatar-initial">?</span>
+      </button>
 
       <div class="blog__feed-layout">
         <!-- Composer — only visible to admin / designated writers -->
@@ -55,17 +61,18 @@
           </div>
         </div>
 
-        <!-- Interaction (likes, emoji, comments) — below the article, above archive -->
-        <div id="blogInteraction" class="blog__interaction-slot"></div>
-
-        <!-- Archive — stacked grid of all articles -->
+        <!-- Archive — scrollable article list with arrows -->
         <div class="blog__archive">
           <div class="blog__archive-header">
             <h3 class="blog__archive-heading">More from the Tribune</h3>
           </div>
 
-          <div id="archiveGrid" class="blog__archive-grid">
-            <!-- JS populates article buttons here -->
+          <div class="blog__archive-carousel">
+            <button id="archivePrev" class="blog__archive-arrow blog__archive-arrow--left" type="button" aria-label="Previous articles">&lsaquo;</button>
+            <div id="archiveGrid" class="blog__archive-grid">
+              <!-- JS populates article buttons here -->
+            </div>
+            <button id="archiveNext" class="blog__archive-arrow blog__archive-arrow--right" type="button" aria-label="Next articles">&rsaquo;</button>
           </div>
         </div>
       </div>
@@ -120,12 +127,43 @@
       </div>
     </div>
 
-    <script>
-      document.addEventListener('copy', function(e){ e.preventDefault(); });
-      document.addEventListener('cut', function(e){ e.preventDefault(); });
-      document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
-    </script>
+    <!-- ===== AUTH GATE MODAL ===== -->
+    <div id="gate" class="gate" aria-hidden="true" role="dialog" aria-labelledby="gateTitle">
+      <div class="gate__backdrop"></div>
+      <div class="gate__content" role="document">
+        <button id="gateClose" class="gate__close" type="button" aria-label="Close">&times;</button>
+        <h2 id="gateTitle">Welcome to Ink &amp; Crayons</h2>
+        <div class="gate__tabs" role="tablist">
+          <button class="gate__tab gate__tab--active" id="gateTabSignIn" type="button" role="tab" aria-selected="true">Sign In</button>
+          <button class="gate__tab" id="gateTabSignUp" type="button" role="tab" aria-selected="false">Create Account</button>
+        </div>
+        <form id="gateForm" class="gate__form" novalidate>
+          <div class="gate__field">
+            <label for="email" class="gate__label">Email</label>
+            <input id="email" name="email" type="email" autocomplete="email" class="gate__input" placeholder="you@example.com" />
+          </div>
+          <div class="gate__field">
+            <label for="password" class="gate__label">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" class="gate__input" placeholder="Min 8 characters" />
+          </div>
+          <div id="gateSignUpFields" hidden>
+            <div class="gate__field">
+              <label for="gateConfirmPw" class="gate__label">Confirm Password</label>
+              <input id="gateConfirmPw" name="confirmPassword" type="password" autocomplete="new-password" class="gate__input" placeholder="Repeat your password" />
+            </div>
+            <div class="gate__field">
+              <label for="username" class="gate__label">Username</label>
+              <input id="username" name="username" type="text" maxlength="20" autocomplete="username" class="gate__input" placeholder="e.g. teachermike" />
+            </div>
+          </div>
+          <p id="gateStatus" class="gate__status" aria-live="polite" role="status"></p>
+          <button id="signUpBtn" type="submit" class="btn btn--primary gate__submit">Sign In</button>
+          <button id="resetPasswordBtn" type="button" class="gate__forgot-link">Forgot password?</button>
+        </form>
+      </div>
+    </div>
+
     <script src="./config/runtime-config.js"></script>
-    <script type="module" src="blog-page.js?v=12"></script>
+    <script type="module" src="blog-page.js?v=10"></script>
   </body>
 </html>
