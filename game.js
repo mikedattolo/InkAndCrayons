@@ -689,12 +689,7 @@ async function init() {
   registerMigrationUtilities();
   attachEvents();
 
-  try {
-    await initAuth();
-  } catch (error) {
-    console.error("Auth init failed:", error);
-  }
-
+  /* Register auth listener FIRST so it catches state changes during initAuth */
   try {
     onAuthStateChanged((user) => {
       currentUser = user;
@@ -709,9 +704,8 @@ async function init() {
       if (accountBtn) accountBtn.hidden = !user;
       if (headerSignInBtn) headerSignInBtn.hidden = !!user;
       /* Update avatar initial */
-      if (avatarInitialEl && user) {
+      if (user && accountBtn) {
         const name = user.username || user.email || "?";
-        avatarInitialEl.textContent = name.charAt(0).toUpperCase();
         accountBtn.textContent = "";
         if (user.avatarUrl && isValidHttpUrl(user.avatarUrl)) {
           const image = document.createElement("img");
@@ -731,6 +725,13 @@ async function init() {
     });
   } catch (error) {
     console.error("Auth listener setup failed:", error);
+  }
+
+  try {
+    const authTimeout = new Promise(resolve => setTimeout(() => resolve(null), 6000));
+    await Promise.race([initAuth(), authTimeout]);
+  } catch (error) {
+    console.error("Auth init failed:", error);
   }
 
   try {

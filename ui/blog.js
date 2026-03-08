@@ -305,10 +305,14 @@ export async function loadPosts({ adminMode = false } = {}) {
   const allPosts = [];
   const seenIds = new Set();
 
-  // 1. Try Supabase
-  const result = await fetchPosts({ adminMode });
-  if (!result.error && result.data?.length) {
-    result.data.forEach((p) => { seenIds.add(p.id); allPosts.push(p); });
+  // 1. Try Supabase (wrapped in try/catch so seed data always loads if this throws)
+  try {
+    const result = await fetchPosts({ adminMode });
+    if (!result.error && result.data?.length) {
+      result.data.forEach((p) => { seenIds.add(p.id); allPosts.push(p); });
+    }
+  } catch (err) {
+    console.warn("Supabase fetchPosts failed, falling back to seed data:", err?.message);
   }
 
   // 2. Merge any legacy-local posts not already in Supabase
@@ -321,13 +325,6 @@ export async function loadPosts({ adminMode = false } = {}) {
   const seedPosts = await loadSeedPostsFallback();
   seedPosts.forEach((p) => {
     if (!seenIds.has(p.id)) { seenIds.add(p.id); allPosts.push(p); }
-  });
-
-  // Sort all posts newest-first so the latest post is always shown first
-  allPosts.sort((a, b) => {
-    const dateA = new Date(a.createdAt || a.date || 0).getTime();
-    const dateB = new Date(b.createdAt || b.date || 0).getTime();
-    return dateB - dateA;
   });
 
   return allPosts;
