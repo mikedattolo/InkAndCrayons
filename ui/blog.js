@@ -30,8 +30,6 @@ const POST_ACTION_EMOJIS = ["😀", "😢", "😂", "😠"];
 const _postTimestamps = new Map();
 const POST_COOLDOWN_MS = 15_000;
 
-const ARCHIVE_PAGE_SIZE = 4;
-let _archivePage = 0;
 let _searchQuery = "";
 
 function readLegacyJson(key, fallback) {
@@ -461,6 +459,10 @@ export function createBlogUI({
     await hydratePostState();
 
     postsContainer.textContent = "";
+    const engagementContainer = document.getElementById("blogEngagement");
+    if (engagementContainer) {
+      engagementContainer.textContent = "";
+    }
     const composerCard = formEl.closest(".blog__composer-card");
     if (composerCard) {
       composerCard.style.display = roleCanPublish(user) ? "flex" : "none";
@@ -844,13 +846,21 @@ export function createBlogUI({
       commentSection.append(commentsWrap, commentForm);
       actionPanel.appendChild(actionBar);
 
+      const engagementBlock = document.createElement("div");
+      engagementBlock.className = "post__engagement-block";
+      engagementBlock.appendChild(actionPanel);
+      if (likeLine) engagementBlock.appendChild(likeLine);
+      if (viewAllBtn) engagementBlock.appendChild(viewAllBtn);
+      engagementBlock.appendChild(commentSection);
+
       card.appendChild(sheet);
-      card.appendChild(actionPanel);
-      if (likeLine) card.appendChild(likeLine);
-      if (viewAllBtn) card.appendChild(viewAllBtn);
-      card.appendChild(commentSection);
 
       postsContainer.appendChild(card);
+      if (engagementContainer) {
+        engagementContainer.appendChild(engagementBlock);
+      } else {
+        card.appendChild(engagementBlock);
+      }
     });
 
     renderArchive(filtered);
@@ -865,20 +875,7 @@ export function createBlogUI({
     if (!archiveGrid) return;
 
     const archivePosts = allFiltered.length > 1 ? allFiltered.slice(1) : [];
-    const totalPages = Math.max(1, Math.ceil(archivePosts.length / ARCHIVE_PAGE_SIZE));
-
-    if (_archivePage >= totalPages) _archivePage = totalPages - 1;
-    if (_archivePage < 0) _archivePage = 0;
-
-    const start = _archivePage * ARCHIVE_PAGE_SIZE;
-    const visible = archivePosts.slice(start, start + ARCHIVE_PAGE_SIZE);
-
     archiveGrid.textContent = "";
-
-    const prevBtn = document.getElementById("archivePrev");
-    const nextBtn = document.getElementById("archiveNext");
-    if (prevBtn) prevBtn.disabled = _archivePage <= 0;
-    if (nextBtn) nextBtn.disabled = _archivePage >= totalPages - 1;
 
     if (archivePosts.length === 0) {
       const empty = document.createElement("p");
@@ -888,7 +885,7 @@ export function createBlogUI({
       return;
     }
 
-    visible.forEach((post) => {
+    archivePosts.forEach((post) => {
       const btn = document.createElement("button");
       btn.className = "blog__archive-btn";
       btn.type = "button";
@@ -918,23 +915,10 @@ export function createBlogUI({
   }
 
   function initArchiveControls() {
-    const prevBtn = document.getElementById("archivePrev");
-    const nextBtn = document.getElementById("archiveNext");
     const searchInput = document.getElementById("blogSearch");
-
-    prevBtn?.addEventListener("click", () => {
-      _archivePage -= 1;
-      renderArchive(filteredPosts());
-    });
-
-    nextBtn?.addEventListener("click", () => {
-      _archivePage += 1;
-      renderArchive(filteredPosts());
-    });
 
     searchInput?.addEventListener("input", async () => {
       _searchQuery = sanitizeSingleLine(searchInput.value, 80);
-      _archivePage = 0;
       await render();
     });
 
@@ -942,7 +926,6 @@ export function createBlogUI({
       if (e.key === "Enter") {
         e.preventDefault();
         _searchQuery = sanitizeSingleLine(searchInput.value, 80);
-        _archivePage = 0;
         await render();
       }
     });
