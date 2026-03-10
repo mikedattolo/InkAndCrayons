@@ -1,4 +1,4 @@
-/* game.js v63 */
+/* game.js v65 */
 import {
   changeUserPassword,
   getUserProfile,
@@ -15,7 +15,7 @@ import {
 import { addWriter, createBlogUI, getWriters, loadPosts, removeWriter } from "./ui/blog.js";
 import { createAuthGate } from "./ui/auth.js";
 import { createModal } from "./ui/modal.js";
-import { loadBooks, renderBooks, addBookOverride } from "./ui/bookshelf.js";
+import { loadBooks, loadMusic, renderBooks, addBookOverride } from "./ui/bookshelf.js";
 import { loadShopItems, renderShopItems, addShopOverride } from "./ui/shop.js";
 import {
   loadAnnouncements,
@@ -130,6 +130,7 @@ let _eventsAttached = false;
 
 const contentStore = {
   books: [],
+  music: [],
   shop: [],
   announcements: [],
 };
@@ -257,18 +258,23 @@ function getPostTimestamp(post) {
 
 /* ── Content Loading ────────────────────────────────────── */
 async function loadContent() {
-  const [booksResult, shopResult, announcementsResult] = await Promise.allSettled([
+  const [booksResult, musicResult, shopResult, announcementsResult] = await Promise.allSettled([
     loadBooks(),
+    loadMusic(),
     loadShopItems(),
     loadAnnouncements(),
   ]);
 
   contentStore.books = booksResult.status === "fulfilled" ? booksResult.value : [];
+  contentStore.music = musicResult.status === "fulfilled" ? musicResult.value : [];
   contentStore.shop = shopResult.status === "fulfilled" ? shopResult.value : [];
   contentStore.announcements = announcementsResult.status === "fulfilled" ? announcementsResult.value : [];
 
   if (booksResult.status === "rejected") {
     console.warn("Unable to load books JSON.", booksResult.reason);
+  }
+  if (musicResult.status === "rejected") {
+    console.warn("Unable to load music JSON.", musicResult.reason);
   }
   if (shopResult.status === "rejected") {
     console.warn("Unable to load shop JSON.", shopResult.reason);
@@ -387,65 +393,13 @@ function openMilestones() {
 }
 
 function openGuides() {
-  setMarketVisible(false);
-
-  const books = [
-    { title: "The Giving Tree — Shel Silverstein", color: "mint", url: "https://www.amazon.com/Giving-Tree-Shel-Silverstein/dp/B000NY2R40" },
-    { title: "Coming Soon", color: "purple" },
-    { title: "Coming Soon", color: "mint" },
-    { title: "Coming Soon", color: "blue" },
-    { title: "Coming Soon", color: "yellow" },
-    { title: "Coming Soon", color: "peach" },
-  ];
-
-  const wrap = document.createElement("div");
-  wrap.className = "bookshelf-wrap";
-
-  const shelf = document.createElement("div");
-  shelf.className = "bookshelf";
-
-  books.forEach((b) => {
-    const book = b.url
-      ? document.createElement("a")
-      : document.createElement("div");
-
-    book.className = `book book--${b.color}${!b.url ? " book--coming" : ""}`;
-    if (b.url) {
-      book.href = b.url;
-      book.target = "_blank";
-      book.rel = "noopener noreferrer";
-      book.title = b.title;
-    }
-
-    const spine = document.createElement("span");
-    spine.className = "book__spine";
-    spine.textContent = b.title;
-    book.appendChild(spine);
-    shelf.appendChild(book);
-  });
-
-  const ledge = document.createElement("div");
-  ledge.className = "bookshelf__ledge";
-
-  const note = document.createElement("p");
-  note.className = "bookshelf-note";
-  note.textContent = "Book recommendations coming soon!";
-
-  wrap.appendChild(shelf);
-  wrap.appendChild(ledge);
-  wrap.appendChild(note);
-
-  modal.open({
-    title: "Helpful Tips",
-    description: "Books I recommend for early childhood educators and parents.",
-    contentNodes: [wrap],
-  });
+  window.location.href = "./bookshelf.html";
 }
 
 function openMusic() {
   setMarketVisible(false);
-  const nodes = contentStore.books.length
-    ? renderBooks(contentStore.books)
+  const nodes = contentStore.music.length
+    ? renderBooks(contentStore.music)
     : [Object.assign(document.createElement("p"), { textContent: "No music links available right now." })];
   modal.open({
     title: "Music & Activities",
