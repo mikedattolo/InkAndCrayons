@@ -1,4 +1,4 @@
-/* game.js v53 */
+/* game.js v61 */
 import {
   changeUserPassword,
   getUserProfile,
@@ -69,12 +69,20 @@ const accountCreated = document.getElementById("accountCreated");
 const accountIdEl = document.getElementById("accountId");
 const profileForm = document.getElementById("profileForm");
 const profileUsernameInput = document.getElementById("profileUsername");
+const profilePicUrlInput = document.getElementById("profilePicUrl");
 const profileStatus = document.getElementById("profileStatus");
 const passwordForm = document.getElementById("passwordForm");
 const currentPasswordInput = document.getElementById("currentPassword");
 const newPasswordInput = document.getElementById("newPassword");
 const confirmPasswordInput = document.getElementById("confirmPassword");
 const passwordStatus = document.getElementById("passwordStatus");
+const paymentMethodsEl = document.getElementById("paymentMethods");
+const paymentForm = document.getElementById("paymentForm");
+const cardNameInput = document.getElementById("cardName");
+const cardNumberInput = document.getElementById("cardNumber");
+const cardExpiryInput = document.getElementById("cardExpiry");
+const cardCvcInput = document.getElementById("cardCvc");
+const paymentStatusEl = document.getElementById("paymentStatus");
 
 /* Chat modal refs */
 const chatModal = document.getElementById("chatModal");
@@ -94,7 +102,8 @@ const avatarInitialEl = document.getElementById("avatarInitial");
 const headerSignInBtn = document.getElementById("headerSignIn");
 const signUpButton = document.getElementById("signUpBtn");
 const forgotPasswordButton = document.getElementById("resetPasswordBtn");
-const userStatusEl = document.getElementById("gateStatus");
+const gateStatusEl = document.getElementById("gateStatus");
+const userStatusEl = document.getElementById("userStatus");
 
 /* Navigation buttons */
 const navLessonsBtn = document.getElementById("navLessons");
@@ -112,7 +121,8 @@ const stickyMusicBtn = document.getElementById("stickyMusic");
 /* Footer buttons */
 const footBlogBtn = document.getElementById("footBlog");
 const footResourcesBtn = document.getElementById("footResources");
-const footAboutBtn = document.getElementById("footAbout");
+const footCoachingBtn = document.getElementById("footCoaching");
+const footContactBtn = document.getElementById("footContact");
 
 /* ── State ──────────────────────────────────────────────── */
 let currentUser = getUserProfile();
@@ -151,7 +161,7 @@ const authGate = createAuthGate({
   emailInput,
   passwordInput,
   usernameInput,
-  statusEl: userStatusEl,
+  statusEl: gateStatusEl,
   signUpButton,
   forgotPasswordButton,
 });
@@ -196,6 +206,53 @@ function isAdmin() {
 
 function setAdminVisibility(visible) {
   adminPanelEl?.setAttribute("aria-hidden", String(!visible));
+}
+
+function renderHeaderAuthState(user) {
+  if (accountBtn) accountBtn.hidden = !user;
+  if (headerSignInBtn) headerSignInBtn.hidden = !!user;
+
+  if (!user) {
+    if (userStatusEl) {
+      userStatusEl.textContent = "";
+      userStatusEl.hidden = true;
+    }
+    return;
+  }
+
+  const displayName = user.username || user.email || "Member";
+  const initial = displayName.charAt(0).toUpperCase() || "?";
+
+  if (accountBtn) {
+    accountBtn.textContent = "";
+    if (user.avatarUrl && isValidHttpUrl(user.avatarUrl)) {
+      const image = document.createElement("img");
+      image.src = user.avatarUrl;
+      image.alt = "Profile";
+      image.className = "site-header__avatar-img";
+      accountBtn.appendChild(image);
+    } else {
+      const initialEl = document.createElement("span");
+      initialEl.id = "avatarInitial";
+      initialEl.className = "site-header__avatar-initial";
+      initialEl.textContent = initial;
+      accountBtn.appendChild(initialEl);
+    }
+  }
+
+  if (avatarInitialEl) {
+    avatarInitialEl.textContent = initial;
+  }
+  if (userStatusEl) {
+    userStatusEl.hidden = false;
+    userStatusEl.textContent = `Signed in as ${displayName}`;
+  }
+}
+
+function getPostTimestamp(post) {
+  const raw = post?.updatedAt || post?.createdAt || post?.date;
+  const ts = new Date(raw).getTime();
+  return Number.isFinite(ts) ? ts : Number.NEGATIVE_INFINITY;
 }
 
 /* ── Content Loading ────────────────────────────────────── */
@@ -330,7 +387,59 @@ function openMilestones() {
 }
 
 function openGuides() {
-  window.location.href = "./bookshelf.html";
+  setMarketVisible(false);
+
+  const books = [
+    { title: "The Giving Tree — Shel Silverstein", color: "mint", url: "https://www.amazon.com/Giving-Tree-Shel-Silverstein/dp/B000NY2R40" },
+    { title: "Coming Soon", color: "purple" },
+    { title: "Coming Soon", color: "mint" },
+    { title: "Coming Soon", color: "blue" },
+    { title: "Coming Soon", color: "yellow" },
+    { title: "Coming Soon", color: "peach" },
+  ];
+
+  const wrap = document.createElement("div");
+  wrap.className = "bookshelf-wrap";
+
+  const shelf = document.createElement("div");
+  shelf.className = "bookshelf";
+
+  books.forEach((b) => {
+    const book = b.url
+      ? document.createElement("a")
+      : document.createElement("div");
+
+    book.className = `book book--${b.color}${!b.url ? " book--coming" : ""}`;
+    if (b.url) {
+      book.href = b.url;
+      book.target = "_blank";
+      book.rel = "noopener noreferrer";
+      book.title = b.title;
+    }
+
+    const spine = document.createElement("span");
+    spine.className = "book__spine";
+    spine.textContent = b.title;
+    book.appendChild(spine);
+    shelf.appendChild(book);
+  });
+
+  const ledge = document.createElement("div");
+  ledge.className = "bookshelf__ledge";
+
+  const note = document.createElement("p");
+  note.className = "bookshelf-note";
+  note.textContent = "Book recommendations coming soon!";
+
+  wrap.appendChild(shelf);
+  wrap.appendChild(ledge);
+  wrap.appendChild(note);
+
+  modal.open({
+    title: "Helpful Tips",
+    description: "Books I recommend for early childhood educators and parents.",
+    contentNodes: [wrap],
+  });
 }
 
 function openMusic() {
@@ -477,11 +586,13 @@ function attachEvents() {
   stickyGuidesBtn?.addEventListener("click", openGuides);
   stickyMusicBtn?.addEventListener("click", openMusic);
 
-
   /* Footer buttons */
   footBlogBtn?.addEventListener("click", openBlog);
-  footResourcesBtn?.addEventListener("click", () => scrollToSection("howItWorks"));
-  footAboutBtn?.addEventListener("click", openAbout);
+  footResourcesBtn?.addEventListener("click", openResources);
+  footCoachingBtn?.addEventListener("click", openGuides);
+  footContactBtn?.addEventListener("click", () => {
+    window.location.href = "./contact.html";
+  });
 
   blogCloseBtn?.addEventListener("click", closeBlog);
   aboutCloseBtn?.addEventListener("click", closeAbout);
@@ -566,8 +677,28 @@ function attachEvents() {
     accountEmail.textContent = u.email;
     accountRole.textContent = u.role === "admin" ? "Admin" : "Member";
     profileUsernameInput.value = u.username;
+    profilePicUrlInput.value = u.avatarUrl || "";
     accountCreated.textContent = `Member since: ${new Date(u.createdAt).toLocaleDateString()}`;
     accountIdEl.textContent = `Account ID: ${u.id}`;
+    renderPaymentCards();
+  }
+
+  function renderPaymentCards() {
+    paymentMethodsEl.textContent = "";
+    const note = document.createElement("p");
+    note.style.fontSize = "0.85rem";
+    note.style.color = "#999";
+    note.textContent = "Card storage is disabled. Use external checkout links in the shop.";
+    paymentMethodsEl.appendChild(note);
+
+    if (paymentForm) {
+      Array.from(paymentForm.querySelectorAll("input")).forEach((input) => {
+        input.required = false;
+        input.disabled = true;
+      });
+      const submitBtn = paymentForm.querySelector("button[type='submit']");
+      if (submitBtn) submitBtn.disabled = true;
+    }
   }
 
   accountBtn?.addEventListener("click", () => {
@@ -591,8 +722,13 @@ function attachEvents() {
   profileForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const username = sanitizeSingleLine(profileUsernameInput.value, 20);
+    const avatarUrl = profilePicUrlInput.value.trim();
     if (!isValidUsername(username)) { profileStatus.textContent = "Username must be 2-20 chars."; return; }
-    const result = await updateUserProfile({ username });
+    if (avatarUrl && !isValidHttpUrl(avatarUrl)) {
+      profileStatus.textContent = "Profile URL must be a valid http(s) URL.";
+      return;
+    }
+    const result = await updateUserProfile({ username, avatarUrl: avatarUrl || undefined });
     if (result.error) {
       profileStatus.textContent = result.error;
     } else {
@@ -689,7 +825,13 @@ async function init() {
   registerMigrationUtilities();
   attachEvents();
 
-  /* Register auth listener FIRST so it catches state changes during initAuth */
+  try {
+    const initialUser = await initAuth();
+    renderHeaderAuthState(initialUser);
+  } catch (error) {
+    console.error("Auth init failed:", error);
+  }
+
   try {
     onAuthStateChanged((user) => {
       currentUser = user;
@@ -701,37 +843,11 @@ async function init() {
       }
       setAdminVisibility(isAdmin());
       if (!isAdmin() && adminStatusEl) adminStatusEl.textContent = "";
-      if (accountBtn) accountBtn.hidden = !user;
-      if (headerSignInBtn) headerSignInBtn.hidden = !!user;
-      /* Update avatar initial */
-      if (user && accountBtn) {
-        const name = user.username || user.email || "?";
-        accountBtn.textContent = "";
-        if (user.avatarUrl && isValidHttpUrl(user.avatarUrl)) {
-          const image = document.createElement("img");
-          image.src = user.avatarUrl;
-          image.alt = "Profile";
-          image.className = "site-header__avatar-img";
-          accountBtn.appendChild(image);
-        } else {
-          const initial = document.createElement("span");
-          initial.id = "avatarInitial";
-          initial.className = "site-header__avatar-initial";
-          initial.textContent = name.charAt(0).toUpperCase();
-          accountBtn.appendChild(initial);
-        }
-      }
+      renderHeaderAuthState(user);
       blogUI?.render();
     });
   } catch (error) {
     console.error("Auth listener setup failed:", error);
-  }
-
-  try {
-    const authTimeout = new Promise(resolve => setTimeout(() => resolve(null), 6000));
-    await Promise.race([initAuth(), authTimeout]);
-  } catch (error) {
-    console.error("Auth init failed:", error);
   }
 
   try {
@@ -764,7 +880,9 @@ async function populateHomeBlogPreview() {
 
   /* Load posts — falls back to seed JSON if Supabase is unavailable */
   const posts = await loadPosts();
-  const filtered = posts.filter((p) => p.title !== "Welcome to Ink & Crayons Articles");
+  const filtered = posts
+    .filter((p) => p.title !== "Welcome to Ink & Crayons Articles")
+    .sort((a, b) => getPostTimestamp(b) - getPostTimestamp(a));
   const latest = filtered.length > 0 ? filtered[0] : null;
 
   cardEl.textContent = "";
@@ -788,7 +906,7 @@ async function populateHomeBlogPreview() {
 
   const snippet = document.createElement("p");
   snippet.className = "home-blog-preview__snippet";
-  const plain = latest.body.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const plain = String(latest.body || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
   snippet.textContent = plain.length > 260 ? plain.slice(0, 260) + "…" : plain;
 
   cardEl.appendChild(title);

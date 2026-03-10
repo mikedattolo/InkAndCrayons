@@ -293,6 +293,12 @@ async function loadSeedPostsFallback() {
   }
 }
 
+function getPostTimestamp(post) {
+  const raw = post?.updatedAt || post?.createdAt || post?.date;
+  const ts = new Date(raw).getTime();
+  return Number.isFinite(ts) ? ts : Number.NEGATIVE_INFINITY;
+}
+
 /**
  * Load posts from all available sources and merge them:
  *   1. Supabase (live DB) — editable
@@ -326,6 +332,8 @@ export async function loadPosts({ adminMode = false } = {}) {
   seedPosts.forEach((p) => {
     if (!seenIds.has(p.id)) { seenIds.add(p.id); allPosts.push(p); }
   });
+
+  allPosts.sort((a, b) => getPostTimestamp(b) - getPostTimestamp(a));
 
   return allPosts;
 }

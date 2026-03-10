@@ -163,22 +163,15 @@ export async function signInWithEmail({ email, password }) {
     return { error: error.message };
   }
 
-  // Wait a bit for the session to be fully established
-  if (data.session) {
-    // Session is already available, get the full user data
-    let user = null;
+  if (data.session?.user) {
+    let profile = null;
     try {
-      // Give Supabase a moment to fully establish the session
-      await new Promise(resolve => setTimeout(resolve, 100));
-      user = await getCurrentAppUser();
+      profile = await ensureProfile(data.session.user);
     } catch (err) {
-      console.error("Error getting user after sign-in:", err);
+      console.error("Error ensuring profile after sign-in:", err);
     }
-    // Fallback: build minimal user from session so listeners are always notified
-    if (!user && data.session.user) {
-      user = mapUser(data.session.user, null);
-    }
-    return { user };
+
+    return { user: mapUser(data.session.user, profile) };
   }
 
   return { error: "Sign-in failed: no session established" };
