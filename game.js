@@ -1,4 +1,4 @@
-/* game.js v62 */
+/* game.js v63 */
 import {
   changeUserPassword,
   getUserProfile,
@@ -676,7 +676,9 @@ function attachEvents() {
     accountUsername.textContent = u.username;
     accountEmail.textContent = u.email;
     accountRole.textContent = u.role === "admin" ? "Admin" : "Member";
-    profileUsernameInput.value = u.username;
+    if (profileUsernameInput) {
+      profileUsernameInput.value = u.username;
+    }
     if (profilePicUrlInput) {
       profilePicUrlInput.value = u.avatarUrl || "";
     }
@@ -686,6 +688,8 @@ function attachEvents() {
   }
 
   function renderPaymentCards() {
+    if (!paymentMethodsEl) return;
+
     paymentMethodsEl.textContent = "";
     const note = document.createElement("p");
     note.style.fontSize = "0.85rem";
