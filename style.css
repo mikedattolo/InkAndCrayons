@@ -3378,36 +3378,25 @@ body::before {
    BLOG PAGE — ARCHIVE SECTION WITH ARROW NAVIGATION
    ============================================================ */
 .blog__archive {
-  max-width: 1200px;
+  max-width: 980px;
   margin: 36px auto 60px;
   padding: 0 40px;
 }
 
 .blog__engagement {
-  max-width: 1140px;
+  max-width: 860px;
   width: 100%;
   margin: 12px auto 0;
   padding: 0 40px;
 }
 
 .post__engagement-block {
-  background: #fff;
-  border: 1px solid rgba(0,0,0,0.08);
-  border-radius: 14px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  overflow: hidden;
+  max-width: 860px;
+  margin: 0 auto;
 }
 
 .post__engagement-block .post__action-panel {
   border-top: none;
-}
-
-.post__engagement-block .post__comments {
-  display: block;
-}
-
-.post__engagement-block .post__comment-form {
-  display: flex;
 }
 
 .blog__archive-header {
@@ -3461,8 +3450,9 @@ body::before {
 /* --- Article buttons row --- */
 .blog__archive-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(220px, 280px));
   gap: 14px;
+  justify-content: center;
   align-items: stretch;
 }
 
@@ -3480,7 +3470,8 @@ body::before {
   transition: all 0.25s ease;
   box-shadow: 0 2px 8px rgba(60,40,80,0.05);
   text-align: left;
-  width: 100%;
+  width: 280px;
+  max-width: 100%;
   min-height: 84px;
 }
 .blog__archive-btn:hover {
@@ -3562,7 +3553,7 @@ body::before {
     margin: 60px auto 40px;
   }
   .blog__archive-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(220px, 280px));
   }
   .blog__archive-carousel {
     gap: 8px;
@@ -3585,7 +3576,8 @@ body::before {
 
 @media (max-width: 560px) {
   .blog__archive-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(220px, 280px);
+    justify-content: center;
   }
 }
 
