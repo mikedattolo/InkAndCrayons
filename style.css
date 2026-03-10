@@ -3466,20 +3466,20 @@ body::before {
    BLOG PAGE — ARCHIVE SECTION WITH ARROW NAVIGATION
    ============================================================ */
 .blog__archive {
-  max-width: 860px;
+  max-width: 780px;
   margin: 36px auto 60px;
   padding: 0 40px;
 }
 
 .blog__engagement {
-  max-width: 760px;
+  max-width: 640px;
   width: 100%;
   margin: 12px auto 0;
   padding: 0 40px;
 }
 
 .post__engagement-block {
-  max-width: 760px;
+  max-width: 640px;
   margin: 0 auto;
   position: relative;
   z-index: 2;
@@ -3487,6 +3487,23 @@ body::before {
 
 .post__engagement-block .post__action-panel {
   border-top: none;
+}
+
+.post__engagement-block .post__action-btn {
+  font-size: 1.45rem;
+  padding: 7px 10px;
+}
+
+.post__engagement-block .post__action-btn .action-count {
+  font-size: 0.92rem;
+}
+
+.post__engagement-block .post__comment-section[hidden] {
+  display: none !important;
+}
+
+.post__engagement-block .post__comment-section:not([hidden]) {
+  display: block;
 }
 
 .post__engagement-block .post__comment-section .post__comments {
@@ -3548,7 +3565,7 @@ body::before {
 /* --- Article buttons row --- */
 .blog__archive-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(180px, 230px));
+  grid-template-columns: repeat(3, minmax(160px, 200px));
   gap: 14px;
   justify-content: center;
   align-items: stretch;
@@ -3568,7 +3585,7 @@ body::before {
   transition: all 0.25s ease;
   box-shadow: 0 2px 8px rgba(60,40,80,0.05);
   text-align: left;
-  width: 230px;
+  width: 200px;
   max-width: 100%;
   min-height: 84px;
 }
@@ -3651,7 +3668,7 @@ body::before {
     margin: 60px auto 40px;
   }
   .blog__archive-grid {
-    grid-template-columns: repeat(2, minmax(180px, 230px));
+    grid-template-columns: repeat(2, minmax(160px, 200px));
   }
   .blog__archive-carousel {
     gap: 8px;
@@ -3674,7 +3691,7 @@ body::before {
 
 @media (max-width: 560px) {
   .blog__archive-grid {
-    grid-template-columns: minmax(180px, 230px);
+    grid-template-columns: minmax(160px, 200px);
     justify-content: center;
   }
 }

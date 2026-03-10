@@ -679,7 +679,7 @@ export function createBlogUI({
 
       const commentSection = document.createElement("div");
       commentSection.className = "post__comment-section";
-      commentSection.style.display = "none";
+      commentSection.hidden = true;
 
       const commentsWrap = document.createElement("div");
       commentsWrap.className = "post__comments";
@@ -759,8 +759,8 @@ export function createBlogUI({
       });
 
       function toggleComments() {
-        const nextOpen = commentSection.style.display === "none";
-        commentSection.style.display = nextOpen ? "block" : "none";
+        const nextOpen = commentSection.hidden;
+        commentSection.hidden = !nextOpen;
         commentToggle.setAttribute("aria-expanded", String(nextOpen));
         if (nextOpen) {
           setTimeout(() => commentInput.focus(), 0);
