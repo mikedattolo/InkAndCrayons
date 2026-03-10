@@ -1,4 +1,4 @@
-/* game.js v61 */
+/* game.js v62 */
 import {
   changeUserPassword,
   getUserProfile,
@@ -677,7 +677,9 @@ function attachEvents() {
     accountEmail.textContent = u.email;
     accountRole.textContent = u.role === "admin" ? "Admin" : "Member";
     profileUsernameInput.value = u.username;
-    profilePicUrlInput.value = u.avatarUrl || "";
+    if (profilePicUrlInput) {
+      profilePicUrlInput.value = u.avatarUrl || "";
+    }
     accountCreated.textContent = `Member since: ${new Date(u.createdAt).toLocaleDateString()}`;
     accountIdEl.textContent = `Account ID: ${u.id}`;
     renderPaymentCards();
@@ -722,7 +724,7 @@ function attachEvents() {
   profileForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const username = sanitizeSingleLine(profileUsernameInput.value, 20);
-    const avatarUrl = profilePicUrlInput.value.trim();
+    const avatarUrl = (profilePicUrlInput?.value || "").trim();
     if (!isValidUsername(username)) { profileStatus.textContent = "Username must be 2-20 chars."; return; }
     if (avatarUrl && !isValidHttpUrl(avatarUrl)) {
       profileStatus.textContent = "Profile URL must be a valid http(s) URL.";
