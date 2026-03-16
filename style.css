@@ -472,19 +472,18 @@ body::before {
 /* ---- Header Quick-Link Buttons (horizontal row below logo) ---- */
 .header-quick-links {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
-  gap: 14px;
+  gap: 10px;
   width: 100%;
-  max-width: 900px;
   margin-top: 4px;
 }
 
 .header-quick-link {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 22px;
+  gap: 8px;
+  padding: 10px 16px;
   border: 2px solid rgba(201,168,247,0.4);
   border-radius: 16px 12px 14px 18px;
   background: rgba(237,228,252,0.7);
@@ -493,6 +492,7 @@ body::before {
   text-align: left;
   position: relative;
   overflow: hidden;
+  white-space: nowrap;
 }
 .header-quick-link::before {
   content: '';
@@ -514,7 +514,7 @@ body::before {
 }
 
 .header-quick-link__icon {
-  font-size: 1.6rem;
+  font-size: 1.3rem;
   flex-shrink: 0;
   position: relative;
   z-index: 1;
@@ -525,13 +525,13 @@ body::before {
   justify-content: center;
 }
 .header-quick-link__icon--market svg {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
 }
 
 .header-quick-link__text {
   font-family: var(--font-hand);
-  font-size: 1.15rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #5a3d9c;
   line-height: 1.2;
