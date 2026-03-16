@@ -44,6 +44,45 @@
           <p class="site-header__tagline">teach &bull; learn &bull; love</p>
         </div>
 
+        <!-- Quick-link buttons (below logo, horizontal row) -->
+        <nav class="header-quick-links" aria-label="Quick links">
+          <button class="header-quick-link header-quick-link--purple" id="headerAbout" type="button">
+            <span class="header-quick-link__icon">👋</span>
+            <span class="header-quick-link__text">About Me</span>
+          </button>
+          <button class="header-quick-link header-quick-link--blue" id="headerMilestones" type="button">
+            <span class="header-quick-link__icon">🌟</span>
+            <span class="header-quick-link__text">Educational Milestones</span>
+          </button>
+          <button class="header-quick-link header-quick-link--yellow" id="headerAmazon" type="button">
+            <span class="header-quick-link__icon">🛒</span>
+            <span class="header-quick-link__text">Amazon Shop</span>
+          </button>
+          <button class="header-quick-link header-quick-link--mint" id="headerLibrary" type="button">
+            <span class="header-quick-link__icon">📚</span>
+            <span class="header-quick-link__text">My Book Library</span>
+          </button>
+          <button class="header-quick-link header-quick-link--peach" id="headerTPT" type="button">
+            <span class="header-quick-link__icon header-quick-link__icon--market">
+              <svg width="28" height="28" viewBox="0 0 64 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <pattern id="awnStripHdr" patternUnits="userSpaceOnUse" width="16" height="16">
+                    <rect width="16" height="16" fill="#fff"/>
+                    <rect width="8" height="16" fill="#f7a8c4"/>
+                    <animateTransform attributeName="patternTransform" type="translate" from="0 0" to="16 0" dur="3s" repeatCount="indefinite"/>
+                  </pattern>
+                </defs>
+                <rect x="9" y="32" width="8" height="42" rx="1" fill="#d6a87a"/>
+                <rect x="47" y="32" width="8" height="42" rx="1" fill="#d6a87a"/>
+                <rect x="6" y="60" width="52" height="18" rx="2" fill="#f1d7b8"/>
+                <rect x="6" y="14" width="52" height="22" rx="3" fill="url(#awnStripHdr)"/>
+                <path d="M8 33 a6 6 0 0 0 12 0 a6 6 0 0 0 12 0 a6 6 0 0 0 12 0 a6 6 0 0 0 12 0" fill="url(#awnStripHdr)"/>
+              </svg>
+            </span>
+            <span class="header-quick-link__text">Teachers Pay Teachers</span>
+          </button>
+        </nav>
+
         <!-- Marketplace control: hidden from header, triggered via sidebar -->
         <div id="marketControl" class="market-control" aria-hidden="false" hidden>
           <button id="marketBtn" class="site-header__market-btn" aria-haspopup="true" aria-expanded="false" title="Marketplace">
@@ -607,6 +646,27 @@
         var libBtn = document.getElementById('sidebarLibrary');
         if(libBtn){
           libBtn.addEventListener('click', function(){
+            window.location.href = './bookshelf.html';
+          });
+        }
+
+        // Wire header quick-link buttons (same actions as sidebar)
+        var hdrMap = {
+          headerAbout:      'navAbout',
+          headerMilestones: 'navMilestones',
+          headerAmazon:     'navLessons',
+          headerTPT:        'navLessons'
+        };
+        Object.entries(hdrMap).forEach(function([hdrId, targetId]){
+          var hdrBtn = document.getElementById(hdrId);
+          var target = document.getElementById(targetId);
+          if(hdrBtn && target){
+            hdrBtn.addEventListener('click', function(){ target.click(); });
+          }
+        });
+        var hdrLibBtn = document.getElementById('headerLibrary');
+        if(hdrLibBtn){
+          hdrLibBtn.addEventListener('click', function(){
             window.location.href = './bookshelf.html';
           });
         }
